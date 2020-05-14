@@ -14,6 +14,26 @@ const VIEW_MODE = {
   YEAR: 'Year'
 }
 
+SVGElement.prototype.getX = function () {
+  return +this.getAttribute('x')
+}
+SVGElement.prototype.getY = function () {
+  return +this.getAttribute('y')
+}
+SVGElement.prototype.getWidth = function () {
+  return +this.getAttribute('width')
+}
+SVGElement.prototype.getHeight = function () {
+  return +this.getAttribute('height')
+}
+SVGElement.prototype.getEndX = function () {
+  return this.getX() + this.getWidth()
+}
+
+function generate_id(task) {
+  return task.name + '_' + Math.random().toString(36).slice(2, 12)
+}
+
 export default class Gantt {
   constructor(wrapper, tasks, options) {
     this.setup_wrapper(wrapper)
@@ -183,9 +203,10 @@ export default class Gantt {
   }
 
   setup_gantt_dates() {
-    this.gantt_start = this.gantt_end = null
+    this.gantt_start = null
+    this.gantt_end = null
 
-    for (let task of this.tasks) {
+    for (const task of this.tasks) {
       // set global start and end date
       if (!this.gantt_start || task._start < this.gantt_start) {
         this.gantt_start = task._start
@@ -195,7 +216,7 @@ export default class Gantt {
       }
 
       if (task.milestones) {
-        for (let milestone of task.milestones) {
+        for (const milestone of task.milestones) {
           if (milestone.date < this.gantt_start) {
             this.gantt_start = milestone.date
           }
@@ -233,14 +254,12 @@ export default class Gantt {
     while (cur_date === null || cur_date < this.gantt_end) {
       if (!cur_date) {
         cur_date = date_utils.clone(this.gantt_start)
+      } else if (this.view_is(VIEW_MODE.YEAR)) {
+        cur_date = date_utils.add(cur_date, 1, 'year')
+      } else if (this.view_is(VIEW_MODE.MONTH)) {
+        cur_date = date_utils.add(cur_date, 1, 'month')
       } else {
-        if (this.view_is(VIEW_MODE.YEAR)) {
-          cur_date = date_utils.add(cur_date, 1, 'year')
-        } else if (this.view_is(VIEW_MODE.MONTH)) {
-          cur_date = date_utils.add(cur_date, 1, 'month')
-        } else {
-          cur_date = date_utils.add(cur_date, this.options.step, 'hour')
-        }
+        cur_date = date_utils.add(cur_date, this.options.step, 'hour')
       }
       this.dates.push(cur_date)
     }
@@ -264,7 +283,7 @@ export default class Gantt {
     this.layers = {}
     const layers = ['grid', 'date', 'progress', 'bar', 'details']
     // make group layers
-    for (let layer of layers) {
+    for (const layer of layers) {
       this.layers[layer] = createSVG('g', {
         class: layer,
         append_to: this.$svg
@@ -284,7 +303,7 @@ export default class Gantt {
     const grid_width = this.dates.length * this.options.column_width
 
     let sum = 0
-    for (let task of this.tasks) {
+    for (const task of this.tasks) {
       sum += task.height || this.options.bar_height
     }
 
@@ -314,7 +333,7 @@ export default class Gantt {
 
     let row_y = this.options.header_height + this.options.padding / 2
 
-    for (let task of this.tasks) {
+    for (const task of this.tasks) {
       console.log(task)
       const row_height = (task.height || this.options.bar_height) + this.options.padding
 
@@ -355,13 +374,13 @@ export default class Gantt {
 
   make_grid_ticks() {
     let tick_x = 0
-    let tick_y = this.options.header_height + this.options.padding / 2
+    const tick_y = this.options.header_height + this.options.padding / 2
     let tick_height = this.options.padding * this.tasks.length
-    for (let task of this.tasks) {
+    for (const task of this.tasks) {
       tick_height += task.height || this.options.bar_height
     }
 
-    for (let date of this.dates) {
+    for (const date of this.dates) {
       let tick_class = 'tick'
       // thick tick for monday
       if (this.view_is(VIEW_MODE.DAY) && date.getDate() === 1) {
@@ -401,7 +420,7 @@ export default class Gantt {
       const width = this.options.column_width
 
       let sum = 0
-      for (let task of this.tasks) {
+      for (const task of this.tasks) {
         sum += task.height || this.options.bar_height
       }
 
@@ -420,7 +439,7 @@ export default class Gantt {
   }
 
   make_dates() {
-    for (let date of this.get_dates_to_draw()) {
+    for (const date of this.get_dates_to_draw()) {
       createSVG('text', {
         x: date.lower_x,
         y: date.lower_y,
@@ -478,6 +497,7 @@ export default class Gantt {
           ? date_utils.format(date, 'D MMM', this.options.language)
           : '',
       'Half Day_upper':
+        // eslint-disable-next-line no-nested-ternary
         date.getDate() !== last_date.getDate()
           ? date.getMonth() !== last_date.getMonth()
             ? date_utils.format(date, 'D MMM', this.options.language)
@@ -611,7 +631,7 @@ export default class Gantt {
   }
 
   hide_popup() {
-    this.popup && this.popup.hide()
+    return this.popup && this.popup.hide()
   }
 
   trigger_event(event, args) {
@@ -643,7 +663,3 @@ export default class Gantt {
 }
 
 Gantt.VIEW_MODE = VIEW_MODE
-
-function generate_id(task) {
-  return task.name + '_' + Math.random().toString(36).slice(2, 12)
-}

@@ -28,7 +28,6 @@ export default class Bar {
 
   prepare() {
     this.prepare_values()
-    this.prepare_helpers()
 
     this.make_milestones()
   }
@@ -62,24 +61,6 @@ export default class Bar {
       class: `milestone-wrapper ${this.task.custom_class || ''}`,
       'data-id': this.task.id
     })
-  }
-
-  prepare_helpers() {
-    SVGElement.prototype.getX = function () {
-      return +this.getAttribute('x')
-    }
-    SVGElement.prototype.getY = function () {
-      return +this.getAttribute('y')
-    }
-    SVGElement.prototype.getWidth = function () {
-      return +this.getAttribute('width')
-    }
-    SVGElement.prototype.getHeight = function () {
-      return +this.getAttribute('height')
-    }
-    SVGElement.prototype.getEndX = function () {
-      return this.getX() + this.getWidth()
-    }
   }
 
   draw() {
@@ -196,7 +177,9 @@ export default class Bar {
 
   set_action_completed() {
     this.action_completed = true
-    setTimeout(() => (this.action_completed = false), 1000)
+    setTimeout(() => {
+      this.action_completed = false
+    }, 1000)
   }
 
   compute_progress() {
@@ -213,8 +196,8 @@ export default class Bar {
     let x = (diff / step) * column_width
 
     if (this.gantt.view_is('Month')) {
-      const diff = date_utils.diff(task_start, gantt_start, 'day')
-      x = (diff * column_width) / 30
+      const d = date_utils.diff(task_start, gantt_start, 'day')
+      x = (d * column_width) / 30
     }
     return x
   }
@@ -240,9 +223,4 @@ export default class Bar {
       label.setAttribute('x', bar.getX() + bar.getWidth() / 2)
     }
   }
-}
-
-function isFunction(functionToCheck) {
-  const getType = {}
-  return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]'
 }

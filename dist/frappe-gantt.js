@@ -230,7 +230,29 @@ var month_names = {
   fr: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
   tr: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
   zh: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
-};
+}; // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart
+
+function padStart(s, length, pad) {
+  var str = s,
+      targetLength = length,
+      padString = pad;
+  str += '';
+  targetLength >>= 0;
+  padString = String(typeof padString !== 'undefined' ? padString : ' ');
+
+  if (str.length > targetLength) {
+    return String(str);
+  }
+
+  targetLength -= str.length;
+
+  if (targetLength > padString.length) {
+    padString += padString.repeat(targetLength / padString.length);
+  }
+
+  return padString.slice(0, targetLength) + String(str);
+}
+
 var date_utils = {
   parse: function parse(date) {
     var date_separator = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '-';
@@ -241,19 +263,18 @@ var date_utils = {
     }
 
     if (typeof date === 'string') {
-      var date_parts, time_parts;
       var parts = date.split(' ');
-      date_parts = parts[0].split(date_separator).map(function (val) {
+      var date_parts = parts[0].split(date_separator).map(function (val) {
         return parseInt(val, 10);
       });
-      time_parts = parts[1] && parts[1].split(time_separator); // month is 0 indexed
+      var time_parts = parts[1] && parts[1].split(time_separator); // month is 0 indexed
 
-      date_parts[1] = date_parts[1] - 1;
+      date_parts[1] -= 1;
       var vals = date_parts;
 
       if (time_parts && time_parts.length) {
-        if (time_parts.length == 4) {
-          time_parts[3] = '0.' + time_parts[3];
+        if (time_parts.length === 4) {
+          time_parts[3] = "0.".concat(time_parts[3]);
           time_parts[3] = parseFloat(time_parts[3]) * 1000;
         }
 
@@ -262,6 +283,8 @@ var date_utils = {
 
       return _construct(Date, _toConsumableArray(vals));
     }
+
+    return null;
   },
   to_string: function to_string(date) {
     var with_time = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -270,21 +293,23 @@ var date_utils = {
       throw new TypeError('Invalid argument type');
     }
 
-    var vals = this.get_date_values(date).map(function (val, i) {
+    var vals = this.get_date_values(date).map(function (v, i) {
+      var val = v;
+
       if (i === 1) {
         // add 1 for month
-        val = val + 1;
+        val += 1;
       }
 
       if (i === 6) {
-        return padStart(val + '', 3, '0');
+        return padStart("".concat(val), 3, '0');
       }
 
-      return padStart(val + '', 2, '0');
+      return padStart("".concat(val), 2, '0');
     });
     var date_string = "".concat(vals[0], "-").concat(vals[1], "-").concat(vals[2]);
     var time_string = "".concat(vals[3], ":").concat(vals[4], ":").concat(vals[5], ".").concat(vals[6]);
-    return date_string + (with_time ? ' ' + time_string : '');
+    return date_string + (with_time ? " ".concat(time_string) : '');
   },
   format: function format(date) {
     var format_string = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'YYYY-MM-DD HH:mm:ss.SSS';
@@ -321,15 +346,15 @@ var date_utils = {
     return str;
   },
   diff: function diff(date_a, date_b) {
-    var scale = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : DAY;
-    var milliseconds, seconds, hours, minutes, days, months, years;
-    milliseconds = date_a - date_b;
-    seconds = milliseconds / 1000;
-    minutes = seconds / 60;
-    hours = minutes / 60;
-    days = hours / 24;
-    months = days / 30;
-    years = months / 12;
+    var s = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : DAY;
+    var milliseconds = date_a - date_b,
+        seconds = milliseconds / 1000,
+        minutes = seconds / 60,
+        hours = minutes / 60,
+        days = hours / 24,
+        months = days / 30,
+        years = months / 12;
+    var scale = s;
 
     if (!scale.endsWith('s')) {
       scale += 's';
@@ -353,8 +378,8 @@ var date_utils = {
     return new Date();
   },
   add: function add(date, qty, scale) {
-    qty = parseInt(qty, 10);
-    var vals = [date.getFullYear() + (scale === YEAR ? qty : 0), date.getMonth() + (scale === MONTH ? qty : 0), date.getDate() + (scale === DAY ? qty : 0), date.getHours() + (scale === HOUR ? qty : 0), date.getMinutes() + (scale === MINUTE ? qty : 0), date.getSeconds() + (scale === SECOND ? qty : 0), date.getMilliseconds() + (scale === MILLISECOND ? qty : 0)];
+    var quantity = parseInt(qty, 10);
+    var vals = [date.getFullYear() + (scale === YEAR ? quantity : 0), date.getMonth() + (scale === MONTH ? quantity : 0), date.getDate() + (scale === DAY ? quantity : 0), date.getHours() + (scale === HOUR ? quantity : 0), date.getMinutes() + (scale === MINUTE ? quantity : 0), date.getSeconds() + (scale === SECOND ? quantity : 0), date.getMilliseconds() + (scale === MILLISECOND ? quantity : 0)];
     return _construct(Date, vals);
   },
   start_of: function start_of(date, scale) {
@@ -387,35 +412,28 @@ var date_utils = {
 
     var year = date.getFullYear();
 
-    if (year % 4 == 0 && year % 100 != 0 || year % 400 == 0) {
+    if (year % 4 === 0 && year % 100 !== 0 || year % 400 === 0) {
       return 29;
     }
 
     return 28;
   }
-}; // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart
-
-function padStart(str, targetLength, padString) {
-  str = str + '';
-  targetLength = targetLength >> 0;
-  padString = String(typeof padString !== 'undefined' ? padString : ' ');
-
-  if (str.length > targetLength) {
-    return String(str);
-  } else {
-    targetLength = targetLength - str.length;
-
-    if (targetLength > padString.length) {
-      padString += padString.repeat(targetLength / padString.length);
-    }
-
-    return padString.slice(0, targetLength) + String(str);
-  }
-}
+};
 
 function $(expr, con) {
   return typeof expr === 'string' ? (con || document).querySelector(expr) : expr || null;
 }
+
+function cubic_bezier(name) {
+  return {
+    ease: '.25 .1 .25 1',
+    linear: '0 0 1 1',
+    'ease-in': '.42 0 1 1',
+    'ease-out': '0 0 .58 1',
+    'ease-in-out': '.42 0 .58 1'
+  }[name];
+}
+
 function createSVG(tag, attrs) {
   var elem = document.createElementNS('http://www.w3.org/2000/svg', tag);
 
@@ -431,18 +449,6 @@ function createSVG(tag, attrs) {
   }
 
   return elem;
-}
-function animateSVG(svgElement, attr, from, to) {
-  var animatedSvgElement = getAnimationElement(svgElement, attr, from, to);
-
-  if (animatedSvgElement === svgElement) {
-    // triggered 2nd time programmatically
-    // trigger artificial click event
-    var event = document.createEvent('HTMLEvents');
-    event.initEvent('click', true, true);
-    event.eventName = 'click';
-    animatedSvgElement.dispatchEvent(event);
-  }
 }
 
 function getAnimationElement(svgElement, attr, from, to) {
@@ -477,16 +483,6 @@ function getAnimationElement(svgElement, attr, from, to) {
   return svgElement;
 }
 
-function cubic_bezier(name) {
-  return {
-    ease: '.25 .1 .25 1',
-    linear: '0 0 1 1',
-    'ease-in': '.42 0 1 1',
-    'ease-out': '0 0 .58 1',
-    'ease-in-out': '.42 0 .58 1'
-  }[name];
-}
-
 $.on = function (element, event, selector, callback) {
   if (!callback) {
     callback = selector;
@@ -501,8 +497,8 @@ $.off = function (element, event, handler) {
 };
 
 $.bind = function (element, event, callback) {
-  event.split(/\s+/).forEach(function (event) {
-    element.addEventListener(event, callback);
+  event.split(/\s+/).forEach(function (e) {
+    element.addEventListener(e, callback);
   });
 };
 
@@ -533,15 +529,30 @@ $.attr = function (element, attr, value) {
   }
 
   if (_typeof(attr) === 'object') {
-    for (var key in attr) {
+    for (var _i = 0, _Object$keys = Object.keys(attr); _i < _Object$keys.length; _i++) {
+      var key = _Object$keys[_i];
       $.attr(element, key, attr[key]);
     }
 
-    return;
+    return null;
   }
 
   element.setAttribute(attr, value);
+  return null;
 };
+
+function animateSVG(svgElement, attr, from, to) {
+  var animatedSvgElement = getAnimationElement(svgElement, attr, from, to);
+
+  if (animatedSvgElement === svgElement) {
+    // triggered 2nd time programmatically
+    // trigger artificial click event
+    var event = document.createEvent('HTMLEvents');
+    event.initEvent('click', true, true);
+    event.eventName = 'click';
+    animatedSvgElement.dispatchEvent(event);
+  }
+}
 
 var Milestone = /*#__PURE__*/function () {
   function Milestone(gantt, task, bar, opts) {
@@ -549,7 +560,6 @@ var Milestone = /*#__PURE__*/function () {
 
     this.set_defaults(gantt, task, bar, opts);
     this.prepare();
-    this.bind();
   }
 
   _createClass(Milestone, [{
@@ -566,7 +576,6 @@ var Milestone = /*#__PURE__*/function () {
     key: "prepare",
     value: function prepare() {
       this.prepare_values();
-      this.prepare_helpers();
     }
   }, {
     key: "prepare_values",
@@ -575,32 +584,8 @@ var Milestone = /*#__PURE__*/function () {
       this.height = this.gantt.options.bar_height;
       this.x = this.compute_x();
       this.y = this.compute_y();
-      this.href = this.href;
       this.width = 16;
       this.group = this.bar.milestone_group;
-    }
-  }, {
-    key: "prepare_helpers",
-    value: function prepare_helpers() {
-      SVGElement.prototype.getX = function () {
-        return +this.getAttribute('x');
-      };
-
-      SVGElement.prototype.getY = function () {
-        return +this.getAttribute('y');
-      };
-
-      SVGElement.prototype.getWidth = function () {
-        return +this.getAttribute('width');
-      };
-
-      SVGElement.prototype.getHeight = function () {
-        return +this.getAttribute('height');
-      };
-
-      SVGElement.prototype.getEndX = function () {
-        return this.getX() + this.getWidth();
-      };
     }
   }, {
     key: "draw",
@@ -620,11 +605,6 @@ var Milestone = /*#__PURE__*/function () {
       });
     }
   }, {
-    key: "bind",
-    value: function bind() {
-      if (this.invalid) return;
-    }
-  }, {
     key: "compute_x",
     value: function compute_x() {
       var _this$gantt$options = this.gantt.options,
@@ -636,9 +616,8 @@ var Milestone = /*#__PURE__*/function () {
       var x = diff / step * column_width;
 
       if (this.gantt.view_is('Month')) {
-        var _diff = date_utils.diff(task_start, gantt_start, 'day');
-
-        x = _diff * column_width / 30;
+        var d = date_utils.diff(task_start, gantt_start, 'day');
+        x = d * column_width / 30;
       }
 
       return x;
@@ -682,7 +661,6 @@ var Bar = /*#__PURE__*/function () {
     key: "prepare",
     value: function prepare() {
       this.prepare_values();
-      this.prepare_helpers();
       this.make_milestones();
     }
   }, {
@@ -712,29 +690,6 @@ var Bar = /*#__PURE__*/function () {
         "class": "milestone-wrapper ".concat(this.task.custom_class || ''),
         'data-id': this.task.id
       });
-    }
-  }, {
-    key: "prepare_helpers",
-    value: function prepare_helpers() {
-      SVGElement.prototype.getX = function () {
-        return +this.getAttribute('x');
-      };
-
-      SVGElement.prototype.getY = function () {
-        return +this.getAttribute('y');
-      };
-
-      SVGElement.prototype.getWidth = function () {
-        return +this.getAttribute('width');
-      };
-
-      SVGElement.prototype.getHeight = function () {
-        return +this.getAttribute('height');
-      };
-
-      SVGElement.prototype.getEndX = function () {
-        return this.getX() + this.getWidth();
-      };
     }
   }, {
     key: "draw",
@@ -858,7 +813,7 @@ var Bar = /*#__PURE__*/function () {
 
       this.action_completed = true;
       setTimeout(function () {
-        return _this3.action_completed = false;
+        _this3.action_completed = false;
       }, 1000);
     }
   }, {
@@ -879,9 +834,8 @@ var Bar = /*#__PURE__*/function () {
       var x = diff / step * column_width;
 
       if (this.gantt.view_is('Month')) {
-        var _diff = date_utils.diff(task_start, gantt_start, 'day');
-
-        x = _diff * column_width / 30;
+        var d = date_utils.diff(task_start, gantt_start, 'day');
+        x = d * column_width / 30;
       }
 
       return x;
@@ -998,6 +952,30 @@ var VIEW_MODE = {
   MONTH: 'Month',
   YEAR: 'Year'
 };
+
+SVGElement.prototype.getX = function () {
+  return +this.getAttribute('x');
+};
+
+SVGElement.prototype.getY = function () {
+  return +this.getAttribute('y');
+};
+
+SVGElement.prototype.getWidth = function () {
+  return +this.getAttribute('width');
+};
+
+SVGElement.prototype.getHeight = function () {
+  return +this.getAttribute('height');
+};
+
+SVGElement.prototype.getEndX = function () {
+  return this.getX() + this.getWidth();
+};
+
+function generate_id(task) {
+  return task.name + '_' + Math.random().toString(36).slice(2, 12);
+}
 
 var Gantt = /*#__PURE__*/function () {
   function Gantt(wrapper, tasks, options) {
@@ -1175,7 +1153,8 @@ var Gantt = /*#__PURE__*/function () {
   }, {
     key: "setup_gantt_dates",
     value: function setup_gantt_dates() {
-      this.gantt_start = this.gantt_end = null;
+      this.gantt_start = null;
+      this.gantt_end = null;
 
       var _iterator = _createForOfIteratorHelper(this.tasks),
           _step;
@@ -1248,14 +1227,12 @@ var Gantt = /*#__PURE__*/function () {
       while (cur_date === null || cur_date < this.gantt_end) {
         if (!cur_date) {
           cur_date = date_utils.clone(this.gantt_start);
+        } else if (this.view_is(VIEW_MODE.YEAR)) {
+          cur_date = date_utils.add(cur_date, 1, 'year');
+        } else if (this.view_is(VIEW_MODE.MONTH)) {
+          cur_date = date_utils.add(cur_date, 1, 'month');
         } else {
-          if (this.view_is(VIEW_MODE.YEAR)) {
-            cur_date = date_utils.add(cur_date, 1, 'year');
-          } else if (this.view_is(VIEW_MODE.MONTH)) {
-            cur_date = date_utils.add(cur_date, 1, 'month');
-          } else {
-            cur_date = date_utils.add(cur_date, this.options.step, 'hour');
-          }
+          cur_date = date_utils.add(cur_date, this.options.step, 'hour');
         }
 
         this.dates.push(cur_date);
@@ -1556,7 +1533,8 @@ var Gantt = /*#__PURE__*/function () {
         Month_lower: date_utils.format(date, 'MMMM', this.options.language),
         Year_lower: date_utils.format(date, 'YYYY', this.options.language),
         'Quarter Day_upper': date.getDate() !== last_date.getDate() ? date_utils.format(date, 'D MMM', this.options.language) : '',
-        'Half Day_upper': date.getDate() !== last_date.getDate() ? date.getMonth() !== last_date.getMonth() ? date_utils.format(date, 'D MMM', this.options.language) : date_utils.format(date, 'D', this.options.language) : '',
+        'Half Day_upper': // eslint-disable-next-line no-nested-ternary
+        date.getDate() !== last_date.getDate() ? date.getMonth() !== last_date.getMonth() ? date_utils.format(date, 'D MMM', this.options.language) : date_utils.format(date, 'D', this.options.language) : '',
         Day_upper: date.getMonth() !== last_date.getMonth() ? date_utils.format(date, 'MMMM', this.options.language) : '',
         Week_upper: date.getMonth() !== last_date.getMonth() ? date_utils.format(date, 'MMMM', this.options.language) : '',
         Month_upper: date.getFullYear() !== last_date.getFullYear() ? date_utils.format(date, 'YYYY', this.options.language) : '',
@@ -1687,7 +1665,7 @@ var Gantt = /*#__PURE__*/function () {
   }, {
     key: "hide_popup",
     value: function hide_popup() {
-      this.popup && this.popup.hide();
+      return this.popup && this.popup.hide();
     }
   }, {
     key: "trigger_event",
@@ -1729,10 +1707,6 @@ var Gantt = /*#__PURE__*/function () {
 }();
 
 Gantt.VIEW_MODE = VIEW_MODE;
-
-function generate_id(task) {
-  return task.name + '_' + Math.random().toString(36).slice(2, 12);
-}
 
 return Gantt;
 
