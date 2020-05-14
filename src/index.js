@@ -1,5 +1,6 @@
 import date_utils from './date_utils'
 import { $, createSVG } from './svg_utils'
+import Tasks from './tasks'
 import Bar from './bar'
 import Popup from './popup'
 
@@ -30,15 +31,11 @@ SVGElement.prototype.getEndX = function () {
   return this.getX() + this.getWidth()
 }
 
-function generate_id(task) {
-  return task.name + '_' + Math.random().toString(36).slice(2, 12)
-}
-
 export default class Gantt {
   constructor(wrapper, tasks, options) {
     this.setup_wrapper(wrapper)
     this.setup_options(options)
-    this.setup_tasks(tasks)
+    this.tasks = new Tasks(this, tasks)
     // initialize with default view mode
     this.change_view_mode()
     this.bind_events()
@@ -109,59 +106,8 @@ export default class Gantt {
     this.options = { ...default_options, ...options }
   }
 
-  setup_tasks(tasks) {
-    // prepare tasks
-    this.tasks = tasks.map((task, i) => {
-      // convert to Date objects
-      task._start = date_utils.parse(task.start)
-      task._end = date_utils.parse(task.end)
-
-      // make task invalid if duration too large
-      if (date_utils.diff(task._end, task._start, 'year') > 10) {
-        task.end = null
-      }
-
-      // cache index
-      task._index = i
-
-      // invalid dates
-      if (!task.start && !task.end) {
-        const today = date_utils.today()
-        task._start = today
-        task._end = date_utils.add(today, 2, 'day')
-      }
-
-      if (!task.start && task.end) {
-        task._start = date_utils.add(task._end, -2, 'day')
-      }
-
-      if (task.start && !task.end) {
-        task._end = date_utils.add(task._start, 2, 'day')
-      }
-
-      // if hours is not set, assume the last day is full day
-      // e.g: 2018-09-09 becomes 2018-09-09 23:59:59
-      const task_end_values = date_utils.get_date_values(task._end)
-      if (task_end_values.slice(3).every((d) => d === 0)) {
-        task._end = date_utils.add(task._end, 24, 'hour')
-      }
-
-      // invalid flag
-      if (!task.start || !task.end) {
-        task.invalid = true
-      }
-
-      // uids
-      if (!task.id) {
-        task.id = generate_id(task)
-      }
-
-      return task
-    })
-  }
-
   refresh(tasks) {
-    this.setup_tasks(tasks)
+    this.tasks = new Tasks(tasks, this.options)
     this.change_view_mode()
   }
 
@@ -203,30 +149,9 @@ export default class Gantt {
   }
 
   setup_gantt_dates() {
-    this.gantt_start = null
-    this.gantt_end = null
-
-    for (const task of this.tasks) {
-      // set global start and end date
-      if (!this.gantt_start || task._start < this.gantt_start) {
-        this.gantt_start = task._start
-      }
-      if (!this.gantt_end || task._end > this.gantt_end) {
-        this.gantt_end = task._end
-      }
-
-      if (task.milestones) {
-        for (const milestone of task.milestones) {
-          if (milestone.date < this.gantt_start) {
-            this.gantt_start = milestone.date
-          }
-
-          if (milestone.date > this.gantt_end) {
-            this.gantt_end = milestone.date
-          }
-        }
-      }
-    }
+    const { gantt_start, gantt_end } = this.tasks.getBoundingDates()
+    this.gantt_start = gantt_start
+    this.gantt_end = gantt_end
 
     this.gantt_start = date_utils.start_of(this.gantt_start, 'day')
     this.gantt_end = date_utils.start_of(this.gantt_end, 'day')
@@ -274,7 +199,7 @@ export default class Gantt {
     this.setup_layers()
     this.make_grid()
     this.make_dates()
-    this.make_bars()
+    this.tasks.render()
     this.set_width()
     this.set_scroll_position()
   }
@@ -302,13 +227,8 @@ export default class Gantt {
   make_grid_background() {
     const grid_width = this.dates.length * this.options.column_width
 
-    let sum = 0
-    for (const task of this.tasks) {
-      sum += task.height || this.options.bar_height
-    }
-
-    sum += this.options.padding * this.tasks.length
-    const grid_height = this.options.header_height + this.options.padding + sum
+    const tasksHeight = this.tasks.getHeight()
+    const grid_height = this.options.header_height + this.options.padding + tasksHeight
 
     createSVG('rect', {
       x: 0,
@@ -333,8 +253,7 @@ export default class Gantt {
 
     let row_y = this.options.header_height + this.options.padding / 2
 
-    for (const task of this.tasks) {
-      console.log(task)
+    for (const task of this.tasks.tasks) {
       const row_height = (task.height || this.options.bar_height) + this.options.padding
 
       createSVG('rect', {
@@ -375,10 +294,7 @@ export default class Gantt {
   make_grid_ticks() {
     let tick_x = 0
     const tick_y = this.options.header_height + this.options.padding / 2
-    let tick_height = this.options.padding * this.tasks.length
-    for (const task of this.tasks) {
-      tick_height += task.height || this.options.bar_height
-    }
+    const tick_height = this.tasks.getHeight()
 
     for (const date of this.dates) {
       let tick_class = 'tick'
@@ -419,13 +335,8 @@ export default class Gantt {
 
       const width = this.options.column_width
 
-      let sum = 0
-      for (const task of this.tasks) {
-        sum += task.height || this.options.bar_height
-      }
-
-      sum += this.options.padding * this.tasks.length
-      const grid_height = this.options.header_height + this.options.padding / 2 + sum
+      const tasksHeight = this.tasks.getHeight()
+      const grid_height = this.options.header_height + this.options.padding / 2 + tasksHeight
 
       createSVG('rect', {
         x,
@@ -552,15 +463,6 @@ export default class Gantt {
     }
   }
 
-  make_bars() {
-    this.bars = this.tasks.map((task) => {
-      const bar = new Bar(this, task)
-      this.layers.bar.appendChild(bar.group)
-      this.layers.bar.appendChild(bar.milestone_group)
-      return bar
-    })
-  }
-
   set_width() {
     const cur_width = this.$svg.getBoundingClientRect().width
     const actual_width = this.$svg.querySelector('.grid .grid-row').getAttribute('width')
@@ -611,18 +513,6 @@ export default class Gantt {
     return false
   }
 
-  get_task(id) {
-    return this.tasks.find((task) => {
-      return task.id === id
-    })
-  }
-
-  get_bar(id) {
-    return this.bars.find((bar) => {
-      return bar.task.id === id
-    })
-  }
-
   show_popup(options) {
     if (!this.popup) {
       this.popup = new Popup(this.popup_wrapper, this.options.custom_popup_html)
@@ -647,8 +537,8 @@ export default class Gantt {
    * @memberof Gantt
    */
   get_oldest_starting_date() {
-    return this.tasks
-      .map((task) => task._start)
+    return this.tasks.tasks
+      .map((task) => task.start)
       .reduce((prev_date, cur_date) => (cur_date <= prev_date ? cur_date : prev_date))
   }
 

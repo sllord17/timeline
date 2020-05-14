@@ -39,7 +39,7 @@ export default class Bar {
     this.y = this.compute_y()
     this.corner_radius = this.gantt.options.bar_corner_radius
     this.duration =
-      date_utils.diff(this.task._end, this.task._start, 'hour') / this.gantt.options.step
+      date_utils.diff(this.task.end, this.task.start, 'hour') / this.gantt.options.step
     this.width = this.gantt.options.column_width * this.duration
     this.progress_width =
       this.gantt.options.column_width * this.duration * (this.task.progress / 100) || 0
@@ -159,9 +159,9 @@ export default class Bar {
   show_popup() {
     if (this.gantt.bar_being_dragged) return
 
-    const start_date = date_utils.format(this.task._start, 'MMM D', this.gantt.options.language)
+    const start_date = date_utils.format(this.task.start, 'MMM D', this.gantt.options.language)
     const end_date = date_utils.format(
-      date_utils.add(this.task._end, -1, 'second'),
+      date_utils.add(this.task.end, -1, 'second'),
       'MMM D',
       this.gantt.options.language
     )
@@ -189,7 +189,7 @@ export default class Bar {
 
   compute_x() {
     const { step, column_width } = this.gantt.options
-    const task_start = this.task._start
+    const task_start = this.task.start
     const { gantt_start } = this.gantt
 
     const diff = date_utils.diff(task_start, gantt_start, 'hour')
@@ -203,11 +203,14 @@ export default class Bar {
   }
 
   compute_y() {
-    let sum = 0
-    for (let i = 0; i < this.task._index; i++) {
-      sum += this.gantt.tasks[i].height || this.gantt.options.bar_height
+    let sum = 0,
+      idx = this.gantt.tasks.tasks.indexOf(this.task)
+
+    for (let i = 0; i < idx; i++) {
+      sum += this.gantt.tasks.tasks[i].height
     }
-    sum += this.task._index * this.gantt.options.padding
+
+    sum += idx * this.gantt.options.padding
     return this.gantt.options.header_height + this.gantt.options.padding + sum
   }
 
