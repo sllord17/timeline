@@ -1064,69 +1064,6 @@ var Bar = /*#__PURE__*/function () {
   return Bar;
 }();
 
-var Arrow = /*#__PURE__*/function () {
-  function Arrow(gantt, from_task, to_task) {
-    _classCallCheck(this, Arrow);
-
-    this.gantt = gantt;
-    this.from_task = from_task;
-    this.to_task = to_task;
-    this.calculate_path();
-    this.draw();
-  }
-
-  _createClass(Arrow, [{
-    key: "calculate_path",
-    value: function calculate_path() {
-      var _this = this;
-
-      var start_x = this.from_task.$bar.getX() + this.from_task.$bar.getWidth() / 2;
-
-      var condition = function condition() {
-        return _this.to_task.$bar.getX() < start_x + _this.gantt.options.padding && start_x > _this.from_task.$bar.getX() + _this.gantt.options.padding;
-      };
-
-      while (condition()) {
-        start_x -= 10;
-      }
-
-      var start_y = this.gantt.options.header_height + this.gantt.options.bar_height + (this.gantt.options.padding + this.gantt.options.bar_height) * this.from_task.task._index + this.gantt.options.padding;
-      var end_x = this.to_task.$bar.getX() - this.gantt.options.padding / 2;
-      var end_y = this.gantt.options.header_height + this.gantt.options.bar_height / 2 + (this.gantt.options.padding + this.gantt.options.bar_height) * this.to_task.task._index + this.gantt.options.padding;
-      var from_is_below_to = this.from_task.task._index > this.to_task.task._index;
-      var curve = this.gantt.options.arrow_curve;
-      var clockwise = from_is_below_to ? 1 : 0;
-      var curve_y = from_is_below_to ? -curve : curve;
-      var offset = from_is_below_to ? end_y + this.gantt.options.arrow_curve : end_y - this.gantt.options.arrow_curve;
-      this.path = "\n            M ".concat(start_x, " ").concat(start_y, "\n            V ").concat(offset, "\n            a ").concat(curve, " ").concat(curve, " 0 0 ").concat(clockwise, " ").concat(curve, " ").concat(curve_y, "\n            L ").concat(end_x, " ").concat(end_y, "\n            m -5 -5\n            l 5 5\n            l -5 5");
-
-      if (this.to_task.$bar.getX() < this.from_task.$bar.getX() + this.gantt.options.padding) {
-        var down_1 = this.gantt.options.padding / 2 - curve;
-        var down_2 = this.to_task.$bar.getY() + this.to_task.$bar.getHeight() / 2 - curve_y;
-        var left = this.to_task.$bar.getX() - this.gantt.options.padding;
-        this.path = "\n                M ".concat(start_x, " ").concat(start_y, "\n                v ").concat(down_1, "\n                a ").concat(curve, " ").concat(curve, " 0 0 1 -").concat(curve, " ").concat(curve, "\n                H ").concat(left, "\n                a ").concat(curve, " ").concat(curve, " 0 0 ").concat(clockwise, " -").concat(curve, " ").concat(curve_y, "\n                V ").concat(down_2, "\n                a ").concat(curve, " ").concat(curve, " 0 0 ").concat(clockwise, " ").concat(curve, " ").concat(curve_y, "\n                L ").concat(end_x, " ").concat(end_y, "\n                m -5 -5\n                l 5 5\n                l -5 5");
-      }
-    }
-  }, {
-    key: "draw",
-    value: function draw() {
-      this.element = createSVG('path', {
-        d: this.path,
-        'data-from': this.from_task.task.id,
-        'data-to': this.to_task.task.id
-      });
-    }
-  }, {
-    key: "update",
-    value: function update() {
-      this.calculate_path();
-      this.element.setAttribute('d', this.path);
-    }
-  }]);
-
-  return Arrow;
-}();
-
 var Popup = /*#__PURE__*/function () {
   function Popup(parent, custom_html) {
     _classCallCheck(this, Popup);
@@ -1273,7 +1210,6 @@ var Gantt = /*#__PURE__*/function () {
         view_modes: _toConsumableArray(Object.values(VIEW_MODE)),
         bar_height: 20,
         bar_corner_radius: 3,
-        arrow_curve: 5,
         padding: 18,
         view_mode: 'Day',
         date_format: 'YYYY-MM-DD',
@@ -1535,8 +1471,6 @@ var Gantt = /*#__PURE__*/function () {
       this.make_grid();
       this.make_dates();
       this.make_bars();
-      this.make_arrows();
-      this.map_arrows_on_bars();
       this.set_width();
       this.set_scroll_position();
     }
@@ -1544,7 +1478,7 @@ var Gantt = /*#__PURE__*/function () {
     key: "setup_layers",
     value: function setup_layers() {
       this.layers = {};
-      var layers = ['grid', 'date', 'arrow', 'progress', 'bar', 'details']; // make group layers
+      var layers = ['grid', 'date', 'progress', 'bar', 'details']; // make group layers
 
       for (var _i = 0, _layers = layers; _i < _layers.length; _i++) {
         var layer = _layers[_i];
@@ -1869,70 +1803,6 @@ var Gantt = /*#__PURE__*/function () {
       });
     }
   }, {
-    key: "make_arrows",
-    value: function make_arrows() {
-      var _this3 = this;
-
-      this.arrows = [];
-
-      var _iterator11 = _createForOfIteratorHelper(this.tasks),
-          _step11;
-
-      try {
-        var _loop = function _loop() {
-          var task = _step11.value;
-          var arrows = [];
-          arrows = task.dependencies.map(function (task_id) {
-            var dependency = _this3.get_task(task_id);
-
-            if (!dependency) return;
-            var arrow = new Arrow(_this3, _this3.bars[dependency._index], // from_task
-            _this3.bars[task._index] // to_task
-            );
-
-            _this3.layers.arrow.appendChild(arrow.element);
-
-            return arrow;
-          }).filter(Boolean); // filter falsy values
-
-          _this3.arrows = _this3.arrows.concat(arrows);
-        };
-
-        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-          _loop();
-        }
-      } catch (err) {
-        _iterator11.e(err);
-      } finally {
-        _iterator11.f();
-      }
-    }
-  }, {
-    key: "map_arrows_on_bars",
-    value: function map_arrows_on_bars() {
-      var _this4 = this;
-
-      var _iterator12 = _createForOfIteratorHelper(this.bars),
-          _step12;
-
-      try {
-        var _loop2 = function _loop2() {
-          var bar = _step12.value;
-          bar.arrows = _this4.arrows.filter(function (arrow) {
-            return arrow.from_task.task.id === bar.task.id || arrow.to_task.task.id === bar.task.id;
-          });
-        };
-
-        for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
-          _loop2();
-        }
-      } catch (err) {
-        _iterator12.e(err);
-      } finally {
-        _iterator12.f();
-      }
-    }
-  }, {
     key: "set_width",
     value: function set_width() {
       var cur_width = this.$svg.getBoundingClientRect().width;
@@ -1954,18 +1824,18 @@ var Gantt = /*#__PURE__*/function () {
   }, {
     key: "bind_grid_click",
     value: function bind_grid_click() {
-      var _this5 = this;
+      var _this3 = this;
 
       $.on(this.$svg, this.options.popup_trigger, '.grid-row, .grid-header', function () {
-        _this5.unselect_all();
+        _this3.unselect_all();
 
-        _this5.hide_popup();
+        _this3.hide_popup();
       });
     }
   }, {
     key: "bind_bar_events",
     value: function bind_bar_events() {
-      var _this6 = this;
+      var _this4 = this;
 
       var is_dragging = false;
       var x_on_start = 0;
@@ -1996,11 +1866,11 @@ var Gantt = /*#__PURE__*/function () {
         x_on_start = e.offsetX;
         y_on_start = e.offsetY;
         parent_bar_id = bar_wrapper.getAttribute('data-id');
-        var ids = [parent_bar_id].concat(_toConsumableArray(_this6.get_all_dependent_tasks(parent_bar_id)));
+        var ids = [parent_bar_id].concat(_toConsumableArray(_this4.get_all_dependent_tasks(parent_bar_id)));
         bars = ids.map(function (id) {
-          return _this6.get_bar(id);
+          return _this4.get_bar(id);
         });
-        _this6.bar_being_dragged = parent_bar_id;
+        _this4.bar_being_dragged = parent_bar_id;
         bars.forEach(function (bar) {
           var $bar = bar.$bar;
           $bar.ox = $bar.getX();
@@ -2015,7 +1885,7 @@ var Gantt = /*#__PURE__*/function () {
         var dy = e.offsetY - y_on_start;
         bars.forEach(function (bar) {
           var $bar = bar.$bar;
-          $bar.finaldx = _this6.get_snap_position(dx);
+          $bar.finaldx = _this4.get_snap_position(dx);
 
           if (is_resizing_left) {
             if (parent_bar_id === bar.task.id) {
@@ -2053,7 +1923,7 @@ var Gantt = /*#__PURE__*/function () {
         is_resizing_right = false;
       });
       $.on(this.$svg, 'mouseup', function (e) {
-        _this6.bar_being_dragged = null;
+        _this4.bar_being_dragged = null;
         bars.forEach(function (bar) {
           var $bar = bar.$bar;
           if (!$bar.finaldx) return;
@@ -2066,7 +1936,7 @@ var Gantt = /*#__PURE__*/function () {
   }, {
     key: "bind_bar_progress",
     value: function bind_bar_progress() {
-      var _this7 = this;
+      var _this5 = this;
 
       var x_on_start = 0;
       var y_on_start = 0;
@@ -2080,7 +1950,7 @@ var Gantt = /*#__PURE__*/function () {
         y_on_start = e.offsetY;
         var $bar_wrapper = $.closest('.bar-wrapper', handle);
         var id = $bar_wrapper.getAttribute('data-id');
-        bar = _this7.get_bar(id);
+        bar = _this5.get_bar(id);
         $bar_progress = bar.$bar_progress;
         $bar = bar.$bar;
         $bar_progress.finaldx = 0;
@@ -2116,14 +1986,14 @@ var Gantt = /*#__PURE__*/function () {
   }, {
     key: "get_all_dependent_tasks",
     value: function get_all_dependent_tasks(task_id) {
-      var _this8 = this;
+      var _this6 = this;
 
       var out = [];
       var to_process = [task_id];
 
       while (to_process.length) {
         var deps = to_process.reduce(function (acc, curr) {
-          acc = acc.concat(_this8.dependency_map[curr]);
+          acc = acc.concat(_this6.dependency_map[curr]);
           return acc;
         }, []);
         out = out.concat(deps);
@@ -2164,7 +2034,7 @@ var Gantt = /*#__PURE__*/function () {
   }, {
     key: "view_is",
     value: function view_is(modes) {
-      var _this9 = this;
+      var _this7 = this;
 
       if (typeof modes === 'string') {
         return this.options.view_mode === modes;
@@ -2172,7 +2042,7 @@ var Gantt = /*#__PURE__*/function () {
 
       if (Array.isArray(modes)) {
         return modes.some(function (mode) {
-          return _this9.options.view_mode === mode;
+          return _this7.options.view_mode === mode;
         });
       }
 

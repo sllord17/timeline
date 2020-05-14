@@ -1,7 +1,6 @@
 import date_utils from './date_utils';
 import { $, createSVG } from './svg_utils';
 import Bar from './bar';
-import Arrow from './arrow';
 import Popup from './popup';
 
 import './gantt.scss';
@@ -80,7 +79,6 @@ export default class Gantt {
             view_modes: [...Object.values(VIEW_MODE)],
             bar_height: 20,
             bar_corner_radius: 3,
-            arrow_curve: 5,
             padding: 18,
             view_mode: 'Day',
             date_format: 'YYYY-MM-DD',
@@ -287,15 +285,13 @@ export default class Gantt {
         this.make_grid();
         this.make_dates();
         this.make_bars();
-        this.make_arrows();
-        this.map_arrows_on_bars();
         this.set_width();
         this.set_scroll_position();
     }
 
     setup_layers() {
         this.layers = {};
-        const layers = ['grid', 'date', 'arrow', 'progress', 'bar', 'details'];
+        const layers = ['grid', 'date', 'progress', 'bar', 'details'];
         // make group layers
         for (let layer of layers) {
             this.layers[layer] = createSVG('g', {
@@ -596,38 +592,6 @@ export default class Gantt {
             this.layers.bar.appendChild(bar.milestone_group);
             return bar;
         });
-    }
-
-    make_arrows() {
-        this.arrows = [];
-        for (let task of this.tasks) {
-            let arrows = [];
-            arrows = task.dependencies
-                .map(task_id => {
-                    const dependency = this.get_task(task_id);
-                    if (!dependency) return;
-                    const arrow = new Arrow(
-                        this,
-                        this.bars[dependency._index], // from_task
-                        this.bars[task._index] // to_task
-                    );
-                    this.layers.arrow.appendChild(arrow.element);
-                    return arrow;
-                })
-                .filter(Boolean); // filter falsy values
-            this.arrows = this.arrows.concat(arrows);
-        }
-    }
-
-    map_arrows_on_bars() {
-        for (let bar of this.bars) {
-            bar.arrows = this.arrows.filter(arrow => {
-                return (
-                    arrow.from_task.task.id === bar.task.id ||
-                    arrow.to_task.task.id === bar.task.id
-                );
-            });
-        }
     }
 
     set_width() {
