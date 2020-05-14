@@ -190,12 +190,12 @@ export default class Bar {
   compute_x() {
     const { step, column_width } = this.gantt.options
     const task_start = this.task.start
-    const { gantt_start } = this.gantt
+    const gantt_start = this.gantt.grid.start
 
     const diff = date_utils.diff(task_start, gantt_start, 'hour')
     let x = (diff / step) * column_width
 
-    if (this.gantt.view_is('Month')) {
+    if (this.gantt.grid.view_is('Month')) {
       const d = date_utils.diff(task_start, gantt_start, 'day')
       x = (d * column_width) / 30
     }
