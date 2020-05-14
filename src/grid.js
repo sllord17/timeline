@@ -1,10 +1,11 @@
+import Internal from './internal'
 import { $, createSVG } from './svg_utils'
 import date_utils from './date_utils'
 import VIEW_MODE from './common'
 
-export default class Grid {
+export default class Grid extends Internal {
   constructor(gantt) {
-    this.gantt = gantt
+    super(gantt)
 
     this.start = null
     this.end = null
@@ -21,11 +22,11 @@ export default class Grid {
 
   view_is(modes) {
     if (typeof modes === 'string') {
-      return this.gantt.options.view_mode === modes
+      return this.getOption('view_mode') === modes
     }
 
     if (Array.isArray(modes)) {
-      return modes.some((mode) => this.gantt.options.view_mode === mode)
+      return modes.some((mode) => this.getOption('view_mode') === mode)
     }
 
     return false
@@ -37,7 +38,7 @@ export default class Grid {
   }
 
   setup_gantt_dates() {
-    const { gantt_start, gantt_end } = this.gantt.tasks.getBoundingDates()
+    const { gantt_start, gantt_end } = this.getTasks().getBoundingDates()
     this.start = gantt_start
     this.end = gantt_end
 
@@ -72,17 +73,17 @@ export default class Grid {
       } else if (this.view_is(VIEW_MODE.MONTH)) {
         cur_date = date_utils.add(cur_date, 1, 'month')
       } else {
-        cur_date = date_utils.add(cur_date, this.gantt.options.step, 'hour')
+        cur_date = date_utils.add(cur_date, this.getOption('step'), 'hour')
       }
       this.dates.push(cur_date)
     }
   }
 
   make_grid_background() {
-    const grid_width = this.dates.length * this.gantt.options.column_width
+    const grid_width = this.dates.length * this.getOption('column_width')
 
-    const tasksHeight = this.gantt.tasks.getHeight()
-    const grid_height = this.gantt.options.header_height + this.gantt.options.padding + tasksHeight
+    const tasksHeight = this.getTasks().getHeight()
+    const grid_height = this.getOption('header_height') + this.getOption('padding') + tasksHeight
 
     createSVG('rect', {
       x: 0,
@@ -90,7 +91,7 @@ export default class Grid {
       width: grid_width,
       height: grid_height,
       class: 'grid-background',
-      append_to: this.gantt.layers.grid
+      append_to: this.getLayer('grid')
     })
 
     $.attr(this.gantt.$svg, {
@@ -100,15 +101,15 @@ export default class Grid {
   }
 
   make_grid_rows() {
-    const rows_layer = createSVG('g', { append_to: this.gantt.layers.grid })
-    const lines_layer = createSVG('g', { append_to: this.gantt.layers.grid })
+    const rows_layer = createSVG('g', { append_to: this.getLayer('grid') })
+    const lines_layer = createSVG('g', { append_to: this.getLayer('grid') })
 
-    const row_width = this.dates.length * this.gantt.options.column_width
+    const row_width = this.dates.length * this.getOption('column_width')
 
-    let row_y = this.gantt.options.header_height + this.gantt.options.padding / 2
+    let row_y = this.getOption('header_height') + this.getOption('padding') / 2
 
-    for (const task of this.gantt.tasks.tasks) {
-      const row_height = (task.height || this.gantt.options.bar_height) + this.gantt.options.padding
+    for (const task of this.getTasks().entries()) {
+      const row_height = (task.height || this.getOption('bar_height')) + this.getOption('padding')
 
       createSVG('rect', {
         x: 0,
@@ -133,22 +134,22 @@ export default class Grid {
   }
 
   make_grid_header() {
-    const header_width = this.dates.length * this.gantt.options.column_width
-    const header_height = this.gantt.options.header_height + 10
+    const header_width = this.dates.length * this.getOption('column_width')
+    const header_height = this.getOption('header_height') + 10
     createSVG('rect', {
       x: 0,
       y: 0,
       width: header_width,
       height: header_height,
       class: 'grid-header',
-      append_to: this.gantt.layers.grid
+      append_to: this.getLayer('grid')
     })
   }
 
   make_grid_ticks() {
     let tick_x = 0
-    const tick_y = this.gantt.options.header_height + this.gantt.options.padding / 2
-    const tick_height = this.gantt.tasks.getHeight()
+    const tick_y = this.getOption('header_height') + this.getOption('padding') / 2
+    const tick_height = this.getTasks().getHeight()
 
     for (const date of this.dates) {
       let tick_class = 'tick'
@@ -168,13 +169,13 @@ export default class Grid {
       createSVG('path', {
         d: `M ${tick_x} ${tick_y} v ${tick_height}`,
         class: tick_class,
-        append_to: this.gantt.layers.grid
+        append_to: this.getLayer('grid')
       })
 
       if (this.view_is(VIEW_MODE.MONTH)) {
-        tick_x += (date_utils.get_days_in_month(date) * this.gantt.options.column_width) / 30
+        tick_x += (date_utils.get_days_in_month(date) * this.getOption('column_width')) / 30
       } else {
-        tick_x += this.gantt.options.column_width
+        tick_x += this.getOption('column_width')
       }
     }
   }
@@ -183,15 +184,15 @@ export default class Grid {
     // highlight today's date
     if (this.view_is(VIEW_MODE.DAY)) {
       const x =
-        (date_utils.diff(date_utils.today(), this.start, 'hour') / this.gantt.options.step) *
-        this.gantt.options.column_width
+        (date_utils.diff(date_utils.today(), this.start, 'hour') / this.getOption('step')) *
+        this.getOption('column_width')
       const y = 0
 
-      const width = this.gantt.options.column_width
+      const width = this.getOption('column_width')
 
-      const tasksHeight = this.gantt.tasks.getHeight()
+      const tasksHeight = this.getTasks().getHeight()
       const grid_height =
-        this.gantt.options.header_height + this.gantt.options.padding / 2 + tasksHeight
+        this.getOption('header_height') + this.getOption('padding') / 2 + tasksHeight
 
       createSVG('rect', {
         x,
@@ -199,7 +200,7 @@ export default class Grid {
         width,
         height: grid_height,
         class: 'today-highlight',
-        append_to: this.gantt.layers.grid
+        append_to: this.getLayer('grid')
       })
     }
   }
@@ -211,7 +212,7 @@ export default class Grid {
         y: date.lower_y,
         innerHTML: date.lower_text,
         class: 'lower-text',
-        append_to: this.gantt.layers.date
+        append_to: this.getLayer('date')
       })
 
       if (date.upper_text) {
@@ -220,11 +221,11 @@ export default class Grid {
           y: date.upper_y,
           innerHTML: date.upper_text,
           class: 'upper-text',
-          append_to: this.gantt.layers.date
+          append_to: this.getLayer('date')
         })
 
         // remove out-of-bound dates
-        if ($upper_text.getBBox().x2 > this.gantt.layers.grid.getBBox().width) {
+        if ($upper_text.getBBox().x2 > this.getLayer('grid').getBBox().width) {
           $upper_text.remove()
         }
       }
@@ -246,74 +247,74 @@ export default class Grid {
       last_date = date_utils.add(date, 1, 'year')
     }
     const date_text = {
-      'Quarter Day_lower': date_utils.format(date, 'HH', this.gantt.options.language),
-      'Half Day_lower': date_utils.format(date, 'HH', this.gantt.options.language),
+      'Quarter Day_lower': date_utils.format(date, 'HH', this.getOption('language')),
+      'Half Day_lower': date_utils.format(date, 'HH', this.getOption('language')),
       Day_lower:
         date.getDate() !== last_date.getDate()
-          ? date_utils.format(date, 'D', this.gantt.options.language)
+          ? date_utils.format(date, 'D', this.getOption('language'))
           : '',
       Week_lower:
         date.getMonth() !== last_date.getMonth()
-          ? date_utils.format(date, 'D MMM', this.gantt.options.language)
-          : date_utils.format(date, 'D', this.gantt.options.language),
-      Month_lower: date_utils.format(date, 'MMMM', this.gantt.options.language),
-      Year_lower: date_utils.format(date, 'YYYY', this.gantt.options.language),
+          ? date_utils.format(date, 'D MMM', this.getOption('language'))
+          : date_utils.format(date, 'D', this.getOption('language')),
+      Month_lower: date_utils.format(date, 'MMMM', this.getOption('language')),
+      Year_lower: date_utils.format(date, 'YYYY', this.getOption('language')),
       'Quarter Day_upper':
         date.getDate() !== last_date.getDate()
-          ? date_utils.format(date, 'D MMM', this.gantt.options.language)
+          ? date_utils.format(date, 'D MMM', this.getOption('language'))
           : '',
       'Half Day_upper':
         // eslint-disable-next-line no-nested-ternary
         date.getDate() !== last_date.getDate()
           ? date.getMonth() !== last_date.getMonth()
-            ? date_utils.format(date, 'D MMM', this.gantt.options.language)
-            : date_utils.format(date, 'D', this.gantt.options.language)
+            ? date_utils.format(date, 'D MMM', this.getOption('language'))
+            : date_utils.format(date, 'D', this.getOption('language'))
           : '',
       Day_upper:
         date.getMonth() !== last_date.getMonth()
-          ? date_utils.format(date, 'MMMM', this.gantt.options.language)
+          ? date_utils.format(date, 'MMMM', this.getOption('language'))
           : '',
       Week_upper:
         date.getMonth() !== last_date.getMonth()
-          ? date_utils.format(date, 'MMMM', this.gantt.options.language)
+          ? date_utils.format(date, 'MMMM', this.getOption('language'))
           : '',
       Month_upper:
         date.getFullYear() !== last_date.getFullYear()
-          ? date_utils.format(date, 'YYYY', this.gantt.options.language)
+          ? date_utils.format(date, 'YYYY', this.getOption('language'))
           : '',
       Year_upper:
         date.getFullYear() !== last_date.getFullYear()
-          ? date_utils.format(date, 'YYYY', this.gantt.options.language)
+          ? date_utils.format(date, 'YYYY', this.getOption('language'))
           : ''
     }
 
     const base_pos = {
-      x: i * this.gantt.options.column_width,
-      lower_y: this.gantt.options.header_height,
-      upper_y: this.gantt.options.header_height - 25
+      x: i * this.getOption('column_width'),
+      lower_y: this.getOption('header_height'),
+      upper_y: this.getOption('header_height') - 25
     }
 
     const x_pos = {
-      'Quarter Day_lower': (this.gantt.options.column_width * 4) / 2,
+      'Quarter Day_lower': (this.getOption('column_width') * 4) / 2,
       'Quarter Day_upper': 0,
-      'Half Day_lower': (this.gantt.options.column_width * 2) / 2,
+      'Half Day_lower': (this.getOption('column_width') * 2) / 2,
       'Half Day_upper': 0,
-      Day_lower: this.gantt.options.column_width / 2,
-      Day_upper: (this.gantt.options.column_width * 30) / 2,
+      Day_lower: this.getOption('column_width') / 2,
+      Day_upper: (this.getOption('column_width') * 30) / 2,
       Week_lower: 0,
-      Week_upper: (this.gantt.options.column_width * 4) / 2,
-      Month_lower: this.gantt.options.column_width / 2,
-      Month_upper: (this.gantt.options.column_width * 12) / 2,
-      Year_lower: this.gantt.options.column_width / 2,
-      Year_upper: (this.gantt.options.column_width * 30) / 2
+      Week_upper: (this.getOption('column_width') * 4) / 2,
+      Month_lower: this.getOption('column_width') / 2,
+      Month_upper: (this.getOption('column_width') * 12) / 2,
+      Year_lower: this.getOption('column_width') / 2,
+      Year_upper: (this.getOption('column_width') * 30) / 2
     }
 
     return {
-      upper_text: date_text[`${this.gantt.options.view_mode}_upper`],
-      lower_text: date_text[`${this.gantt.options.view_mode}_lower`],
-      upper_x: base_pos.x + x_pos[`${this.gantt.options.view_mode}_upper`],
+      upper_text: date_text[`${this.getOption('view_mode')}_upper`],
+      lower_text: date_text[`${this.getOption('view_mode')}_lower`],
+      upper_x: base_pos.x + x_pos[`${this.getOption('view_mode')}_upper`],
       upper_y: base_pos.upper_y,
-      lower_x: base_pos.x + x_pos[`${this.gantt.options.view_mode}_lower`],
+      lower_x: base_pos.x + x_pos[`${this.getOption('view_mode')}_lower`],
       lower_y: base_pos.lower_y
     }
   }

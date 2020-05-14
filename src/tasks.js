@@ -1,8 +1,9 @@
 import Task from './task'
+import Internal from './internal'
 
-export default class Tasks {
+export default class Tasks extends Internal {
   constructor(gantt, tasks) {
-    this.gantt = gantt
+    super(gantt)
     this.tasks = tasks.map((t) => new Task(gantt, t))
   }
 
@@ -19,17 +20,17 @@ export default class Tasks {
         gantt_end = task.end
       }
 
-      // if (task.milestones) {
-      //   for (const milestone of task.milestones) {
-      //     if (milestone.date < this.gantt_start) {
-      //       gantt_start = milestone.date
-      //     }
+      if (task.milestones) {
+        for (const milestone of task.milestones) {
+          if (milestone.date < gantt_start) {
+            gantt_start = milestone.date
+          }
 
-      //     if (milestone.date > this.gantt_end) {
-      //       gantt_end = milestone.date
-      //     }
-      //   }
-      // }
+          if (milestone.date > gantt_end) {
+            gantt_end = milestone.date
+          }
+        }
+      }
     }
 
     return { gantt_start, gantt_end }
@@ -40,11 +41,15 @@ export default class Tasks {
   }
 
   getHeight() {
-    let sum = this.gantt.options.padding * this.tasks.length
+    let sum = this.getOption('padding') * this.tasks.length
     for (const task of this.tasks) {
       sum += task.height
     }
 
     return sum
+  }
+
+  entries() {
+    return this.tasks
   }
 }

@@ -1,48 +1,32 @@
 import date_utils from './date_utils'
 import { $, createSVG, animateSVG } from './svg_utils'
 import Milestone from './milestone'
+import Internal from './internal'
 
-export default class Bar {
+export default class Bar extends Internal {
   constructor(gantt, task) {
-    this.set_defaults(gantt, task)
-    this.prepare()
+    super(gantt)
+    this.set_defaults(task)
+    this.prepare_values()
     this.draw()
     this.bind()
   }
 
-  set_defaults(gantt, task) {
+  set_defaults(task) {
     this.action_completed = false
-    this.gantt = gantt
     this.task = task
-    this.milestones = []
-  }
-
-  make_milestones() {
-    if (this.task.milestones)
-      this.milestones = this.task.milestones.map(
-        function (obj) {
-          return new Milestone(this.gantt, this.task, this, obj)
-        }.bind(this)
-      )
-  }
-
-  prepare() {
-    this.prepare_values()
-
-    this.make_milestones()
   }
 
   prepare_values() {
     this.invalid = this.task.invalid
-    this.height = this.task.height || this.gantt.options.bar_height
+    this.height = this.task.height || this.getOption('bar_height')
     this.x = this.compute_x()
     this.y = this.compute_y()
-    this.corner_radius = this.gantt.options.bar_corner_radius
-    this.duration =
-      date_utils.diff(this.task.end, this.task.start, 'hour') / this.gantt.options.step
-    this.width = this.gantt.options.column_width * this.duration
+    this.corner_radius = this.getOption('bar_corner_radius')
+    this.duration = date_utils.diff(this.task.end, this.task.start, 'hour') / this.getOption('step')
+    this.width = this.getOption('column_width') * this.duration
     this.progress_width =
-      this.gantt.options.column_width * this.duration * (this.task.progress / 100) || 0
+      this.getOption('column_width') * this.duration * (this.task.progress / 100) || 0
     this.group = createSVG('g', {
       class: `bar-wrapper ${this.task.custom_class || ''}`,
       'data-id': this.task.id
@@ -52,26 +36,12 @@ export default class Bar {
       class: 'bar-group',
       append_to: this.group
     })
-    this.handle_group = createSVG('g', {
-      class: 'handle-group',
-      append_to: this.group
-    })
-
-    this.milestone_group = createSVG('g', {
-      class: `milestone-wrapper ${this.task.custom_class || ''}`,
-      'data-id': this.task.id
-    })
   }
 
   draw() {
     this.draw_bar()
     this.draw_progress_bar()
     this.draw_label()
-    this.draw_milestones()
-  }
-
-  draw_milestones() {
-    this.milestones.forEach((m) => m.draw())
   }
 
   draw_bar() {
@@ -139,7 +109,7 @@ export default class Bar {
   }
 
   setup_click_event() {
-    $.on(this.group, `focus ${this.gantt.options.popup_trigger}`, (e) => {
+    $.on(this.group, `focus ${this.getOption('popup_trigger')}`, (e) => {
       if (this.action_completed) {
         // just finished a move action, wait for a few seconds
         return
@@ -157,13 +127,11 @@ export default class Bar {
   }
 
   show_popup() {
-    if (this.gantt.bar_being_dragged) return
-
-    const start_date = date_utils.format(this.task.start, 'MMM D', this.gantt.options.language)
+    const start_date = date_utils.format(this.task.start, 'MMM D', this.getOption('language'))
     const end_date = date_utils.format(
       date_utils.add(this.task.end, -1, 'second'),
       'MMM D',
-      this.gantt.options.language
+      this.getOption('language')
     )
     const subtitle = `${start_date} - ${end_date}`
 
@@ -188,7 +156,8 @@ export default class Bar {
   }
 
   compute_x() {
-    const { step, column_width } = this.gantt.options
+    const step = this.getOption('step'),
+      column_width = this.getOption('column_width')
     const task_start = this.task.start
     const gantt_start = this.gantt.grid.start
 
@@ -204,14 +173,13 @@ export default class Bar {
 
   compute_y() {
     let sum = 0,
-      idx = this.gantt.tasks.tasks.indexOf(this.task)
+      idx = this.getTasks().entries().indexOf(this.task)
 
     for (let i = 0; i < idx; i++) {
-      sum += this.gantt.tasks.tasks[i].height
+      sum += this.getTaskIdx([i]).height + this.getOption('padding')
     }
 
-    sum += idx * this.gantt.options.padding
-    return this.gantt.options.header_height + this.gantt.options.padding + sum
+    return this.getOption('header_height') + this.getOption('padding') + sum
   }
 
   update_label_position() {

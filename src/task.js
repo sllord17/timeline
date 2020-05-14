@@ -2,6 +2,9 @@
 
 import date_utils from './date_utils'
 import Bar from './bar'
+import Internal from './internal'
+import { createSVG } from './svg_utils'
+import Milestone from './milestone'
 
 function generate_id(task) {
   return task.name + '_' + Math.random().toString(36).slice(2, 12)
@@ -14,14 +17,16 @@ function generate_id(task) {
  * @property {string} name The name of the task
  * @property {string} id The ID of the task. One is generated if not provided.
  */
-export default class Task {
+export default class Task extends Internal {
   constructor(gantt, opts) {
-    this.gantt = gantt
+    super(gantt)
     this.start = date_utils.parse(opts.start)
     this.end = date_utils.parse(opts.end)
     this.progress = opts.progress
     this.name = opts.name
-    this.height = opts.height || this.gantt.options.bar_height
+    this.height = opts.height || this.getOption('bar_height')
+    this.milestones = opts.milestones || []
+    this.custom_class = opts.custom_class
 
     // make task invalid if duration too large
     if (date_utils.diff(this.end, this.start, 'year') > 10) {
@@ -61,12 +66,24 @@ export default class Task {
   }
 
   render() {
+    this.milestone_group = createSVG('g', {
+      class: `milestone-wrapper ${this.custom_class || ''}`,
+      'data-id': this.id
+    })
+
     this.make_bars()
+    this.make_milestones()
   }
 
   make_bars() {
-    const bar = new Bar(this.gantt, this)
-    this.gantt.layers.bar.appendChild(bar.group)
-    this.gantt.layers.bar.appendChild(bar.milestone_group)
+    const bar = new Bar(this.gantt, this),
+      layer = this.getLayer('bar')
+
+    layer.appendChild(bar.group)
+    layer.appendChild(this.milestone_group)
+  }
+
+  make_milestones() {
+    this.$milestones = this.milestones.map((m) => new Milestone(this.gantt, this, m))
   }
 }
