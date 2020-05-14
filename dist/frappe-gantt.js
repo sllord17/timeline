@@ -1081,21 +1081,6 @@ var Gantt = /*#__PURE__*/function () {
 
         if (!task.start || !task.end) {
           task.invalid = true;
-        } // dependencies
-
-
-        if (typeof task.dependencies === 'string' || !task.dependencies) {
-          var deps = [];
-
-          if (task.dependencies) {
-            deps = task.dependencies.split(',').map(function (d) {
-              return d.trim();
-            }).filter(function (d) {
-              return d;
-            });
-          }
-
-          task.dependencies = deps;
         } // uids
 
 
@@ -1105,40 +1090,6 @@ var Gantt = /*#__PURE__*/function () {
 
         return task;
       });
-      this.setup_dependencies();
-    }
-  }, {
-    key: "setup_dependencies",
-    value: function setup_dependencies() {
-      this.dependency_map = {};
-
-      var _iterator = _createForOfIteratorHelper(this.tasks),
-          _step;
-
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var t = _step.value;
-
-          var _iterator2 = _createForOfIteratorHelper(t.dependencies),
-              _step2;
-
-          try {
-            for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-              var d = _step2.value;
-              this.dependency_map[d] = this.dependency_map[d] || [];
-              this.dependency_map[d].push(t.id);
-            }
-          } catch (err) {
-            _iterator2.e(err);
-          } finally {
-            _iterator2.f();
-          }
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
     }
   }, {
     key: "refresh",
@@ -1192,12 +1143,12 @@ var Gantt = /*#__PURE__*/function () {
     value: function setup_gantt_dates() {
       this.gantt_start = this.gantt_end = null;
 
-      var _iterator3 = _createForOfIteratorHelper(this.tasks),
-          _step3;
+      var _iterator = _createForOfIteratorHelper(this.tasks),
+          _step;
 
       try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var task = _step3.value;
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var task = _step.value;
 
           // set global start and end date
           if (!this.gantt_start || task._start < this.gantt_start) {
@@ -1209,12 +1160,12 @@ var Gantt = /*#__PURE__*/function () {
           }
 
           if (task.milestones) {
-            var _iterator4 = _createForOfIteratorHelper(task.milestones),
-                _step4;
+            var _iterator2 = _createForOfIteratorHelper(task.milestones),
+                _step2;
 
             try {
-              for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-                var milestone = _step4.value;
+              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+                var milestone = _step2.value;
 
                 if (milestone.date < this.gantt_start) {
                   this.gantt_start = milestone.date;
@@ -1225,16 +1176,16 @@ var Gantt = /*#__PURE__*/function () {
                 }
               }
             } catch (err) {
-              _iterator4.e(err);
+              _iterator2.e(err);
             } finally {
-              _iterator4.f();
+              _iterator2.f();
             }
           }
         }
       } catch (err) {
-        _iterator3.e(err);
+        _iterator.e(err);
       } finally {
-        _iterator3.f();
+        _iterator.f();
       }
 
       this.gantt_start = date_utils.start_of(this.gantt_start, 'day');
@@ -1321,18 +1272,18 @@ var Gantt = /*#__PURE__*/function () {
       var grid_width = this.dates.length * this.options.column_width;
       var sum = 0;
 
-      var _iterator5 = _createForOfIteratorHelper(this.tasks),
-          _step5;
+      var _iterator3 = _createForOfIteratorHelper(this.tasks),
+          _step3;
 
       try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var task = _step5.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var task = _step3.value;
           sum += task.height || this.options.bar_height;
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator5.f();
+        _iterator3.f();
       }
 
       sum += this.options.padding * this.tasks.length;
@@ -1362,12 +1313,12 @@ var Gantt = /*#__PURE__*/function () {
       var row_width = this.dates.length * this.options.column_width;
       var row_y = this.options.header_height + this.options.padding / 2;
 
-      var _iterator6 = _createForOfIteratorHelper(this.tasks),
-          _step6;
+      var _iterator4 = _createForOfIteratorHelper(this.tasks),
+          _step4;
 
       try {
-        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-          var task = _step6.value;
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var task = _step4.value;
           console.log(task);
           var row_height = (task.height || this.options.bar_height) + this.options.padding;
           createSVG('rect', {
@@ -1389,9 +1340,9 @@ var Gantt = /*#__PURE__*/function () {
           row_y += row_height;
         }
       } catch (err) {
-        _iterator6.e(err);
+        _iterator4.e(err);
       } finally {
-        _iterator6.f();
+        _iterator4.f();
       }
     }
   }, {
@@ -1415,26 +1366,26 @@ var Gantt = /*#__PURE__*/function () {
       var tick_y = this.options.header_height + this.options.padding / 2;
       var tick_height = this.options.padding * this.tasks.length;
 
-      var _iterator7 = _createForOfIteratorHelper(this.tasks),
-          _step7;
+      var _iterator5 = _createForOfIteratorHelper(this.tasks),
+          _step5;
 
       try {
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          var task = _step7.value;
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var task = _step5.value;
           tick_height += task.height || this.options.bar_height;
         }
       } catch (err) {
-        _iterator7.e(err);
+        _iterator5.e(err);
       } finally {
-        _iterator7.f();
+        _iterator5.f();
       }
 
-      var _iterator8 = _createForOfIteratorHelper(this.dates),
-          _step8;
+      var _iterator6 = _createForOfIteratorHelper(this.dates),
+          _step6;
 
       try {
-        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-          var date = _step8.value;
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var date = _step6.value;
           var tick_class = 'tick'; // thick tick for monday
 
           if (this.view_is(VIEW_MODE.DAY) && date.getDate() === 1) {
@@ -1464,9 +1415,9 @@ var Gantt = /*#__PURE__*/function () {
           }
         }
       } catch (err) {
-        _iterator8.e(err);
+        _iterator6.e(err);
       } finally {
-        _iterator8.f();
+        _iterator6.f();
       }
     }
   }, {
@@ -1479,18 +1430,18 @@ var Gantt = /*#__PURE__*/function () {
         var width = this.options.column_width;
         var sum = 0;
 
-        var _iterator9 = _createForOfIteratorHelper(this.tasks),
-            _step9;
+        var _iterator7 = _createForOfIteratorHelper(this.tasks),
+            _step7;
 
         try {
-          for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-            var task = _step9.value;
+          for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+            var task = _step7.value;
             sum += task.height || this.options.bar_height;
           }
         } catch (err) {
-          _iterator9.e(err);
+          _iterator7.e(err);
         } finally {
-          _iterator9.f();
+          _iterator7.f();
         }
 
         sum += this.options.padding * this.tasks.length;
@@ -1508,12 +1459,12 @@ var Gantt = /*#__PURE__*/function () {
   }, {
     key: "make_dates",
     value: function make_dates() {
-      var _iterator10 = _createForOfIteratorHelper(this.get_dates_to_draw()),
-          _step10;
+      var _iterator8 = _createForOfIteratorHelper(this.get_dates_to_draw()),
+          _step8;
 
       try {
-        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-          var date = _step10.value;
+        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+          var date = _step8.value;
           createSVG('text', {
             x: date.lower_x,
             y: date.lower_y,
@@ -1537,9 +1488,9 @@ var Gantt = /*#__PURE__*/function () {
           }
         }
       } catch (err) {
-        _iterator10.e(err);
+        _iterator8.e(err);
       } finally {
-        _iterator10.f();
+        _iterator8.f();
       }
     }
   }, {
@@ -1651,27 +1602,6 @@ var Gantt = /*#__PURE__*/function () {
       });
     }
   }, {
-    key: "get_all_dependent_tasks",
-    value: function get_all_dependent_tasks(task_id) {
-      var _this4 = this;
-
-      var out = [];
-      var to_process = [task_id];
-
-      while (to_process.length) {
-        var deps = to_process.reduce(function (acc, curr) {
-          acc = acc.concat(_this4.dependency_map[curr]);
-          return acc;
-        }, []);
-        out = out.concat(deps);
-        to_process = deps.filter(function (d) {
-          return !to_process.includes(d);
-        });
-      }
-
-      return out.filter(Boolean);
-    }
-  }, {
     key: "unselect_all",
     value: function unselect_all() {
       _toConsumableArray(this.$svg.querySelectorAll('.bar-wrapper')).forEach(function (el) {
@@ -1681,7 +1611,7 @@ var Gantt = /*#__PURE__*/function () {
   }, {
     key: "view_is",
     value: function view_is(modes) {
-      var _this5 = this;
+      var _this4 = this;
 
       if (typeof modes === 'string') {
         return this.options.view_mode === modes;
@@ -1689,7 +1619,7 @@ var Gantt = /*#__PURE__*/function () {
 
       if (Array.isArray(modes)) {
         return modes.some(function (mode) {
-          return _this5.options.view_mode === mode;
+          return _this4.options.view_mode === mode;
         });
       }
 
