@@ -54,6 +54,40 @@ function _defineProperty(obj, key, value) {
   return obj;
 }
 
+function ownKeys(object, enumerableOnly) {
+  var keys = Object.keys(object);
+
+  if (Object.getOwnPropertySymbols) {
+    var symbols = Object.getOwnPropertySymbols(object);
+    if (enumerableOnly) symbols = symbols.filter(function (sym) {
+      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+    });
+    keys.push.apply(keys, symbols);
+  }
+
+  return keys;
+}
+
+function _objectSpread2(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {};
+
+    if (i % 2) {
+      ownKeys(Object(source), true).forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      });
+    } else if (Object.getOwnPropertyDescriptors) {
+      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+    } else {
+      ownKeys(Object(source)).forEach(function (key) {
+        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+      });
+    }
+  }
+
+  return target;
+}
+
 function _setPrototypeOf(o, p) {
   _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
     o.__proto__ = p;
@@ -663,7 +697,7 @@ var Bar = /*#__PURE__*/function () {
       this.width = this.gantt.options.column_width * this.duration;
       this.progress_width = this.gantt.options.column_width * this.duration * (this.task.progress / 100) || 0;
       this.group = createSVG('g', {
-        "class": 'bar-wrapper ' + (this.task.custom_class || ''),
+        "class": "bar-wrapper ".concat(this.task.custom_class || ''),
         'data-id': this.task.id
       });
       this.bar_group = createSVG('g', {
@@ -675,7 +709,7 @@ var Bar = /*#__PURE__*/function () {
         append_to: this.group
       });
       this.milestone_group = createSVG('g', {
-        "class": 'milestone-wrapper ' + (this.task.custom_class || ''),
+        "class": "milestone-wrapper ".concat(this.task.custom_class || ''),
         'data-id': this.task.id
       });
     }
@@ -786,7 +820,7 @@ var Bar = /*#__PURE__*/function () {
     value: function setup_click_event() {
       var _this2 = this;
 
-      $.on(this.group, 'focus ' + this.gantt.options.popup_trigger, function (e) {
+      $.on(this.group, "focus ".concat(this.gantt.options.popup_trigger), function (e) {
         if (_this2.action_completed) {
           // just finished a move action, wait for a few seconds
           return;
@@ -809,7 +843,7 @@ var Bar = /*#__PURE__*/function () {
       if (this.gantt.bar_being_dragged) return;
       var start_date = date_utils.format(this.task._start, 'MMM D', this.gantt.options.language);
       var end_date = date_utils.format(date_utils.add(this.task._end, -1, 'second'), 'MMM D', this.gantt.options.language);
-      var subtitle = start_date + ' - ' + end_date;
+      var subtitle = "".concat(start_date, " - ").concat(end_date);
       this.gantt.show_popup({
         target_element: this.$bar,
         title: this.task.name,
@@ -867,8 +901,8 @@ var Bar = /*#__PURE__*/function () {
   }, {
     key: "update_label_position",
     value: function update_label_position() {
-      var bar = this.$bar,
-          label = this.group.querySelector('.bar-label');
+      var bar = this.$bar;
+      var label = this.group.querySelector('.bar-label');
 
       if (label.getBBox().width > bar.getWidth()) {
         label.classList.add('big');
@@ -1036,7 +1070,7 @@ var Gantt = /*#__PURE__*/function () {
         custom_popup_html: null,
         language: 'en'
       };
-      this.options = Object.assign({}, default_options, options);
+      this.options = _objectSpread2(_objectSpread2({}, default_options), options);
     }
   }, {
     key: "setup_tasks",
@@ -1604,6 +1638,8 @@ var Gantt = /*#__PURE__*/function () {
   }, {
     key: "unselect_all",
     value: function unselect_all() {
+      
+
       _toConsumableArray(this.$svg.querySelectorAll('.bar-wrapper')).forEach(function (el) {
         el.classList.remove('active');
       });
