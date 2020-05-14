@@ -708,7 +708,6 @@ var Bar = /*#__PURE__*/function () {
       this.draw_bar();
       this.draw_progress_bar();
       this.draw_label();
-      this.draw_resize_handles();
       this.draw_milestones();
     }
   }, {
@@ -771,41 +770,6 @@ var Bar = /*#__PURE__*/function () {
       });
     }
   }, {
-    key: "draw_resize_handles",
-    value: function draw_resize_handles() {
-      if (this.invalid) return;
-      var bar = this.$bar;
-      var handle_width = 8;
-      createSVG('rect', {
-        x: bar.getX() + bar.getWidth() - 9,
-        y: bar.getY() + 1,
-        width: handle_width,
-        height: this.height - 2,
-        rx: this.corner_radius,
-        ry: this.corner_radius,
-        "class": 'handle right',
-        append_to: this.handle_group
-      });
-      createSVG('rect', {
-        x: bar.getX() + 1,
-        y: bar.getY() + 1,
-        width: handle_width,
-        height: this.height - 2,
-        rx: this.corner_radius,
-        ry: this.corner_radius,
-        "class": 'handle left',
-        append_to: this.handle_group
-      });
-
-      if (this.task.progress && this.task.progress < 100) {
-        this.$handle_progress = createSVG('polygon', {
-          points: this.get_progress_polygon_points().join(','),
-          "class": 'handle progress',
-          append_to: this.handle_group
-        });
-      }
-    }
-  }, {
     key: "get_progress_polygon_points",
     value: function get_progress_polygon_points() {
       var bar_progress = this.$bar_progress;
@@ -854,94 +818,14 @@ var Bar = /*#__PURE__*/function () {
       });
     }
   }, {
-    key: "update_bar_position",
-    value: function update_bar_position(_ref) {
-      var _this3 = this;
-
-      var _ref$x = _ref.x,
-          x = _ref$x === void 0 ? null : _ref$x,
-          _ref$width = _ref.width,
-          width = _ref$width === void 0 ? null : _ref$width;
-      var bar = this.$bar;
-
-      if (x) {
-        // get all x values of parent task
-        var xs = this.task.dependencies.map(function (dep) {
-          return _this3.gantt.get_bar(dep).$bar.getX();
-        }); // child task must not go before parent
-
-        var valid_x = xs.reduce(function (prev, curr) {
-          return x >= curr;
-        }, x);
-
-        if (!valid_x) {
-          width = null;
-          return;
-        }
-
-        this.update_attr(bar, 'x', x);
-      }
-
-      if (width && width >= this.gantt.options.column_width) {
-        this.update_attr(bar, 'width', width);
-      }
-
-      this.update_label_position();
-      this.update_handle_position();
-      this.update_progressbar_position();
-      this.update_arrow_position();
-    }
-  }, {
-    key: "date_changed",
-    value: function date_changed() {
-      var changed = false;
-
-      var _this$compute_start_e = this.compute_start_end_date(),
-          new_start_date = _this$compute_start_e.new_start_date,
-          new_end_date = _this$compute_start_e.new_end_date;
-
-      if (Number(this.task._start) !== Number(new_start_date)) {
-        changed = true;
-        this.task._start = new_start_date;
-      }
-
-      if (Number(this.task._end) !== Number(new_end_date)) {
-        changed = true;
-        this.task._end = new_end_date;
-      }
-
-      if (!changed) return;
-      this.gantt.trigger_event('date_change', [this.task, new_start_date, date_utils.add(new_end_date, -1, 'second')]);
-    }
-  }, {
-    key: "progress_changed",
-    value: function progress_changed() {
-      var new_progress = this.compute_progress();
-      this.task.progress = new_progress;
-      this.gantt.trigger_event('progress_change', [this.task, new_progress]);
-    }
-  }, {
     key: "set_action_completed",
     value: function set_action_completed() {
-      var _this4 = this;
+      var _this3 = this;
 
       this.action_completed = true;
       setTimeout(function () {
-        return _this4.action_completed = false;
+        return _this3.action_completed = false;
       }, 1000);
-    }
-  }, {
-    key: "compute_start_end_date",
-    value: function compute_start_end_date() {
-      var bar = this.$bar;
-      var x_in_units = bar.getX() / this.gantt.options.column_width;
-      var new_start_date = date_utils.add(this.gantt.gantt_start, x_in_units * this.gantt.options.step, 'hour');
-      var width_in_units = bar.getWidth() / this.gantt.options.column_width;
-      var new_end_date = date_utils.add(new_start_date, width_in_units * this.gantt.options.step, 'hour');
-      return {
-        new_start_date: new_start_date,
-        new_end_date: new_end_date
-      };
     }
   }, {
     key: "compute_progress",
@@ -981,43 +865,6 @@ var Bar = /*#__PURE__*/function () {
       return this.gantt.options.header_height + this.gantt.options.padding + sum;
     }
   }, {
-    key: "get_snap_position",
-    value: function get_snap_position(dx) {
-      var odx = dx,
-          rem,
-          position;
-
-      if (this.gantt.view_is('Week')) {
-        rem = dx % (this.gantt.options.column_width / 7);
-        position = odx - rem + (rem < this.gantt.options.column_width / 14 ? 0 : this.gantt.options.column_width / 7);
-      } else if (this.gantt.view_is('Month')) {
-        rem = dx % (this.gantt.options.column_width / 30);
-        position = odx - rem + (rem < this.gantt.options.column_width / 60 ? 0 : this.gantt.options.column_width / 30);
-      } else {
-        rem = dx % this.gantt.options.column_width;
-        position = odx - rem + (rem < this.gantt.options.column_width / 2 ? 0 : this.gantt.options.column_width);
-      }
-
-      return position;
-    }
-  }, {
-    key: "update_attr",
-    value: function update_attr(element, attr, value) {
-      value = +value;
-
-      if (!isNaN(value)) {
-        element.setAttribute(attr, value);
-      }
-
-      return element;
-    }
-  }, {
-    key: "update_progressbar_position",
-    value: function update_progressbar_position() {
-      this.$bar_progress.setAttribute('x', this.$bar.getX());
-      this.$bar_progress.setAttribute('width', this.$bar.getWidth() * (this.task.progress / 100));
-    }
-  }, {
     key: "update_label_position",
     value: function update_label_position() {
       var bar = this.$bar,
@@ -1029,34 +876,6 @@ var Bar = /*#__PURE__*/function () {
       } else {
         label.classList.remove('big');
         label.setAttribute('x', bar.getX() + bar.getWidth() / 2);
-      }
-    }
-  }, {
-    key: "update_handle_position",
-    value: function update_handle_position() {
-      var bar = this.$bar;
-      this.handle_group.querySelector('.handle.left').setAttribute('x', bar.getX() + 1);
-      this.handle_group.querySelector('.handle.right').setAttribute('x', bar.getEndX() - 9);
-      var handle = this.group.querySelector('.handle.progress');
-      handle && handle.setAttribute('points', this.get_progress_polygon_points());
-    }
-  }, {
-    key: "update_arrow_position",
-    value: function update_arrow_position() {
-      this.arrows = this.arrows || [];
-
-      var _iterator = _createForOfIteratorHelper(this.arrows),
-          _step;
-
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var arrow = _step.value;
-          arrow.update();
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
       }
     }
   }]);
@@ -1461,7 +1280,6 @@ var Gantt = /*#__PURE__*/function () {
     key: "bind_events",
     value: function bind_events() {
       this.bind_grid_click();
-      this.bind_bar_events();
     }
   }, {
     key: "render",
@@ -1833,167 +1651,16 @@ var Gantt = /*#__PURE__*/function () {
       });
     }
   }, {
-    key: "bind_bar_events",
-    value: function bind_bar_events() {
-      var _this4 = this;
-
-      var is_dragging = false;
-      var x_on_start = 0;
-      var y_on_start = 0;
-      var is_resizing_left = false;
-      var is_resizing_right = false;
-      var parent_bar_id = null;
-      var bars = []; // instanceof Bar
-
-      this.bar_being_dragged = null;
-
-      function action_in_progress() {
-        return is_dragging || is_resizing_left || is_resizing_right;
-      }
-
-      $.on(this.$svg, 'mousedown', '.bar-wrapper, .handle', function (e, element) {
-        var bar_wrapper = $.closest('.bar-wrapper', element);
-
-        if (element.classList.contains('left')) {
-          is_resizing_left = true;
-        } else if (element.classList.contains('right')) {
-          is_resizing_right = true;
-        } else if (element.classList.contains('bar-wrapper')) {
-          is_dragging = true;
-        }
-
-        bar_wrapper.classList.add('active');
-        x_on_start = e.offsetX;
-        y_on_start = e.offsetY;
-        parent_bar_id = bar_wrapper.getAttribute('data-id');
-        var ids = [parent_bar_id].concat(_toConsumableArray(_this4.get_all_dependent_tasks(parent_bar_id)));
-        bars = ids.map(function (id) {
-          return _this4.get_bar(id);
-        });
-        _this4.bar_being_dragged = parent_bar_id;
-        bars.forEach(function (bar) {
-          var $bar = bar.$bar;
-          $bar.ox = $bar.getX();
-          $bar.oy = $bar.getY();
-          $bar.owidth = $bar.getWidth();
-          $bar.finaldx = 0;
-        });
-      });
-      $.on(this.$svg, 'mousemove', function (e) {
-        if (!action_in_progress()) return;
-        var dx = e.offsetX - x_on_start;
-        var dy = e.offsetY - y_on_start;
-        bars.forEach(function (bar) {
-          var $bar = bar.$bar;
-          $bar.finaldx = _this4.get_snap_position(dx);
-
-          if (is_resizing_left) {
-            if (parent_bar_id === bar.task.id) {
-              bar.update_bar_position({
-                x: $bar.ox + $bar.finaldx,
-                width: $bar.owidth - $bar.finaldx
-              });
-            } else {
-              bar.update_bar_position({
-                x: $bar.ox + $bar.finaldx
-              });
-            }
-          } else if (is_resizing_right) {
-            if (parent_bar_id === bar.task.id) {
-              bar.update_bar_position({
-                width: $bar.owidth + $bar.finaldx
-              });
-            }
-          } else if (is_dragging) {
-            bar.update_bar_position({
-              x: $bar.ox + $bar.finaldx
-            });
-          }
-        });
-      });
-      document.addEventListener('mouseup', function (e) {
-        if (is_dragging || is_resizing_left || is_resizing_right) {
-          bars.forEach(function (bar) {
-            return bar.group.classList.remove('active');
-          });
-        }
-
-        is_dragging = false;
-        is_resizing_left = false;
-        is_resizing_right = false;
-      });
-      $.on(this.$svg, 'mouseup', function (e) {
-        _this4.bar_being_dragged = null;
-        bars.forEach(function (bar) {
-          var $bar = bar.$bar;
-          if (!$bar.finaldx) return;
-          bar.date_changed();
-          bar.set_action_completed();
-        });
-      });
-      this.bind_bar_progress();
-    }
-  }, {
-    key: "bind_bar_progress",
-    value: function bind_bar_progress() {
-      var _this5 = this;
-
-      var x_on_start = 0;
-      var y_on_start = 0;
-      var is_resizing = null;
-      var bar = null;
-      var $bar_progress = null;
-      var $bar = null;
-      $.on(this.$svg, 'mousedown', '.handle.progress', function (e, handle) {
-        is_resizing = true;
-        x_on_start = e.offsetX;
-        y_on_start = e.offsetY;
-        var $bar_wrapper = $.closest('.bar-wrapper', handle);
-        var id = $bar_wrapper.getAttribute('data-id');
-        bar = _this5.get_bar(id);
-        $bar_progress = bar.$bar_progress;
-        $bar = bar.$bar;
-        $bar_progress.finaldx = 0;
-        $bar_progress.owidth = $bar_progress.getWidth();
-        $bar_progress.min_dx = -$bar_progress.getWidth();
-        $bar_progress.max_dx = $bar.getWidth() - $bar_progress.getWidth();
-      });
-      $.on(this.$svg, 'mousemove', function (e) {
-        if (!is_resizing) return;
-        var dx = e.offsetX - x_on_start;
-        var dy = e.offsetY - y_on_start;
-
-        if (dx > $bar_progress.max_dx) {
-          dx = $bar_progress.max_dx;
-        }
-
-        if (dx < $bar_progress.min_dx) {
-          dx = $bar_progress.min_dx;
-        }
-
-        var $handle = bar.$handle_progress;
-        $.attr($bar_progress, 'width', $bar_progress.owidth + dx);
-        $.attr($handle, 'points', bar.get_progress_polygon_points());
-        $bar_progress.finaldx = dx;
-      });
-      $.on(this.$svg, 'mouseup', function () {
-        is_resizing = false;
-        if (!($bar_progress && $bar_progress.finaldx)) return;
-        bar.progress_changed();
-        bar.set_action_completed();
-      });
-    }
-  }, {
     key: "get_all_dependent_tasks",
     value: function get_all_dependent_tasks(task_id) {
-      var _this6 = this;
+      var _this4 = this;
 
       var out = [];
       var to_process = [task_id];
 
       while (to_process.length) {
         var deps = to_process.reduce(function (acc, curr) {
-          acc = acc.concat(_this6.dependency_map[curr]);
+          acc = acc.concat(_this4.dependency_map[curr]);
           return acc;
         }, []);
         out = out.concat(deps);
@@ -2005,26 +1672,6 @@ var Gantt = /*#__PURE__*/function () {
       return out.filter(Boolean);
     }
   }, {
-    key: "get_snap_position",
-    value: function get_snap_position(dx) {
-      var odx = dx,
-          rem,
-          position;
-
-      if (this.view_is(VIEW_MODE.WEEK)) {
-        rem = dx % (this.options.column_width / 7);
-        position = odx - rem + (rem < this.options.column_width / 14 ? 0 : this.options.column_width / 7);
-      } else if (this.view_is(VIEW_MODE.MONTH)) {
-        rem = dx % (this.options.column_width / 30);
-        position = odx - rem + (rem < this.options.column_width / 60 ? 0 : this.options.column_width / 30);
-      } else {
-        rem = dx % this.options.column_width;
-        position = odx - rem + (rem < this.options.column_width / 2 ? 0 : this.options.column_width);
-      }
-
-      return position;
-    }
-  }, {
     key: "unselect_all",
     value: function unselect_all() {
       _toConsumableArray(this.$svg.querySelectorAll('.bar-wrapper')).forEach(function (el) {
@@ -2034,7 +1681,7 @@ var Gantt = /*#__PURE__*/function () {
   }, {
     key: "view_is",
     value: function view_is(modes) {
-      var _this7 = this;
+      var _this5 = this;
 
       if (typeof modes === 'string') {
         return this.options.view_mode === modes;
@@ -2042,7 +1689,7 @@ var Gantt = /*#__PURE__*/function () {
 
       if (Array.isArray(modes)) {
         return modes.some(function (mode) {
-          return _this7.options.view_mode === mode;
+          return _this5.options.view_mode === mode;
         });
       }
 
