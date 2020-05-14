@@ -2,6 +2,8 @@ import sass from 'rollup-plugin-sass';
 import uglify from 'rollup-plugin-uglify';
 import merge from 'deepmerge';
 
+import babel from '@rollup/plugin-babel';
+
 const dev = {
     input: 'src/index.js',
     output: {
@@ -12,14 +14,19 @@ const dev = {
     plugins: [
         sass({
             output: 'dist/frappe-gantt.css'
-        })
+        }),
+        babel({
+            exclude: 'node_modules/**'
+          })
     ]
 };
 const prod = merge(dev, {
     output: {
         file: 'dist/frappe-gantt.min.js'
     },
-    plugins: [uglify()]
+    plugins: [
+        uglify()
+    ]
 });
 
 export default [dev, prod];
