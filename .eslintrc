@@ -14,7 +14,7 @@
     ],
     "no-underscore-dangle": "off",
     "one-var": "off",
-    "camelcase": "warn",
+    "camelcase": "off",
     "no-bitwise": "off",
     "func-names": "off",
     "no-plusplus": "off",
