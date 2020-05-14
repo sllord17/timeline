@@ -655,7 +655,7 @@ var Bar = /*#__PURE__*/function () {
     key: "prepare_values",
     value: function prepare_values() {
       this.invalid = this.task.invalid;
-      this.height = this.gantt.options.bar_height;
+      this.height = this.task.height || this.gantt.options.bar_height;
       this.x = this.compute_x();
       this.y = this.compute_y();
       this.corner_radius = this.gantt.options.bar_corner_radius;
@@ -971,7 +971,14 @@ var Bar = /*#__PURE__*/function () {
   }, {
     key: "compute_y",
     value: function compute_y() {
-      return this.gantt.options.header_height + this.gantt.options.padding + this.task._index * (this.height + this.gantt.options.padding);
+      var sum = 0;
+
+      for (var i = 0; i < this.task._index; i++) {
+        sum += this.gantt.tasks[i].height || this.gantt.options.bar_height;
+      }
+
+      sum += this.task._index * this.gantt.options.padding;
+      return this.gantt.options.header_height + this.gantt.options.padding + sum;
     }
   }, {
     key: "get_snap_position",
@@ -1560,7 +1567,24 @@ var Gantt = /*#__PURE__*/function () {
     key: "make_grid_background",
     value: function make_grid_background() {
       var grid_width = this.dates.length * this.options.column_width;
-      var grid_height = this.options.header_height + this.options.padding + (this.options.bar_height + this.options.padding) * this.tasks.length;
+      var sum = 0;
+
+      var _iterator5 = _createForOfIteratorHelper(this.tasks),
+          _step5;
+
+      try {
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var task = _step5.value;
+          sum += task.height || this.options.bar_height;
+        }
+      } catch (err) {
+        _iterator5.e(err);
+      } finally {
+        _iterator5.f();
+      }
+
+      sum += this.options.padding * this.tasks.length;
+      var grid_height = this.options.header_height + this.options.padding + sum;
       createSVG('rect', {
         x: 0,
         y: 0,
@@ -1570,7 +1594,7 @@ var Gantt = /*#__PURE__*/function () {
         append_to: this.layers.grid
       });
       $.attr(this.$svg, {
-        height: grid_height + this.options.padding + 100,
+        height: grid_height,
         width: '100%'
       });
     }
@@ -1584,15 +1608,16 @@ var Gantt = /*#__PURE__*/function () {
         append_to: this.layers.grid
       });
       var row_width = this.dates.length * this.options.column_width;
-      var row_height = this.options.bar_height + this.options.padding;
       var row_y = this.options.header_height + this.options.padding / 2;
 
-      var _iterator5 = _createForOfIteratorHelper(this.tasks),
-          _step5;
+      var _iterator6 = _createForOfIteratorHelper(this.tasks),
+          _step6;
 
       try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          var task = _step5.value;
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var task = _step6.value;
+          console.log(task);
+          var row_height = (task.height || this.options.bar_height) + this.options.padding;
           createSVG('rect', {
             x: 0,
             y: row_y,
@@ -1609,12 +1634,12 @@ var Gantt = /*#__PURE__*/function () {
             "class": 'row-line',
             append_to: lines_layer
           });
-          row_y += this.options.bar_height + this.options.padding;
+          row_y += row_height;
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator6.e(err);
       } finally {
-        _iterator5.f();
+        _iterator6.f();
       }
     }
   }, {
@@ -1636,14 +1661,28 @@ var Gantt = /*#__PURE__*/function () {
     value: function make_grid_ticks() {
       var tick_x = 0;
       var tick_y = this.options.header_height + this.options.padding / 2;
-      var tick_height = (this.options.bar_height + this.options.padding) * this.tasks.length;
+      var tick_height = this.options.padding * this.tasks.length;
 
-      var _iterator6 = _createForOfIteratorHelper(this.dates),
-          _step6;
+      var _iterator7 = _createForOfIteratorHelper(this.tasks),
+          _step7;
 
       try {
-        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-          var date = _step6.value;
+        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+          var task = _step7.value;
+          tick_height += task.height || this.options.bar_height;
+        }
+      } catch (err) {
+        _iterator7.e(err);
+      } finally {
+        _iterator7.f();
+      }
+
+      var _iterator8 = _createForOfIteratorHelper(this.dates),
+          _step8;
+
+      try {
+        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+          var date = _step8.value;
           var tick_class = 'tick'; // thick tick for monday
 
           if (this.view_is(VIEW_MODE.DAY) && date.getDate() === 1) {
@@ -1673,9 +1712,9 @@ var Gantt = /*#__PURE__*/function () {
           }
         }
       } catch (err) {
-        _iterator6.e(err);
+        _iterator8.e(err);
       } finally {
-        _iterator6.f();
+        _iterator8.f();
       }
     }
   }, {
@@ -1686,12 +1725,29 @@ var Gantt = /*#__PURE__*/function () {
         var x = date_utils.diff(date_utils.today(), this.gantt_start, 'hour') / this.options.step * this.options.column_width;
         var y = 0;
         var width = this.options.column_width;
-        var height = (this.options.bar_height + this.options.padding) * this.tasks.length + this.options.header_height + this.options.padding / 2;
+        var sum = 0;
+
+        var _iterator9 = _createForOfIteratorHelper(this.tasks),
+            _step9;
+
+        try {
+          for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+            var task = _step9.value;
+            sum += task.height || this.options.bar_height;
+          }
+        } catch (err) {
+          _iterator9.e(err);
+        } finally {
+          _iterator9.f();
+        }
+
+        sum += this.options.padding * this.tasks.length;
+        var grid_height = this.options.header_height + this.options.padding / 2 + sum;
         createSVG('rect', {
           x: x,
           y: y,
           width: width,
-          height: height,
+          height: grid_height,
           "class": 'today-highlight',
           append_to: this.layers.grid
         });
@@ -1700,12 +1756,12 @@ var Gantt = /*#__PURE__*/function () {
   }, {
     key: "make_dates",
     value: function make_dates() {
-      var _iterator7 = _createForOfIteratorHelper(this.get_dates_to_draw()),
-          _step7;
+      var _iterator10 = _createForOfIteratorHelper(this.get_dates_to_draw()),
+          _step10;
 
       try {
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          var date = _step7.value;
+        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+          var date = _step10.value;
           createSVG('text', {
             x: date.lower_x,
             y: date.lower_y,
@@ -1729,9 +1785,9 @@ var Gantt = /*#__PURE__*/function () {
           }
         }
       } catch (err) {
-        _iterator7.e(err);
+        _iterator10.e(err);
       } finally {
-        _iterator7.f();
+        _iterator10.f();
       }
     }
   }, {
@@ -1819,12 +1875,12 @@ var Gantt = /*#__PURE__*/function () {
 
       this.arrows = [];
 
-      var _iterator8 = _createForOfIteratorHelper(this.tasks),
-          _step8;
+      var _iterator11 = _createForOfIteratorHelper(this.tasks),
+          _step11;
 
       try {
         var _loop = function _loop() {
-          var task = _step8.value;
+          var task = _step11.value;
           var arrows = [];
           arrows = task.dependencies.map(function (task_id) {
             var dependency = _this3.get_task(task_id);
@@ -1842,13 +1898,13 @@ var Gantt = /*#__PURE__*/function () {
           _this3.arrows = _this3.arrows.concat(arrows);
         };
 
-        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
           _loop();
         }
       } catch (err) {
-        _iterator8.e(err);
+        _iterator11.e(err);
       } finally {
-        _iterator8.f();
+        _iterator11.f();
       }
     }
   }, {
@@ -1856,24 +1912,24 @@ var Gantt = /*#__PURE__*/function () {
     value: function map_arrows_on_bars() {
       var _this4 = this;
 
-      var _iterator9 = _createForOfIteratorHelper(this.bars),
-          _step9;
+      var _iterator12 = _createForOfIteratorHelper(this.bars),
+          _step12;
 
       try {
         var _loop2 = function _loop2() {
-          var bar = _step9.value;
+          var bar = _step12.value;
           bar.arrows = _this4.arrows.filter(function (arrow) {
             return arrow.from_task.task.id === bar.task.id || arrow.to_task.task.id === bar.task.id;
           });
         };
 
-        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+        for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
           _loop2();
         }
       } catch (err) {
-        _iterator9.e(err);
+        _iterator12.e(err);
       } finally {
-        _iterator9.f();
+        _iterator12.f();
       }
     }
   }, {

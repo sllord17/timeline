@@ -36,7 +36,7 @@ export default class Bar {
 
     prepare_values() {
         this.invalid = this.task.invalid;
-        this.height = this.gantt.options.bar_height;
+        this.height = this.task.height || this.gantt.options.bar_height;
         this.x = this.compute_x();
         this.y = this.compute_y();
         this.corner_radius = this.gantt.options.bar_corner_radius;
@@ -335,10 +335,13 @@ export default class Bar {
     }
 
     compute_y() {
+        let sum = 0;
+        for (let i = 0; i < this.task._index; i++) {
+            sum += this.gantt.tasks[i].height || this.gantt.options.bar_height;
+        }
+        sum += this.task._index * this.gantt.options.padding;
         return (
-            this.gantt.options.header_height +
-            this.gantt.options.padding +
-            this.task._index * (this.height + this.gantt.options.padding)
+            this.gantt.options.header_height + this.gantt.options.padding + sum
         );
     }
 

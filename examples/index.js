@@ -1,10 +1,10 @@
 var names = [
-    ["Redesign website", [0, 7]],
-    ["Write new content", [1, 4]],
-    ["Apply new styles", [3, 6]],
-    ["Review", [7, 7]],
-    ["Deploy", [8, 9]],
-    ["Go Live!", [10, 10]]
+    ["Redesign website", [0, 7], 22],
+    ["Write new content", [1, 4], 50],
+    ["Apply new styles", [3, 6], 10],
+    ["Review", [7, 7], 40],
+    ["Deploy", [8, 9], 30],
+    ["Go Live!", [10, 10], 29]
 ];
 
 var tasks = names.map(function(name, i) {
@@ -20,6 +20,7 @@ var tasks = names.map(function(name, i) {
         start: start,
         end: end,
         name: name[0],
+        height: name[2],
         id: "Task " + i,
         milestones: [{date: milestone, href: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png' }],
         progress: parseInt(Math.random() * 100, 10)
