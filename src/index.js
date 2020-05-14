@@ -219,6 +219,18 @@ export default class Gantt {
             if (!this.gantt_end || task._end > this.gantt_end) {
                 this.gantt_end = task._end;
             }
+
+            if (task.milestones) {
+                for (let milestone of task.milestones) {
+                    if (milestone.date < this.gantt_start) {
+                        this.gantt_start = milestone.date;
+                    }
+
+                    if (milestone.date > this.gantt_end) {
+                        this.gantt_end = milestone.date;
+                    }
+                }
+            }
         }
 
         this.gantt_start = date_utils.start_of(this.gantt_start, 'day');
@@ -566,6 +578,7 @@ export default class Gantt {
         this.bars = this.tasks.map(task => {
             const bar = new Bar(this, task);
             this.layers.bar.appendChild(bar.group);
+            this.layers.bar.appendChild(bar.milestone_group);
             return bar;
         });
     }

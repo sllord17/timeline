@@ -1,5 +1,7 @@
 import date_utils from './date_utils';
 import { $, createSVG, animateSVG } from './svg_utils';
+import Milestone from './milestone';
+
 
 export default class Bar {
     constructor(gantt, task) {
@@ -13,11 +15,23 @@ export default class Bar {
         this.action_completed = false;
         this.gantt = gantt;
         this.task = task;
+        this.milestones = [];
+    }
+
+    make_milestones() {
+        if (this.task.milestones)
+            this.milestones = this.task.milestones.map(
+                function(obj) {
+                    return new Milestone(this.gantt, this.task, this, obj);
+                }.bind(this)
+            );
     }
 
     prepare() {
         this.prepare_values();
         this.prepare_helpers();
+
+        this.make_milestones();
     }
 
     prepare_values() {
@@ -46,6 +60,11 @@ export default class Bar {
             class: 'handle-group',
             append_to: this.group
         });
+
+        this.milestone_group = createSVG('g', {
+            class: 'milestone-wrapper ' + (this.task.custom_class || ''),
+            'data-id': this.task.id
+        });
     }
 
     prepare_helpers() {
@@ -71,6 +90,11 @@ export default class Bar {
         this.draw_progress_bar();
         this.draw_label();
         this.draw_resize_handles();
+        this.draw_milestones();
+    }
+
+    draw_milestones() {
+        this.milestones.forEach(m => m.draw());
     }
 
     draw_bar() {
