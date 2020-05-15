@@ -1,0 +1,5 @@
+export enum EVENT {
+  SHOW_POPUP,
+  HIDE_POPUP,
+  TOGGLE_POPUP
+}

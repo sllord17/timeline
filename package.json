@@ -1,19 +1,19 @@
 {
-  "name": "frappe-gantt",
+  "name": "timeline",
   "version": "0.3.0",
-  "description": "A simple, modern, interactive gantt library for the web",
-  "main": "src/index.js",
+  "description": "A simple, modern, itinerary view of a timeline",
   "scripts": {
+    "typecheck": "tsc --pretty",
     "start": "yarn run dev",
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "test": "jest",
     "test:watch": "jest --watch",
-    "prettier": "prettier es6 --write \"{src/*,tests/*,rollup.config}.js\""
+    "prettier": "prettier --write \"{src/*,tests/*,rollup.config}.js\""
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/frappe/gantt.git"
+    "url": "https://github.com/raiyni/timeline.git"
   },
   "keywords": [
     "gantt",
@@ -23,16 +23,28 @@
     "interactive gantt",
     "project management"
   ],
-  "author": "Faris Ansari",
+  "author": "Ron Young",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/frappe/gantt/issues"
+    "url": "https://github.com/raiyni/timeline/issues"
   },
-  "homepage": "https://github.com/frappe/gantt",
+  "homepage": "https://github.com/raiyni/timeline",
+  "main": "dist/timeline.js",
+  "css": "dist/timeline.css",
+  "types": "types/index.d.ts",
   "devDependencies": {
     "@babel/core": "^7.9.6",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.9.6",
+    "@babel/plugin-transform-runtime": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
+    "@babel/preset-typescript": "^7.9.0",
+    "@openlayers/eslint-plugin": "^4.0.0",
     "@rollup/plugin-babel": "^5.0.0",
+    "@rollup/plugin-commonjs": "^11.1.0",
+    "@rollup/plugin-node-resolve": "^7.1.3",
+    "@rollup/stream": "^1.0.0",
+    "core-js": "^3.6.5",
     "deepmerge": "^2.0.1",
     "eslint": "6.8.0",
     "eslint-config-airbnb": "^18.1.0",
@@ -45,11 +57,15 @@
     "jest": "^22.2.1",
     "jsdoc": "~3.6.4",
     "prettier": "^2.0.5",
-    "rollup": "^0.55.3",
-    "rollup-plugin-sass": "^0.5.3",
-    "rollup-plugin-uglify": "^3.0.0"
+    "rollup": "^2.10.1",
+    "rollup-plugin-sass": "^1.2.2",
+    "typescript": "^3.9.2"
   },
   "eslintIgnore": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "classlist-polyfill": "^1.2.0",
+    "dayjs": "^1.8.27"
+  }
 }
