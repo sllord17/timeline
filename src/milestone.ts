@@ -9,6 +9,7 @@ export interface MilestoneOptions {
   height: number
   width: number
   date: string
+  y: number
 }
 
 export default class Milestone {
@@ -26,7 +27,9 @@ export default class Milestone {
 
   constructor(options: TimelineOptions, config: MilestoneOptions) {
     this.options = options
-    this.config = config
+    this.config = { ...config }
+
+    this.config.y = config.y ?? 0
 
     this.href = config.href
     this.height = config.height || 16
@@ -45,7 +48,7 @@ export default class Milestone {
   public render(layer: SVGElementX, startDate: dayjs.Dayjs, y: number) {
     svg('image', {
       x: this.computeX(startDate),
-      y: y,
+      y: y + this.config.y,
       width: this.width,
       height: this.height,
       href: this.href,

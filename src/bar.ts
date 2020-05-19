@@ -7,8 +7,20 @@ import { TimelineOptions } from './timeline'
 import { VIEW_MODE } from './view'
 import dayjs from 'dayjs'
 
+export interface BarOptions {
+  progress?: number
+  customClass?: string
+  height?: number
+  start: string
+  end: string
+  label: string
+  y: number
+}
+
 export default class Bar implements EventListenerObject {
   private options: TimelineOptions
+  private config: BarOptions
+
   private task: Task
 
   private width: number
@@ -20,28 +32,76 @@ export default class Bar implements EventListenerObject {
   private label: SVGElementX
   private group: SVGElementX
 
-  constructor(options: TimelineOptions, task: Task) {
-    this.options = options
-    this.task = task
+  private _end: dayjs.Dayjs
+  get end(): dayjs.Dayjs {
+    return this._end
+  }
 
-    const duration = this.task.end.diff(this.task.start, 'hour') / this.options.step
+  private _start: dayjs.Dayjs
+  get start(): dayjs.Dayjs {
+    return this._start
+  }
+
+  private _height: number
+  get height(): number {
+    return this._height
+  }
+
+  constructor(options: TimelineOptions, config: BarOptions, task: Task) {
+    this.options = options
+    this.config = { ...config }
+    this.task = task
+    this._height = config.height || options.barHeight
+
+    this._start = dayjs(config.start)
+    this._end = dayjs(config.end)
+
+    this.config.progress = config.progress ?? 100
+    this.config.y = config.y ?? 0
+
+    // // make task invalid if duration too large
+    if (this._end.diff(this._start, 'year') > 10) {
+      this._end = null
+    }
+
+    // invalid dates
+    if (!this._start && !this._end) {
+      this._start = dayjs().startOf('day')
+      this._end = this._start.add(2, 'day')
+    }
+
+    if (!this._start && this._end) {
+      this._start = this._end.subtract(2, 'day')
+    }
+
+    if (this._start && !this._end) {
+      this._end = this._start.add(2, 'day')
+    }
+
+    // if hours is not set, assume the last day is full day
+    // e.g: 2018-09-09 becomes 2018-09-09 23:59:59
+    if (this._end.isSame(this._end.startOf('day'))) {
+      this._end = this._end.add(24, 'hour')
+    }
+
+    const duration = this.end.diff(this.start, 'hour') / this.options.step
     this.width = duration * this.options.columnWidth
   }
 
   private computeX(startDate: dayjs.Dayjs): number {
     if (VIEW_MODE.MONTH == this.options.viewMode) {
-      return (this.task.start.diff(startDate, 'day') * this.options.columnWidth) / 30
+      return (this.start.diff(startDate, 'day') * this.options.columnWidth) / 30
     }
 
-    return (this.task.start.diff(startDate, 'hour') / this.options.step) * this.options.columnWidth
+    return (this.start.diff(startDate, 'hour') / this.options.step) * this.options.columnWidth
   }
 
   public render(layer: SVGElementX, startDate: dayjs.Dayjs, y: number) {
     this.x = this.computeX(startDate)
-    this.y = y
+    this.y = y + this.config.y
 
     this.group = svg('g', {
-      class: `bar-wrapper ${this.task.customClass || ''}`,
+      class: `bar-wrapper ${this.config.customClass || ''}`,
       'data-id': this.task.id,
       append_to: layer
     })
@@ -65,7 +125,7 @@ export default class Bar implements EventListenerObject {
       x: this.x,
       y: this.y,
       width: this.width,
-      height: this.task.height,
+      height: this.height,
       rx: this.options.barCornerRadius,
       ry: this.options.barCornerRadius,
       class: 'bar',
@@ -77,8 +137,8 @@ export default class Bar implements EventListenerObject {
     svg('rect', {
       x: this.x,
       y: this.y,
-      width: this.width * (this.task.progress / 100) || 0,
-      height: this.task.height,
+      width: this.width * (this.config.progress / 100) || 0,
+      height: this.height,
       rx: this.options.barCornerRadius,
       ry: this.options.barCornerRadius,
       class: 'bar-progress',
@@ -89,7 +149,7 @@ export default class Bar implements EventListenerObject {
   private drawLabel(layer: SVGElementX) {
     this.label = svg('text', {
       x: this.x + this.width / 2,
-      y: this.y + this.task.height / 2,
+      y: this.y + this.height / 2,
       class: 'bar-label',
       append_to: layer
     })

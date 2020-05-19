@@ -9,6 +9,12 @@ import { TimelineOptions } from './timeline'
 import { VIEW_MODE } from './view'
 import dayjs from 'dayjs'
 
+export interface ColumnOptions {
+  id: string
+  text: string
+  customClass?: string
+}
+
 export default class Grid {
   private options: TimelineOptions
 
@@ -69,7 +75,7 @@ export default class Grid {
   }
 
   private setBoundingDates() {
-    this.tasks.forEach((task, idx) => {
+    this.tasks.forEach((task) => {
       if (!this._start || task.start.isBefore(this._start)) {
         this._start = task.start.clone()
       }
@@ -77,16 +83,6 @@ export default class Grid {
       if (!this._end || task.end.isAfter(this._end)) {
         this._end = task.end.clone()
       }
-
-      task.milestones.forEach((m) => {
-        if (m.date.isBefore(this._start)) {
-          this._start = m.date.clone()
-        }
-
-        if (m.date.isAfter(this._end)) {
-          this._end = m.date.clone()
-        }
-      })
     })
   }
 

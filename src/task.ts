@@ -1,6 +1,6 @@
+import Bar, { BarOptions } from './bar'
 import Milestone, { MilestoneOptions } from './milestone'
 
-import Bar from './bar'
 import { SVGElementX } from './types'
 import { TimelineOptions } from './timeline'
 import dayjs from 'dayjs'
@@ -10,19 +10,30 @@ export interface HtmlProducer {
   (target: Task | Bar | Milestone): string
 }
 
-export interface TaskOptions {
-  start: string
-  end: string
-  id: string
-  customClass: string
-  name: string
-  progress: number
-  height: number
+export interface SingleBarOptions extends TaskBaseOptions {
+  plan: BarOptions
   milestones?: MilestoneOptions[]
 }
 
+export interface MultiBarOptions extends TaskBaseOptions {
+  plans: BarOptions[][]
+  milestones?: MilestoneOptions[][]
+}
+
+interface TaskBaseOptions {
+  id: string
+  name: string
+  customClass?: string
+}
+
+export type TaskOptions = SingleBarOptions & MultiBarOptions
+
 function generate_id(task: Task) {
   return task.name + '_' + Math.random().toString(36).slice(2, 12)
+}
+
+function isSingle(options: TaskOptions): boolean {
+  return 'plan' in options
 }
 
 export default class Task {
@@ -39,10 +50,6 @@ export default class Task {
     return this._end
   }
 
-  public get progress(): number {
-    return this.config.progress
-  }
-
   public get name(): string {
     return this.config.name
   }
@@ -57,71 +64,99 @@ export default class Task {
     return this._id
   }
 
-  private _milestones: Milestone[] = []
-  public get milestones(): Milestone[] {
-    return this._milestones
-  }
-
-  public get customClass(): string {
-    return this.config.customClass
-  }
+  private _plans: Bar[][] = []
+  private _milestones: Milestone[][] = []
 
   constructor(options: TimelineOptions, config: TaskOptions) {
     this.options = options
-    this.config = config
+    this.config = { ...config }
 
-    this._start = dayjs(config.start)
-    this._end = dayjs(config.end)
-    this._height = config.height || options.barHeight
-
-    // make task invalid if duration too large
-    if (this._end.diff(this._start, 'year') > 10) {
-      this._end = null
-    }
-
-    // invalid dates
-    if (!this._start && !this._end) {
-      this._start = dayjs().startOf('day')
-      this._end = this._start.add(2, 'day')
-    }
-
-    if (!this._start && this._end) {
-      this._start = this._end.subtract(2, 'day')
-    }
-
-    if (this._start && !this._end) {
-      this._end = this._start.add(2, 'day')
-    }
-
-    // if hours is not set, assume the last day is full day
-    // e.g: 2018-09-09 becomes 2018-09-09 23:59:59
-    if (this._end.isSame(this._end.startOf('day'))) {
-      this._end = this._end.add(24, 'hour')
-    }
+    this._height = 0
 
     if (!this._id) {
       this._id = generate_id(this)
     }
 
-    if (config.milestones) {
-      this._milestones = config.milestones.map((m) => new Milestone(options, m))
+    if (isSingle(config)) {
+      this._plans = [[new Bar(options, config.plan, this)]]
+      this._milestones = [
+        (<MilestoneOptions[]>config.milestones).map((m) => new Milestone(options, m))
+      ]
+    } else {
+      let rowOffsets: number[] = []
+      this._plans = config.plans.map((bo, idx) => {
+        const arr = bo.map((b) => {
+          if (idx > 0) b.y = rowOffsets[idx - 1]
+          return new Bar(options, b, this)
+        })
+        const max = Math.max(...arr.map((b) => b.height))
+        rowOffsets.push(max)
+        return arr
+      })
+
+      this._milestones = (<MilestoneOptions[][]>config.milestones).map((m, idx) =>
+        m.map((m2) => {
+          if (idx > 0 && rowOffsets[idx - 1]) m2.y = rowOffsets[idx - 1]
+          return new Milestone(options, m2)
+        })
+      )
     }
+
+    this.computeHeight()
+    this.computeBoundingDates()
+  }
+
+  private computeHeight() {
+    this._height = this._plans
+      .map((a) => Math.max(...a.map((p) => p.height)))
+      .reduce((a, b) => a + b, 0)
+    this._plans.forEach((a) => a.forEach((p) => (this._height = Math.max(this._height, p.height))))
+  }
+
+  private computeBoundingDates() {
+    if (!this._end) {
+      this._end = this._plans[0][0].end.clone()
+    }
+
+    this._plans.forEach((a) =>
+      a.forEach((p) => {
+        if (!this._start || p.start.isBefore(this._start)) {
+          this._start = p.start.clone()
+        }
+
+        if (!this._end || p.end.isAfter(this._end)) {
+          this._end = p.end.clone()
+        }
+      })
+    )
+
+    this._milestones.forEach((a) =>
+      a.forEach((p) => {
+        if (!this._start || p.date.isBefore(this._start)) {
+          this._start = p.date.clone()
+        }
+
+        if (!this._end || p.date.isAfter(this._end)) {
+          this._end = p.date.clone()
+        }
+      })
+    )
   }
 
   public render(layer: SVGElementX, startDate: dayjs.Dayjs, y: number) {
+    console.log(this._height)
     const barGroup = svg('g', {
       class: 'bar',
       append_to: layer
     })
 
     const milestoneGroup = svg('g', {
-      class: `milestone-wrapper ${this.customClass || ''}`,
+      class: `milestone-wrapper ${this.config.customClass || ''}`,
       'data-id': this.id,
       append_to: layer
     })
 
-    new Bar(this.options, this).render(barGroup, startDate, y)
-
-    this._milestones.forEach((m) => m.render(milestoneGroup, startDate, y))
+    this._plans.forEach((row) => row.forEach((p) => p.render(barGroup, startDate, y)))
+    this._milestones.forEach((row) => row.forEach((m) => m.render(milestoneGroup, startDate, y)))
   }
 }
