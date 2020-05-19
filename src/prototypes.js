@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 SVGElement.prototype.getX = function () {
   return +this.getAttribute('x')
 }

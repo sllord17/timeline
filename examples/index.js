@@ -29,5 +29,5 @@ var tasks = names.map(function (name, i) {
   }
 })
 
-var gantt_chart = new Timeline('#gantt-1', tasks)
+var gantt_chart = new Timeline('#abc123', tasks)
 // document.querySelector(".gantt-container").scrollLeft = 2045;

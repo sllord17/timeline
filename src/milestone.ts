@@ -1,5 +1,4 @@
 import { SVGElementX } from './types'
-import Task from './task'
 import { TimelineOptions } from './timeline'
 import { VIEW_MODE } from './view'
 import dayjs from 'dayjs'

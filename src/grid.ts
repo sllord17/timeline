@@ -1,10 +1,12 @@
-import { VIEW_MODE, viewIs } from './view'
+/** @module timeline/grid */
+
 import { svg, toTextFragment } from './util'
 
 import { SVGElementX } from './types'
 import { TaskOptions } from './task'
 import Tasks from './tasks'
 import { TimelineOptions } from './timeline'
+import { VIEW_MODE } from './view'
 import dayjs from 'dayjs'
 
 export default class Grid {
@@ -36,9 +38,9 @@ export default class Grid {
     do {
       if (!d) {
         d = dayjs(this.start)
-      } else if (viewIs([VIEW_MODE.YEAR], this.options.viewMode)) {
+      } else if (VIEW_MODE.YEAR == this.options.viewMode) {
         d = d.add(1, 'year')
-      } else if (viewIs([VIEW_MODE.MONTH], this.options.viewMode)) {
+      } else if (VIEW_MODE.MONTH == this.options.viewMode) {
         d = d.add(1, 'month')
       } else {
         d = d.add(this.options.step, 'hour')
@@ -51,13 +53,13 @@ export default class Grid {
     this._start = this._start.startOf('day')
     this._end = this._end.startOf('day')
 
-    if (viewIs([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY], this.options.viewMode)) {
+    if ([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY].some((k) => k == this.options.viewMode)) {
       this._start = this._start.subtract(7, 'day')
       this._end = this._end.add(7, 'day')
-    } else if (viewIs([VIEW_MODE.MONTH], this.options.viewMode)) {
+    } else if (VIEW_MODE.MONTH == this.options.viewMode) {
       this._start = this._start.subtract(1, 'year')
       this._end = this._end.add(1, 'year')
-    } else if (viewIs([VIEW_MODE.YEAR], this.options.viewMode)) {
+    } else if (VIEW_MODE.YEAR == this.options.viewMode) {
       this._start = this._start.subtract(2, 'year')
       this._end = this._end.add(2, 'year')
     } else {
@@ -293,7 +295,7 @@ export default class Grid {
       last_date = date.add(1, 'year')
     }
 
-    const date_text = {
+    const date_text: { [key: string]: string } = {
       'Quarter Day_lower': date.format('HH'),
       'Half Day_lower': date.format('HH'),
       Day_lower: date.date() !== last_date.date() ? date.format('D') : '',
@@ -314,13 +316,13 @@ export default class Grid {
       Year_upper: date.year() !== last_date.year() ? date.format('YYYY') : ''
     }
 
-    const base_pos = {
+    const base_pos: { [key: string]: number } = {
       x: i * this.options.columnWidth,
       lower_y: this.options.headerHeight,
       upper_y: this.options.headerHeight - 25
     }
 
-    const x_pos = {
+    const x_pos: { [key: string]: number } = {
       'Quarter Day_lower': (this.options.columnWidth * 4) / 2,
       'Quarter Day_upper': 0,
       'Half Day_lower': (this.options.columnWidth * 2) / 2,

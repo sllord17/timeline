@@ -41,7 +41,6 @@ export default class Popup {
       config.position = 'left'
     }
 
-    const target = config.positionTarget
     if (this.options.popupProducer) {
       this.parent.innerHTML = this.options.popupProducer(config.eventTarget)
       this.pointer = (toDom('<div class="pointer"></div>') as unknown) as HTMLDivElement

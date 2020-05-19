@@ -70,97 +70,6 @@ var Timeline = (function () {
     return target;
   }
 
-  function _inherits(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function");
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) _setPrototypeOf(subClass, superClass);
-  }
-
-  function _getPrototypeOf(o) {
-    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-      return o.__proto__ || Object.getPrototypeOf(o);
-    };
-    return _getPrototypeOf(o);
-  }
-
-  function _setPrototypeOf(o, p) {
-    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-      o.__proto__ = p;
-      return o;
-    };
-
-    return _setPrototypeOf(o, p);
-  }
-
-  function _isNativeReflectConstruct() {
-    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
-    if (Reflect.construct.sham) return false;
-    if (typeof Proxy === "function") return true;
-
-    try {
-      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function _assertThisInitialized(self) {
-    if (self === void 0) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return self;
-  }
-
-  function _possibleConstructorReturn(self, call) {
-    if (call && (typeof call === "object" || typeof call === "function")) {
-      return call;
-    }
-
-    return _assertThisInitialized(self);
-  }
-
-  function _createSuper(Derived) {
-    var hasNativeReflectConstruct = _isNativeReflectConstruct();
-
-    return function () {
-      var Super = _getPrototypeOf(Derived),
-          result;
-
-      if (hasNativeReflectConstruct) {
-        var NewTarget = _getPrototypeOf(this).constructor;
-
-        result = Reflect.construct(Super, arguments, NewTarget);
-      } else {
-        result = Super.apply(this, arguments);
-      }
-
-      return _possibleConstructorReturn(this, result);
-    };
-  }
-
-  function _toConsumableArray(arr) {
-    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
-  }
-
-  function _arrayWithoutHoles(arr) {
-    if (Array.isArray(arr)) return _arrayLikeToArray(arr);
-  }
-
-  function _iterableToArray(iter) {
-    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
-  }
-
   function _unsupportedIterableToArray(o, minLen) {
     if (!o) return;
     if (typeof o === "string") return _arrayLikeToArray(o, minLen);
@@ -176,10 +85,6 @@ var Timeline = (function () {
     for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
 
     return arr2;
-  }
-
-  function _nonIterableSpread() {
-    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
   function _createForOfIteratorHelper(o) {
@@ -237,109 +142,274 @@ var Timeline = (function () {
     };
   }
 
-  /** @module timeline/types */
-
-  /** @enum {string} */
-  var VIEW_MODE = {
-    QUARTER_DAY: 'Quarter Day',
-    HALF_DAY: 'Half Day',
-    DAY: 'Day',
-    WEEK: 'Week',
-    MONTH: 'Month',
-    YEAR: 'Year'
+  // @ts-nocheck
+  SVGElement.prototype.getX = function () {
+    return +this.getAttribute('x');
   };
-  /**
-   * @typedef {object} MilestoneOptions
-   * @property  {string} href
-   * @property  {number} height
-   * @property  {number} width
-   * @property {string} date
-   */
 
-  var MilestoneOptions = Object.freeze({});
-  /**
-   * @typedef {object} TaskOptions
-   * @property  {Array<MilestoneOptions>} milestones
-   * @property  {string} start
-   * @property  {string} end
-   * @property  {string} id
-   * @property  {number} progress
-   * @property  {number=} height
-   * @property  {string} customClass
-   * @property  {string} name
-   */
+  SVGElement.prototype.getY = function () {
+    return +this.getAttribute('y');
+  };
 
-  var TaskOptions = Object.freeze({});
-  /**
-   * @typedef {object} PopupOptions
-   * @property {(HTMLElement|SVGElement|SVGGraphicsElement)} target
-   * @property {string=} title
-   * @property {string=} subtitle
-   * @property {string=} position
-   * @property {import("./task").default} task
-   */
+  SVGElement.prototype.getWidth = function () {
+    return +this.getAttribute('width');
+  };
 
-  var PopupOptions = Object.freeze({});
-  /**
-   * @typedef {object} TimelineOptions
-   */
+  SVGElement.prototype.getHeight = function () {
+    return +this.getAttribute('height');
+  };
 
-  var TimelineOptions = Object.freeze({
-    /** @property {number} headerHeight */
-    headerHeight: 50,
-    columnWidth: 30,
-    step: 24,
-    viewModes: Object.keys(VIEW_MODE).map(function (k) {
-      return VIEW_MODE[k];
-    }),
-    barHeight: 20,
-    barCornerRadius: 3,
-    padding: 18,
-    viewMode: 'Day',
-    dateFormat: 'YYYY-MM-DD',
-    popupTrigger: 'click',
-
-    /** @type {HtmlProducer} */
-    producer: null,
-
-    /** @type {function(?): ?} */
-    on_click: null
-  });
-  /**
-   * @typedef {object} SVGElementX
-   * @property {function(): number=} getX
-   * @property {function(): number=} getY
-   * @property {function(): number=} getWidth
-   * @property {function(): number=} getHeight
-   * @property {function(): number=} getEndX
-   * @property {function(): DOMRect=} getBBox
-   * @property {function(): DOMMatrix=} getCTM
-   * @property {function(): DOMMatrix=} getScreenCTM
-   * @property {SVGAnimatedTransformList} transform
-   */
-
-  /**
-   * @typedef {SVGElementX & SVGElement} SVGElement2
-   */
-
-  var SVGElement2 = Object.freeze({});
-  /**
-   * @typedef {SVGElement2 & SVGGraphicsElement} SVGElement3
-   */
-
-  var SVGElement3 = Object.freeze({});
-
-  /** @module timeline/util */
-  /**
-   * Create an SVG element with provided attributes
+  SVGElement.prototype.getEndX = function () {
+    return this.getX() + this.getWidth();
+  };
+  /*
+   * classList.js: Cross-browser full element.classList implementation.
+   * 1.2.20171210
    *
-   * @param {string} tag SVG tag to create
-   * @param {any} attrs Attributes to set on the SVG element
-   * @returns {types.SVGElement3}
+   * By Eli Grey, http://eligrey.com
+   * License: Dedicated to the public domain.
+   *   See https://github.com/eligrey/classList.js/blob/master/LICENSE.md
    */
+
+  /*global self, document, DOMException */
+
+  /*! @source http://purl.eligrey.com/github/classList.js/blob/master/classList.js */
+
+
+  if ('document' in self) {
+    // Full polyfill for browsers with no classList support
+    // Including IE < Edge missing SVGElement.classList
+    if (!('classList' in document.createElement('_')) || document.createElementNS && !('classList' in document.createElementNS('http://www.w3.org/2000/svg', 'g'))) {
+
+      (function (view) {
+
+        if (!('Element' in view)) return;
+
+        var classListProp = 'classList',
+            protoProp = 'prototype',
+            elemCtrProto = view.Element[protoProp],
+            objCtr = Object,
+            strTrim = String[protoProp].trim || function () {
+          return this.replace(/^\s+|\s+$/g, '');
+        },
+            arrIndexOf = Array[protoProp].indexOf || function (item) {
+          var i = 0,
+              len = this.length;
+
+          for (; i < len; i++) {
+            if (i in this && this[i] === item) {
+              return i;
+            }
+          }
+
+          return -1;
+        },
+            // Vendors: please allow content code to instantiate DOMExceptions
+        DOMEx = function DOMEx(type, message) {
+          this.name = type;
+          this.code = DOMException[type];
+          this.message = message;
+        },
+            checkTokenAndGetIndex = function checkTokenAndGetIndex(classList, token) {
+          if (token === '') {
+            throw new DOMEx('SYNTAX_ERR', 'The token must not be empty.');
+          }
+
+          if (/\s/.test(token)) {
+            throw new DOMEx('INVALID_CHARACTER_ERR', 'The token must not contain space characters.');
+          }
+
+          return arrIndexOf.call(classList, token);
+        },
+            ClassList = function ClassList(elem) {
+          var trimmedClasses = strTrim.call(elem.getAttribute('class') || ''),
+              classes = trimmedClasses ? trimmedClasses.split(/\s+/) : [],
+              i = 0,
+              len = classes.length;
+
+          for (; i < len; i++) {
+            this.push(classes[i]);
+          }
+
+          this._updateClassName = function () {
+            elem.setAttribute('class', this.toString());
+          };
+        },
+            classListProto = ClassList[protoProp] = [],
+            classListGetter = function classListGetter() {
+          return new ClassList(this);
+        }; // Most DOMException implementations don't allow calling DOMException's toString()
+        // on non-DOMExceptions. Error's toString() is sufficient here.
+
+
+        DOMEx[protoProp] = Error[protoProp];
+
+        classListProto.item = function (i) {
+          return this[i] || null;
+        };
+
+        classListProto.contains = function (token) {
+          return ~checkTokenAndGetIndex(this, token + '');
+        };
+
+        classListProto.add = function () {
+          var tokens = arguments,
+              i = 0,
+              l = tokens.length,
+              token,
+              updated = false;
+
+          do {
+            token = tokens[i] + '';
+
+            if (!~checkTokenAndGetIndex(this, token)) {
+              this.push(token);
+              updated = true;
+            }
+          } while (++i < l);
+
+          if (updated) {
+            this._updateClassName();
+          }
+        };
+
+        classListProto.remove = function () {
+          var tokens = arguments,
+              i = 0,
+              l = tokens.length,
+              token,
+              updated = false,
+              index;
+
+          do {
+            token = tokens[i] + '';
+            index = checkTokenAndGetIndex(this, token);
+
+            while (~index) {
+              this.splice(index, 1);
+              updated = true;
+              index = checkTokenAndGetIndex(this, token);
+            }
+          } while (++i < l);
+
+          if (updated) {
+            this._updateClassName();
+          }
+        };
+
+        classListProto.toggle = function (token, force) {
+          var result = this.contains(token),
+              method = result ? force !== true && 'remove' : force !== false && 'add';
+
+          if (method) {
+            this[method](token);
+          }
+
+          if (force === true || force === false) {
+            return force;
+          } else {
+            return !result;
+          }
+        };
+
+        classListProto.replace = function (token, replacement_token) {
+          var index = checkTokenAndGetIndex(token + '');
+
+          if (~index) {
+            this.splice(index, 1, replacement_token);
+
+            this._updateClassName();
+          }
+        };
+
+        classListProto.toString = function () {
+          return this.join(' ');
+        };
+
+        if (objCtr.defineProperty) {
+          var classListPropDesc = {
+            get: classListGetter,
+            enumerable: true,
+            configurable: true
+          };
+
+          try {
+            objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
+          } catch (ex) {
+            // IE 8 doesn't support enumerable:true
+            // adding undefined to fight this issue https://github.com/eligrey/classList.js/issues/36
+            // modernie IE8-MSW7 machine has IE8 8.0.6001.18702 and is affected
+            if (ex.number === undefined || ex.number === -0x7ff5ec54) {
+              classListPropDesc.enumerable = false;
+              objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
+            }
+          }
+        } else if (objCtr[protoProp].__defineGetter__) {
+          elemCtrProto.__defineGetter__(classListProp, classListGetter);
+        }
+      })(self);
+    } // There is full or partial native classList support, so just check if we need
+
+    (function () {
+
+      var testElement = document.createElement('_');
+      testElement.classList.add('c1', 'c2'); // Polyfill for IE 10/11 and Firefox <26, where classList.add and
+      // classList.remove exist but support only one argument at a time.
+
+      if (!testElement.classList.contains('c2')) {
+        var createMethod = function createMethod(method) {
+          var original = DOMTokenList.prototype[method];
+
+          DOMTokenList.prototype[method] = function (token) {
+            var i,
+                len = arguments.length;
+
+            for (i = 0; i < len; i++) {
+              token = arguments[i];
+              original.call(this, token);
+            }
+          };
+        };
+
+        createMethod('add');
+        createMethod('remove');
+      }
+
+      testElement.classList.toggle('c3', false); // Polyfill for IE 10 and Firefox <24, where classList.toggle does not
+      // support the second argument.
+
+      if (testElement.classList.contains('c3')) {
+        var _toggle = DOMTokenList.prototype.toggle;
+
+        DOMTokenList.prototype.toggle = function (token, force) {
+          if (1 in arguments && !this.contains(token) === !force) {
+            return force;
+          } else {
+            return _toggle.call(this, token);
+          }
+        };
+      } // replace() polyfill
+
+
+      if (!('replace' in document.createElement('_').classList)) {
+        DOMTokenList.prototype.replace = function (token, replacement_token) {
+          var tokens = this.toString().split(' '),
+              index = tokens.indexOf(token + '');
+
+          if (~index) {
+            tokens = tokens.slice(index);
+            this.remove.apply(this, tokens);
+            this.add(replacement_token);
+            this.add.apply(this, tokens.slice(1));
+          }
+        };
+      }
+
+      testElement = null;
+    })();
+  }
 
   var svg = function svg(tag, attrs) {
-    /** @type {types.SVGElement2} */
     var elem = document.createElementNS('http://www.w3.org/2000/svg', tag);
 
     for (var attr in attrs) {
@@ -353,134 +423,125 @@ var Timeline = (function () {
       }
     }
 
-    elem.getX = function () {
-      return +this.getAttribute('x');
-    };
-
-    elem.getY = function () {
-      return +this.getAttribute('y');
-    };
-
-    elem.getWidth = function () {
-      return +this.getAttribute('width');
-    };
-
-    elem.getHeight = function () {
-      return +this.getAttribute('height');
-    };
-
-    elem.getEndX = function () {
-      return this.getX() + this.getWidth();
-    };
-
     return elem;
   };
-  /**
-   * @param {Element} element
-   * @param {string} event
-   * @param {function(?): ?} listener
-   * @param {string=} selector
-   */
+  var toTextFragment = function toTextFragment(text) {
+    var frag = document.createDocumentFragment(),
+        temp = document.createElement('div');
+    temp.innerHTML = text;
 
-  var on = function on(element, event, listener, selector) {
-    if (!selector) {
-      bind(element, event, listener);
-    } else {
-      delegate(element, event, selector, listener);
+    while (temp.firstChild) {
+      frag.appendChild(temp.firstChild);
     }
-  };
-  /**
-   * @param {Element} element
-   * @param {string} event
-   * @param {function(?): ?} listener
-   */
 
-  var bind = function bind(element, event, listener) {
-    event.split(/\s+/).forEach(function (e) {
-      element.addEventListener(e, listener);
-    });
+    return frag;
   };
-  /**
-   * @param {Element} element
-   * @param {string} event
-   * @param {string} selector
-   * @param {function(?): ?} listener
-   */
-  // tsc-off
-
+  var toDom = function toDom(html) {
+    var frag = document.createRange().createContextualFragment(html);
+    return frag.firstChild;
+  };
   var delegate = function delegate(element, event, selector, listener) {
-    element.addEventListener(event,
-    /** @param {events.SVGMouseEvent} e */
-    function (e) {
+    element.addEventListener(event, function (e) {
       var delegatedTarget = e.target.closest(selector);
 
       if (delegatedTarget) {
-        e.delegatedTarget = delegatedTarget;
-        listener.call(this, e, delegatedTarget);
+        var delegateEvent = _objectSpread2(_objectSpread2({}, e), {}, {
+          target: delegatedTarget
+        });
+
+        listener.call(this, delegateEvent);
       }
     });
   };
-  /**
-   * @param {Element} element
-   * @param {any} attr
-   */
 
-  var attrs = function attrs(element, attr) {
-    for (var _i = 0, _Object$keys = Object.keys(attr); _i < _Object$keys.length; _i++) {
-      var key = _Object$keys[_i];
-      element.setAttribute(key, attr[key]);
+  var Popup = /*#__PURE__*/function () {
+    function Popup(options, parent) {
+      _classCallCheck(this, Popup);
+
+      _defineProperty(this, "options", void 0);
+
+      _defineProperty(this, "parent", void 0);
+
+      _defineProperty(this, "title", void 0);
+
+      _defineProperty(this, "subtitle", void 0);
+
+      _defineProperty(this, "pointer", void 0);
+
+      this.options = options;
+      this.parent = parent;
+      this.title = toDom('<div class="title"></div>');
+      this.subtitle = toDom('<div class="subtitle"></div>');
+      this.pointer = toDom('<div class="pointer"></div>');
+      parent.appendChild(this.title);
+      parent.appendChild(this.subtitle);
+      parent.appendChild(this.pointer);
     }
-  };
 
-  /** @module timeline/internal */
-  var Internal = /*#__PURE__*/function () {
-    /**
-     *
-     * @param {import("./index.js").default} timeline
-     */
-    function Internal(timeline) {
-      _classCallCheck(this, Internal);
+    _createClass(Popup, [{
+      key: "show",
+      value: function show(config) {
+        if (!config.positionTarget) throw new Error('target is required to show popup');
 
-      /**
-       * @protected
-       */
-      this.timeline = timeline;
-      /**
-       * @protected
-       */
+        if (!config.position) {
+          config.position = 'left';
+        }
 
-      this.options = this.timeline.options;
-    }
-    /**
-     * @param {string} key
-     */
+        if (this.options.popupProducer) {
+          this.parent.innerHTML = this.options.popupProducer(config.eventTarget);
+          this.pointer = toDom('<div class="pointer"></div>');
+          this.parent.appendChild(this.pointer);
+        } else {
+          this.title.innerHTML = config.title;
+          this.subtitle.innerHTML = config.subtitle;
+          this.parent.style.width = this.parent.clientWidth + 'px';
+        }
 
+        var pos = config.positionTarget.getBBox();
 
-    _createClass(Internal, [{
-      key: "getLayer",
-      value: function getLayer(key) {
-        return this.timeline.layers[key];
+        if (config.position == 'left') {
+          this.parent.style.left = pos.x + (pos.width + 10) + 'px';
+          this.parent.style.top = pos.y + 'px';
+          this.pointer.style.transform = 'rotateZ(90deg)';
+          this.pointer.style.left = '-7px';
+          this.pointer.style.top = '2px';
+        }
+
+        this.parent.style.opacity = '1';
       }
     }, {
-      key: "getTasks",
-      value: function getTasks() {
-        return this.timeline.tasks;
+      key: "hide",
+      value: function hide() {
+        this.parent.style.opacity = '0';
       }
-      /**
-       *
-       * @param {number} index
-       */
-
     }, {
-      key: "getTaskIdx",
-      value: function getTaskIdx(index) {
-        var tasks = this.getTasks().entries();
-        return index < tasks.length ? tasks[index] : null;
+      key: "isVisible",
+      value: function isVisible() {
+        return this.parent.style.opacity == '0';
       }
     }]);
 
-    return Internal;
+    return Popup;
   }();
+
+  var EVENT;
+
+  (function (EVENT) {
+    EVENT[EVENT["SHOW_POPUP"] = 0] = "SHOW_POPUP";
+    EVENT[EVENT["HIDE_POPUP"] = 1] = "HIDE_POPUP";
+    EVENT[EVENT["TOGGLE_POPUP"] = 2] = "TOGGLE_POPUP";
+  })(EVENT || (EVENT = {}));
+
+  var VIEW_MODE;
+
+  (function (VIEW_MODE) {
+    VIEW_MODE["QUARTER_DAY"] = "Quarter Day";
+    VIEW_MODE["HALF_DAY"] = "Half Day";
+    VIEW_MODE["DAY"] = "Day";
+    VIEW_MODE["WEEK"] = "Week";
+    VIEW_MODE["MONTH"] = "Month";
+    VIEW_MODE["YEAR"] = "Year";
+  })(VIEW_MODE || (VIEW_MODE = {}));
 
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -492,182 +553,585 @@ var Timeline = (function () {
   !function(t,e){module.exports=e();}(commonjsGlobal,function(){var t="millisecond",e="second",n="minute",r="hour",i="day",s="week",u="month",o="quarter",a="year",h=/^(\d{4})-?(\d{1,2})-?(\d{0,2})[^0-9]*(\d{1,2})?:?(\d{1,2})?:?(\d{1,2})?.?(\d{1,3})?$/,f=/\[([^\]]+)]|Y{2,4}|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|a|A|m{1,2}|s{1,2}|Z{1,2}|SSS/g,c=function(t,e,n){var r=String(t);return !r||r.length>=e?t:""+Array(e+1-r.length).join(n)+t},d={s:c,z:function(t){var e=-t.utcOffset(),n=Math.abs(e),r=Math.floor(n/60),i=n%60;return (e<=0?"+":"-")+c(r,2,"0")+":"+c(i,2,"0")},m:function(t,e){var n=12*(e.year()-t.year())+(e.month()-t.month()),r=t.clone().add(n,u),i=e-r<0,s=t.clone().add(n+(i?-1:1),u);return Number(-(n+(e-r)/(i?r-s:s-r))||0)},a:function(t){return t<0?Math.ceil(t)||0:Math.floor(t)},p:function(h){return {M:u,y:a,w:s,d:i,D:"date",h:r,m:n,s:e,ms:t,Q:o}[h]||String(h||"").toLowerCase().replace(/s$/,"")},u:function(t){return void 0===t}},$={name:"en",weekdays:"Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"),months:"January_February_March_April_May_June_July_August_September_October_November_December".split("_")},l="en",m={};m[l]=$;var y=function(t){return t instanceof v},M=function(t,e,n){var r;if(!t)return l;if("string"==typeof t)m[t]&&(r=t),e&&(m[t]=e,r=t);else {var i=t.name;m[i]=t,r=i;}return !n&&r&&(l=r),r||!n&&l},g=function(t,e){if(y(t))return t.clone();var n="object"==typeof e?e:{};return n.date=t,n.args=arguments,new v(n)},D=d;D.l=M,D.i=y,D.w=function(t,e){return g(t,{locale:e.$L,utc:e.$u,$offset:e.$offset})};var v=function(){function c(t){this.$L=this.$L||M(t.locale,null,!0),this.parse(t);}var d=c.prototype;return d.parse=function(t){this.$d=function(t){var e=t.date,n=t.utc;if(null===e)return new Date(NaN);if(D.u(e))return new Date;if(e instanceof Date)return new Date(e);if("string"==typeof e&&!/Z$/i.test(e)){var r=e.match(h);if(r)return n?new Date(Date.UTC(r[1],r[2]-1,r[3]||1,r[4]||0,r[5]||0,r[6]||0,r[7]||0)):new Date(r[1],r[2]-1,r[3]||1,r[4]||0,r[5]||0,r[6]||0,r[7]||0)}return new Date(e)}(t),this.init();},d.init=function(){var t=this.$d;this.$y=t.getFullYear(),this.$M=t.getMonth(),this.$D=t.getDate(),this.$W=t.getDay(),this.$H=t.getHours(),this.$m=t.getMinutes(),this.$s=t.getSeconds(),this.$ms=t.getMilliseconds();},d.$utils=function(){return D},d.isValid=function(){return !("Invalid Date"===this.$d.toString())},d.isSame=function(t,e){var n=g(t);return this.startOf(e)<=n&&n<=this.endOf(e)},d.isAfter=function(t,e){return g(t)<this.startOf(e)},d.isBefore=function(t,e){return this.endOf(e)<g(t)},d.$g=function(t,e,n){return D.u(t)?this[e]:this.set(n,t)},d.year=function(t){return this.$g(t,"$y",a)},d.month=function(t){return this.$g(t,"$M",u)},d.day=function(t){return this.$g(t,"$W",i)},d.date=function(t){return this.$g(t,"$D","date")},d.hour=function(t){return this.$g(t,"$H",r)},d.minute=function(t){return this.$g(t,"$m",n)},d.second=function(t){return this.$g(t,"$s",e)},d.millisecond=function(e){return this.$g(e,"$ms",t)},d.unix=function(){return Math.floor(this.valueOf()/1e3)},d.valueOf=function(){return this.$d.getTime()},d.startOf=function(t,o){var h=this,f=!!D.u(o)||o,c=D.p(t),d=function(t,e){var n=D.w(h.$u?Date.UTC(h.$y,e,t):new Date(h.$y,e,t),h);return f?n:n.endOf(i)},$=function(t,e){return D.w(h.toDate()[t].apply(h.toDate("s"),(f?[0,0,0,0]:[23,59,59,999]).slice(e)),h)},l=this.$W,m=this.$M,y=this.$D,M="set"+(this.$u?"UTC":"");switch(c){case a:return f?d(1,0):d(31,11);case u:return f?d(1,m):d(0,m+1);case s:var g=this.$locale().weekStart||0,v=(l<g?l+7:l)-g;return d(f?y-v:y+(6-v),m);case i:case"date":return $(M+"Hours",0);case r:return $(M+"Minutes",1);case n:return $(M+"Seconds",2);case e:return $(M+"Milliseconds",3);default:return this.clone()}},d.endOf=function(t){return this.startOf(t,!1)},d.$set=function(s,o){var h,f=D.p(s),c="set"+(this.$u?"UTC":""),d=(h={},h[i]=c+"Date",h.date=c+"Date",h[u]=c+"Month",h[a]=c+"FullYear",h[r]=c+"Hours",h[n]=c+"Minutes",h[e]=c+"Seconds",h[t]=c+"Milliseconds",h)[f],$=f===i?this.$D+(o-this.$W):o;if(f===u||f===a){var l=this.clone().set("date",1);l.$d[d]($),l.init(),this.$d=l.set("date",Math.min(this.$D,l.daysInMonth())).toDate();}else d&&this.$d[d]($);return this.init(),this},d.set=function(t,e){return this.clone().$set(t,e)},d.get=function(t){return this[D.p(t)]()},d.add=function(t,o){var h,f=this;t=Number(t);var c=D.p(o),d=function(e){var n=g(f);return D.w(n.date(n.date()+Math.round(e*t)),f)};if(c===u)return this.set(u,this.$M+t);if(c===a)return this.set(a,this.$y+t);if(c===i)return d(1);if(c===s)return d(7);var $=(h={},h[n]=6e4,h[r]=36e5,h[e]=1e3,h)[c]||1,l=this.$d.getTime()+t*$;return D.w(l,this)},d.subtract=function(t,e){return this.add(-1*t,e)},d.format=function(t){var e=this;if(!this.isValid())return "Invalid Date";var n=t||"YYYY-MM-DDTHH:mm:ssZ",r=D.z(this),i=this.$locale(),s=this.$H,u=this.$m,o=this.$M,a=i.weekdays,h=i.months,c=function(t,r,i,s){return t&&(t[r]||t(e,n))||i[r].substr(0,s)},d=function(t){return D.s(s%12||12,t,"0")},$=i.meridiem||function(t,e,n){var r=t<12?"AM":"PM";return n?r.toLowerCase():r},l={YY:String(this.$y).slice(-2),YYYY:this.$y,M:o+1,MM:D.s(o+1,2,"0"),MMM:c(i.monthsShort,o,h,3),MMMM:c(h,o),D:this.$D,DD:D.s(this.$D,2,"0"),d:String(this.$W),dd:c(i.weekdaysMin,this.$W,a,2),ddd:c(i.weekdaysShort,this.$W,a,3),dddd:a[this.$W],H:String(s),HH:D.s(s,2,"0"),h:d(1),hh:d(2),a:$(s,u,!0),A:$(s,u,!1),m:String(u),mm:D.s(u,2,"0"),s:String(this.$s),ss:D.s(this.$s,2,"0"),SSS:D.s(this.$ms,3,"0"),Z:r};return n.replace(f,function(t,e){return e||l[t]||r.replace(":","")})},d.utcOffset=function(){return 15*-Math.round(this.$d.getTimezoneOffset()/15)},d.diff=function(t,h,f){var c,d=D.p(h),$=g(t),l=6e4*($.utcOffset()-this.utcOffset()),m=this-$,y=D.m(this,$);return y=(c={},c[a]=y/12,c[u]=y,c[o]=y/3,c[s]=(m-l)/6048e5,c[i]=(m-l)/864e5,c[r]=m/36e5,c[n]=m/6e4,c[e]=m/1e3,c)[d]||m,f?y:D.a(y)},d.daysInMonth=function(){return this.endOf(u).$D},d.$locale=function(){return m[this.$L]},d.locale=function(t,e){if(!t)return this.$L;var n=this.clone(),r=M(t,e,!0);return r&&(n.$L=r),n},d.clone=function(){return D.w(this.$d,this)},d.toDate=function(){return new Date(this.valueOf())},d.toJSON=function(){return this.isValid()?this.toISOString():null},d.toISOString=function(){return this.$d.toISOString()},d.toString=function(){return this.$d.toUTCString()},c}();return g.prototype=v.prototype,g.extend=function(t,e){return t(e,v,g),g},g.locale=M,g.isDayjs=y,g.unix=function(t){return g(1e3*t)},g.en=m[l],g.Ls=m,g});
   });
 
-  function createFragment(htmlStr) {
-    var frag = document.createDocumentFragment(),
-        temp = document.createElement('div');
-    temp.innerHTML = htmlStr;
-
-    while (temp.firstChild) {
-      frag.appendChild(temp.firstChild);
-    }
-
-    return frag;
-  }
-
-  var Grid = /*#__PURE__*/function (_Internal) {
-    _inherits(Grid, _Internal);
-
-    var _super = _createSuper(Grid);
-
-    /** @param {import('./index').default} timeline */
-    function Grid(timeline) {
-      var _this;
-
-      _classCallCheck(this, Grid);
-
-      _this = _super.call(this, timeline);
-      /**
-       * @type {dayjs.Dayjs}
-       */
-
-      _this.start = null;
-      /**
-       * @type {dayjs.Dayjs}
-       */
-
-      _this.end = null;
-      /**
-       * @type {Array<dayjs.Dayjs>}
-       */
-
-      _this.dates = [];
-      return _this;
-    }
-
-    _createClass(Grid, [{
-      key: "render",
-      value: function render() {
-        this.make_grid_background();
-        this.make_grid_rows();
-        this.make_grid_header();
-        this.make_grid_ticks();
-        this.make_grid_highlights();
-        this.make_dates();
+  var Milestone = /*#__PURE__*/function () {
+    _createClass(Milestone, [{
+      key: "date",
+      get: function get() {
+        return this._date;
       }
-      /** @param {VIEW_MODE|VIEW_MODE[]} modes */
+    }]);
 
-    }, {
-      key: "view_is",
-      value: function view_is(modes) {
-        var _this2 = this;
+    function Milestone(options, config) {
+      _classCallCheck(this, Milestone);
 
-        if (typeof modes === 'string') {
-          return this.options.viewMode === modes;
+      _defineProperty(this, "href", void 0);
+
+      _defineProperty(this, "height", void 0);
+
+      _defineProperty(this, "width", void 0);
+
+      _defineProperty(this, "_date", void 0);
+
+      _defineProperty(this, "options", void 0);
+
+      _defineProperty(this, "config", void 0);
+
+      this.options = options;
+      this.config = config;
+      this.href = config.href;
+      this.height = config.height || 16;
+      this.width = config.width || 16;
+      this._date = dayjs_min(config.date);
+    }
+
+    _createClass(Milestone, [{
+      key: "computeX",
+      value: function computeX(startDate) {
+        if (VIEW_MODE.MONTH == this.options.viewMode) {
+          return this.date.diff(startDate, 'day') * this.options.columnWidth / 30;
         }
 
-        if (Array.isArray(modes)) {
-          return modes.some(function (mode) {
-            return _this2.options.viewMode === mode;
+        return this.date.diff(startDate, 'hour') / this.options.step * this.options.columnWidth;
+      }
+    }, {
+      key: "render",
+      value: function render(layer, startDate, y) {
+        svg('image', {
+          x: this.computeX(startDate),
+          y: y,
+          width: this.width,
+          height: this.height,
+          href: this.href,
+          append_to: layer
+        });
+      }
+    }]);
+
+    return Milestone;
+  }();
+
+  var Bar = /*#__PURE__*/function () {
+    function Bar(options, task) {
+      _classCallCheck(this, Bar);
+
+      _defineProperty(this, "options", void 0);
+
+      _defineProperty(this, "task", void 0);
+
+      _defineProperty(this, "width", void 0);
+
+      _defineProperty(this, "x", void 0);
+
+      _defineProperty(this, "y", void 0);
+
+      _defineProperty(this, "bar", void 0);
+
+      _defineProperty(this, "label", void 0);
+
+      _defineProperty(this, "group", void 0);
+
+      this.options = options;
+      this.task = task;
+      var duration = this.task.end.diff(this.task.start, 'hour') / this.options.step;
+      this.width = duration * this.options.columnWidth;
+    }
+
+    _createClass(Bar, [{
+      key: "computeX",
+      value: function computeX(startDate) {
+        if (VIEW_MODE.MONTH == this.options.viewMode) {
+          return this.task.start.diff(startDate, 'day') * this.options.columnWidth / 30;
+        }
+
+        return this.task.start.diff(startDate, 'hour') / this.options.step * this.options.columnWidth;
+      }
+    }, {
+      key: "render",
+      value: function render(layer, startDate, y) {
+        this.x = this.computeX(startDate);
+        this.y = y;
+        this.group = svg('g', {
+          "class": "bar-wrapper ".concat(this.task.customClass || ''),
+          'data-id': this.task.id,
+          append_to: layer
+        });
+        var barGroup = svg('g', {
+          "class": 'bar-group',
+          append_to: this.group
+        });
+
+        if (this.options.popup) {
+          barGroup.addEventListener('click', this, false);
+        }
+
+        this.drawBar(barGroup);
+        this.drawProgressBar(barGroup);
+        this.drawLabel(barGroup);
+      }
+    }, {
+      key: "drawBar",
+      value: function drawBar(layer) {
+        this.bar = svg('rect', {
+          x: this.x,
+          y: this.y,
+          width: this.width,
+          height: this.task.height,
+          rx: this.options.barCornerRadius,
+          ry: this.options.barCornerRadius,
+          "class": 'bar',
+          append_to: layer
+        });
+      }
+    }, {
+      key: "drawProgressBar",
+      value: function drawProgressBar(layer) {
+        svg('rect', {
+          x: this.x,
+          y: this.y,
+          width: this.width * (this.task.progress / 100) || 0,
+          height: this.task.height,
+          rx: this.options.barCornerRadius,
+          ry: this.options.barCornerRadius,
+          "class": 'bar-progress',
+          append_to: layer
+        });
+      }
+    }, {
+      key: "drawLabel",
+      value: function drawLabel(layer) {
+        var _this = this;
+
+        this.label = svg('text', {
+          x: this.x + this.width / 2,
+          y: this.y + this.task.height / 2,
+          "class": 'bar-label',
+          append_to: layer
+        });
+        this.label.appendChild(toTextFragment(this.task.name));
+        requestAnimationFrame(function () {
+          return _this.updateLabelPosition();
+        });
+      }
+    }, {
+      key: "updateLabelPosition",
+      value: function updateLabelPosition() {
+        if (this.label.getBBox().width > this.bar.getWidth()) {
+          this.label.classList.add('big');
+          this.label.setAttribute('x', this.bar.getX() + this.bar.getWidth() + 5 + '');
+        } else {
+          this.label.classList.remove('big');
+          this.label.setAttribute('x', this.bar.getX() + this.bar.getWidth() / 2 + '');
+        }
+      }
+    }, {
+      key: "handleEvent",
+      value: function handleEvent(evt) {
+        var key = evt.type;
+
+        if (key == 'click' && this.options.popup) {
+          this.options.dispatch(EVENT.SHOW_POPUP, {
+            eventTarget: this,
+            positionTarget: this.group,
+            title: this.task.name,
+            subtitle: this.task.start.format('MMM DD') + ' - ' + this.task.end.format('MMM DD')
           });
         }
 
-        return false;
+        if (!this.options.events || !this.options.events[key]) throw new Error('Event not implemented.');
+        this.options.events[key].call(this, evt);
+      }
+    }]);
+
+    return Bar;
+  }();
+
+  function generate_id(task) {
+    return task.name + '_' + Math.random().toString(36).slice(2, 12);
+  }
+
+  var Task = /*#__PURE__*/function () {
+    _createClass(Task, [{
+      key: "start",
+      get: function get() {
+        return this._start;
       }
     }, {
-      key: "setup_dates",
-      value: function setup_dates() {
-        this.setup_gantt_dates();
-        this.setup_date_values();
+      key: "end",
+      get: function get() {
+        return this._end;
       }
     }, {
-      key: "setup_gantt_dates",
-      value: function setup_gantt_dates() {
-        var _this$getTasks$getBou = this.getTasks().getBoundingDates(),
-            gantt_start = _this$getTasks$getBou.gantt_start,
-            gantt_end = _this$getTasks$getBou.gantt_end;
+      key: "progress",
+      get: function get() {
+        return this.config.progress;
+      }
+    }, {
+      key: "name",
+      get: function get() {
+        return this.config.name;
+      }
+    }, {
+      key: "height",
+      get: function get() {
+        return this._height;
+      }
+    }, {
+      key: "id",
+      get: function get() {
+        return this._id;
+      }
+    }, {
+      key: "milestones",
+      get: function get() {
+        return this._milestones;
+      }
+    }, {
+      key: "customClass",
+      get: function get() {
+        return this.config.customClass;
+      }
+    }]);
 
-        this.start = dayjs_min(gantt_start).startOf('day');
-        this.end = dayjs_min(gantt_end).startOf('day'); // add date padding on both sides
+    function Task(options, config) {
+      _classCallCheck(this, Task);
 
-        if (this.view_is([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY])) {
-          this.start = this.start.subtract(7, 'day');
-          this.end = this.end.add(7, 'day');
-        } else if (this.view_is(VIEW_MODE.MONTH)) {
-          this.start = this.start.subtract(1, 'year');
-          this.end = this.end.add(1, 'year');
-        } else if (this.view_is(VIEW_MODE.YEAR)) {
-          this.start = this.start.subtract(2, 'year');
-          this.end = this.end.add(2, 'year');
+      _defineProperty(this, "options", void 0);
+
+      _defineProperty(this, "config", void 0);
+
+      _defineProperty(this, "_start", void 0);
+
+      _defineProperty(this, "_end", void 0);
+
+      _defineProperty(this, "_height", void 0);
+
+      _defineProperty(this, "_id", void 0);
+
+      _defineProperty(this, "_milestones", []);
+
+      this.options = options;
+      this.config = config;
+      this._start = dayjs_min(config.start);
+      this._end = dayjs_min(config.end);
+      this._height = config.height || options.barHeight; // make task invalid if duration too large
+
+      if (this._end.diff(this._start, 'year') > 10) {
+        this._end = null;
+      } // invalid dates
+
+
+      if (!this._start && !this._end) {
+        this._start = dayjs_min().startOf('day');
+        this._end = this._start.add(2, 'day');
+      }
+
+      if (!this._start && this._end) {
+        this._start = this._end.subtract(2, 'day');
+      }
+
+      if (this._start && !this._end) {
+        this._end = this._start.add(2, 'day');
+      } // if hours is not set, assume the last day is full day
+      // e.g: 2018-09-09 becomes 2018-09-09 23:59:59
+
+
+      if (this._end.isSame(this._end.startOf('day'))) {
+        this._end = this._end.add(24, 'hour');
+      }
+
+      if (!this._id) {
+        this._id = generate_id(this);
+      }
+
+      if (config.milestones) {
+        this._milestones = config.milestones.map(function (m) {
+          return new Milestone(options, m);
+        });
+      }
+    }
+
+    _createClass(Task, [{
+      key: "render",
+      value: function render(layer, startDate, y) {
+        var barGroup = svg('g', {
+          "class": 'bar',
+          append_to: layer
+        });
+        var milestoneGroup = svg('g', {
+          "class": "milestone-wrapper ".concat(this.customClass || ''),
+          'data-id': this.id,
+          append_to: layer
+        });
+        new Bar(this.options, this).render(barGroup, startDate, y);
+
+        this._milestones.forEach(function (m) {
+          return m.render(milestoneGroup, startDate, y);
+        });
+      }
+    }]);
+
+    return Task;
+  }();
+
+  var Tasks = /*#__PURE__*/function () {
+    function Tasks(options, config) {
+      _classCallCheck(this, Tasks);
+
+      _defineProperty(this, "options", void 0);
+
+      _defineProperty(this, "_tasks", void 0);
+
+      this.options = options;
+      this._tasks = config.map(function (c) {
+        return new Task(options, c);
+      });
+    }
+
+    _createClass(Tasks, [{
+      key: "forEach",
+      value: function forEach(callable) {
+        this._tasks.forEach(callable);
+      }
+    }, {
+      key: "getHeight",
+      value: function getHeight() {
+        var _this = this;
+
+        return this._tasks.map(function (t) {
+          return t.height;
+        }).reduce(function (a, b) {
+          return a + b + _this.options.padding;
+        });
+      }
+    }]);
+
+    return Tasks;
+  }();
+
+  var Grid = /*#__PURE__*/function () {
+    function Grid(options, taskOptions) {
+      _classCallCheck(this, Grid);
+
+      _defineProperty(this, "options", void 0);
+
+      _defineProperty(this, "_start", void 0);
+
+      _defineProperty(this, "_end", void 0);
+
+      _defineProperty(this, "dates", void 0);
+
+      _defineProperty(this, "tasks", void 0);
+
+      this.options = options;
+      this.tasks = new Tasks(this.options, taskOptions);
+      this.setupDates();
+    }
+
+    _createClass(Grid, [{
+      key: "setupDates",
+      value: function setupDates() {
+        this.setBoundingDates();
+        this.convertDates();
+        this.fillDates();
+      }
+    }, {
+      key: "fillDates",
+      value: function fillDates() {
+        this.dates = [];
+        var d = null;
+
+        do {
+          if (!d) {
+            d = dayjs_min(this.start);
+          } else if (VIEW_MODE.YEAR == this.options.viewMode) {
+            d = d.add(1, 'year');
+          } else if (VIEW_MODE.MONTH == this.options.viewMode) {
+            d = d.add(1, 'month');
+          } else {
+            d = d.add(this.options.step, 'hour');
+          }
+
+          this.dates.push(d);
+        } while (d.isBefore(this._end));
+      }
+    }, {
+      key: "convertDates",
+      value: function convertDates() {
+        var _this = this;
+
+        this._start = this._start.startOf('day');
+        this._end = this._end.startOf('day');
+
+        if ([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY].some(function (k) {
+          return k == _this.options.viewMode;
+        })) {
+          this._start = this._start.subtract(7, 'day');
+          this._end = this._end.add(7, 'day');
+        } else if (VIEW_MODE.MONTH == this.options.viewMode) {
+          this._start = this._start.subtract(1, 'year');
+          this._end = this._end.add(1, 'year');
+        } else if (VIEW_MODE.YEAR == this.options.viewMode) {
+          this._start = this._start.subtract(2, 'year');
+          this._end = this._end.add(2, 'year');
         } else {
-          this.start = this.start.subtract(1, 'month');
-          this.end = this.end.add(1, 'month');
+          this._start = this._start.subtract(1, 'month');
+          this._end = this._end.add(1, 'month');
         }
       }
     }, {
-      key: "setup_date_values",
-      value: function setup_date_values() {
-        this.dates = [];
-        var cur_date = null;
+      key: "setBoundingDates",
+      value: function setBoundingDates() {
+        var _this2 = this;
 
-        do {
-          if (!cur_date) {
-            cur_date = dayjs_min(this.start);
-          } else if (this.view_is(VIEW_MODE.YEAR)) {
-            cur_date = cur_date.add(1, 'year');
-          } else if (this.view_is(VIEW_MODE.MONTH)) {
-            cur_date = cur_date.add(1, 'month');
-          } else {
-            cur_date = cur_date.add(this.options.step, 'hour');
+        this.tasks.forEach(function (task, idx) {
+          if (!_this2._start || task.start.isBefore(_this2._start)) {
+            _this2._start = task.start.clone();
           }
 
-          this.dates.push(cur_date);
-        } while (cur_date.isBefore(this.end));
+          if (!_this2._end || task.end.isAfter(_this2._end)) {
+            _this2._end = task.end.clone();
+          }
+
+          task.milestones.forEach(function (m) {
+            if (m.date.isBefore(_this2._start)) {
+              _this2._start = m.date.clone();
+            }
+
+            if (m.date.isAfter(_this2._end)) {
+              _this2._end = m.date.clone();
+            }
+          });
+        });
       }
     }, {
-      key: "make_grid_background",
-      value: function make_grid_background() {
-        var grid_width = this.dates.length * this.options.columnWidth;
-        var tasksHeight = this.getTasks().getHeight();
-        var grid_height = this.options.headerHeight + this.options.padding + tasksHeight;
+      key: "getWidth",
+      value: function getWidth() {
+        return this.dates.length * this.options.columnWidth;
+      }
+    }, {
+      key: "getHeight",
+      value: function getHeight() {
+        return this.options.headerHeight + this.tasks.getHeight() + this.options.padding;
+      }
+    }, {
+      key: "render",
+      value: function render(parent) {
+        var _this3 = this;
+
+        parent.setAttribute('width', "".concat(this.getWidth()));
+        parent.setAttribute('height', "".concat(this.getHeight()));
+        var gridLayer = svg('g', {
+          "class": 'grid',
+          append_to: parent
+        });
+        var dateLayer = svg('g', {
+          "class": 'date',
+          append_to: parent
+        });
+        var taskLayer = svg('g', {
+          "class": 'bar',
+          append_to: parent
+        });
+        this.drawBackground(gridLayer);
+        this.drawRows(gridLayer);
+        this.drawHeader(gridLayer);
+        this.drawColumns(gridLayer);
+        this.highlightCurrentDay(gridLayer);
+        this.drawDates(dateLayer);
+        var y = this.options.headerHeight + this.options.padding;
+        this.tasks.forEach(function (t) {
+          t.render(taskLayer, _this3._start, y);
+          y += t.height + _this3.options.padding;
+        });
+      }
+    }, {
+      key: "drawBackground",
+      value: function drawBackground(layer) {
         svg('rect', {
           x: 0,
           y: 0,
-          width: grid_width,
-          height: grid_height,
+          width: this.getWidth(),
+          height: this.getHeight(),
           "class": 'grid-background',
-          append_to: this.getLayer('grid')
-        });
-        attrs(this.timeline.$svg, {
-          height: grid_height,
-          width: '100%'
+          append_to: layer
         });
       }
     }, {
-      key: "make_grid_rows",
-      value: function make_grid_rows() {
-        var rows_layer = svg('g', {
-          append_to: this.getLayer('grid')
-        });
-        var lines_layer = svg('g', {
-          append_to: this.getLayer('grid')
-        });
-        var row_width = this.dates.length * this.options.columnWidth;
-        var row_y = this.options.headerHeight + this.options.padding / 2;
+      key: "drawRows",
+      value: function drawRows(layer) {
+        var _this4 = this;
 
-        var _iterator = _createForOfIteratorHelper(this.getTasks().entries()),
+        var rowsLayer = svg('g', {
+          append_to: layer
+        });
+        var linesLayer = svg('g', {
+          append_to: layer
+        });
+        var rowWidth = this.getWidth();
+        var y = this.options.headerHeight + this.options.padding / 2;
+        this.tasks.forEach(function (task) {
+          var rowHeight = task.height + _this4.options.padding;
+          svg('rect', {
+            x: 0,
+            y: y,
+            width: rowWidth,
+            height: rowHeight,
+            "class": 'grid-row',
+            append_to: rowsLayer
+          });
+          svg('line', {
+            x1: 0,
+            y1: y + rowHeight,
+            x2: rowWidth,
+            y2: y + rowHeight,
+            "class": 'row-line',
+            append_to: linesLayer
+          });
+          y += rowHeight;
+        });
+      }
+    }, {
+      key: "drawHeader",
+      value: function drawHeader(layer) {
+        svg('rect', {
+          x: 0,
+          y: 0,
+          width: this.getWidth(),
+          height: this.options.headerHeight + 10,
+          "class": 'grid-header',
+          append_to: layer
+        });
+      }
+    }, {
+      key: "drawColumns",
+      value: function drawColumns(layer) {
+        var x = 0;
+        var y = this.options.headerHeight + this.options.padding / 2,
+            height = this.tasks.getHeight();
+
+        var _iterator = _createForOfIteratorHelper(this.dates),
             _step;
 
         try {
           for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var task = _step.value;
-            var row_height = (task.height || this.options.barHeight) + this.options.padding;
-            svg('rect', {
-              x: 0,
-              y: row_y,
-              width: row_width,
-              height: row_height,
-              "class": 'grid-row',
-              append_to: rows_layer
+            var date = _step.value;
+            var clazz = 'tick';
+
+            if (VIEW_MODE.DAY == this.options.viewMode && date.date() == 1 || VIEW_MODE.WEEK == this.options.viewMode && date.date() >= 1 && date.date() < 8 || VIEW_MODE.MONTH == this.options.viewMode && (date.month() + 1) % 3 === 0) {
+              clazz += ' thick';
+            }
+
+            svg('path', {
+              d: "M ".concat(x, " ").concat(y, " v ").concat(height),
+              "class": clazz,
+              append_to: layer
             });
-            svg('line', {
-              x1: 0,
-              y1: row_y + row_height,
-              x2: row_width,
-              y2: row_y + row_height,
-              "class": 'row-line',
-              append_to: lines_layer
-            });
-            row_y += row_height;
+
+            if (VIEW_MODE.MONTH == this.options.viewMode) {
+              x += date.daysInMonth() * this.options.columnWidth / 30;
+            } else {
+              x += this.options.columnWidth;
+            }
           }
         } catch (err) {
           _iterator.e(err);
@@ -676,58 +1140,53 @@ var Timeline = (function () {
         }
       }
     }, {
-      key: "make_grid_header",
-      value: function make_grid_header() {
-        var header_width = this.dates.length * this.options.columnWidth;
-        var header_height = this.options.headerHeight + 10;
-        svg('rect', {
-          x: 0,
-          y: 0,
-          width: header_width,
-          height: header_height,
-          "class": 'grid-header',
-          append_to: this.getLayer('grid')
-        });
+      key: "highlightCurrentDay",
+      value: function highlightCurrentDay(layer) {
+        if (VIEW_MODE.DAY == this.options.viewMode) {
+          var x = dayjs_min().diff(this.start, 'hour') / this.options.step * this.options.columnWidth;
+          svg('rect', {
+            x: x,
+            y: 0,
+            width: this.options.columnWidth,
+            height: this.getHeight(),
+            "class": 'today-highlight',
+            append_to: layer
+          });
+        }
       }
     }, {
-      key: "make_grid_ticks",
-      value: function make_grid_ticks() {
-        var tick_x = 0;
-        var tick_y = this.options.headerHeight + this.options.padding / 2;
-        var tick_height = this.getTasks().getHeight();
+      key: "drawDates",
+      value: function drawDates(layer) {
+        var lastDate = null;
+        var i = 0;
 
         var _iterator2 = _createForOfIteratorHelper(this.dates),
             _step2;
 
         try {
           for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-            var date = _step2.value;
-            var tick_class = 'tick'; // thick tick for monday
-
-            if (this.view_is(VIEW_MODE.DAY) && date.date() === 1) {
-              tick_class += ' thick';
-            } // thick tick for first week
-
-
-            if (this.view_is(VIEW_MODE.WEEK) && date.date() >= 1 && date.date() < 8) {
-              tick_class += ' thick';
-            } // thick ticks for quarters
-
-
-            if (this.view_is(VIEW_MODE.MONTH) && (date.month() + 1) % 3 === 0) {
-              tick_class += ' thick';
-            }
-
-            svg('path', {
-              d: "M ".concat(tick_x, " ").concat(tick_y, " v ").concat(tick_height),
-              "class": tick_class,
-              append_to: this.getLayer('grid')
+            var d = _step2.value;
+            var date = this.getDateInfo(d, lastDate, i++);
+            lastDate = d;
+            var lowerText = svg('text', {
+              x: date.lower_x,
+              y: date.lower_y,
+              "class": 'lower-text',
+              append_to: layer
             });
+            lowerText.appendChild(toTextFragment(date.lower_text));
 
-            if (this.view_is(VIEW_MODE.MONTH)) {
-              tick_x += date.daysInMonth() * this.options.columnWidth / 30;
-            } else {
-              tick_x += this.options.columnWidth;
+            if (date.upper_text) {
+              var upperText = svg('text', {
+                x: date.upper_x,
+                y: date.upper_y,
+                "class": 'upper-text',
+                append_to: layer
+              });
+              upperText.appendChild(toTextFragment(date.upper_text)); // remove out-of-bound dates
+              // if ($upper_text.getBBox().x2 > this.getLayer('grid').getBBox().width) {
+              //   $upper_text.remove()
+              // }
             }
           }
         } catch (err) {
@@ -737,88 +1196,8 @@ var Timeline = (function () {
         }
       }
     }, {
-      key: "make_grid_highlights",
-      value: function make_grid_highlights() {
-        console.log(VIEW_MODE.DAY); // highlight today's date
-
-        if (this.view_is(VIEW_MODE.DAY)) {
-          var x = dayjs_min().diff(this.start, 'hour') / this.options.step * this.options.columnWidth;
-          var y = 0;
-          var width = this.options.columnWidth;
-          var tasksHeight = this.getTasks().getHeight();
-          var grid_height = this.options.headerHeight + this.options.padding / 2 + tasksHeight;
-          svg('rect', {
-            x: x,
-            y: y,
-            width: width,
-            height: grid_height,
-            "class": 'today-highlight',
-            append_to: this.getLayer('grid')
-          });
-        }
-      }
-    }, {
-      key: "make_dates",
-      value: function make_dates() {
-        var _iterator3 = _createForOfIteratorHelper(this.get_dates_to_draw()),
-            _step3;
-
-        try {
-          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-            var date = _step3.value;
-            var z = svg('text', {
-              x: date.lower_x,
-              y: date.lower_y,
-              "class": 'lower-text',
-              append_to: this.getLayer('date')
-            });
-            z.appendChild(createFragment(date.lower_text));
-
-            if (date.upper_text) {
-              var $upper_text = svg('text', {
-                x: date.upper_x,
-                y: date.upper_y,
-                "class": 'upper-text',
-                append_to: this.getLayer('date')
-              });
-              $upper_text.appendChild(createFragment(date.upper_text)); // remove out-of-bound dates
-
-              if ($upper_text.getBBox().x2 > this.getLayer('grid').getBBox().width) {
-                $upper_text.remove();
-              }
-            }
-          }
-        } catch (err) {
-          _iterator3.e(err);
-        } finally {
-          _iterator3.f();
-        }
-      }
-    }, {
-      key: "get_dates_to_draw",
-      value: function get_dates_to_draw() {
-        var _this3 = this;
-
-        /** @type {dayjs.Dayjs} */
-        var last_date = null;
-        var dates = this.dates.map(function (date, i) {
-          var d = _this3.get_date_info(date, last_date, i);
-
-          last_date = date;
-          return d;
-        });
-        return dates;
-      }
-      /**
-       *
-       * @param {dayjs.Dayjs} date
-       * @param {dayjs.Dayjs} last_date
-       * @param {number} i
-       */
-
-    }, {
-      key: "get_date_info",
-      value: function get_date_info(date, last_date, i) {
+      key: "getDateInfo",
+      value: function getDateInfo(date, last_date, i) {
         if (!last_date) {
           last_date = date.add(1, 'year');
         }
@@ -866,895 +1245,97 @@ var Timeline = (function () {
           lower_y: base_pos.lower_y
         };
       }
+    }, {
+      key: "start",
+      get: function get() {
+        return this._start;
+      },
+      set: function set(start) {
+        this._start = start;
+      }
+    }, {
+      key: "end",
+      get: function get() {
+        return this._end;
+      },
+      set: function set(end) {
+        this._end = end;
+      }
     }]);
 
     return Grid;
-  }(Internal);
-
-  var Popup = /*#__PURE__*/function () {
-    /**
-     * @param {HTMLElement|SVGElement|SVGGraphicsElement} parent
-     * @param {types.HtmlProducer} producer
-     */
-    function Popup(parent, producer) {
-      _classCallCheck(this, Popup);
-
-      this.parent = parent;
-      this.producer = producer;
-      this.make();
-    }
-
-    _createClass(Popup, [{
-      key: "make",
-      value: function make() {
-        this.parent.innerHTML = "\n            <div class=\"title\"></div>\n            <div class=\"subtitle\"></div>\n            <div class=\"pointer\"></div>\n        ";
-        this.hide();
-        /** @type {HTMLElement|SVGGraphicsElement} */
-
-        this.title = this.parent.querySelector('.title');
-        /** @type {HTMLElement|SVGGraphicsElement} */
-
-        this.subtitle = this.parent.querySelector('.subtitle');
-        /** @type {HTMLElement|SVGGraphicsElement} */
-
-        this.pointer = this.parent.querySelector('.pointer');
-      }
-      /**
-       * @param {types.PopupOptions} options
-       */
-
-    }, {
-      key: "show",
-      value: function show(options) {
-        if (!options.target) {
-          throw new Error('target is required to show popup');
-        }
-
-        if (!options.position) {
-          options.position = 'left';
-        }
-
-        var target = options.target;
-
-        if (this.producer) {
-          var html = this.producer(options.task);
-          html += '<div class="pointer"></div>';
-          this.parent.innerHTML = html;
-          this.pointer = this.parent.querySelector('.pointer');
-        } else {
-          // set data
-          this.title.innerHTML = options.title;
-          this.subtitle.innerHTML = options.subtitle;
-          this.parent.style.width = this.parent.clientWidth + 'px';
-        } // set position
-
-
-        var position_meta;
-
-        if (target instanceof HTMLElement) {
-          position_meta = target.getBoundingClientRect();
-        } else if (target instanceof SVGGraphicsElement) {
-          position_meta =
-          /** @type {SVGGraphicsElement} */
-          options.target.getBBox();
-        }
-
-        if (options.position === 'left') {
-          this.parent.style.left = position_meta.x + (position_meta.width + 10) + 'px';
-          this.parent.style.top = position_meta.y + 'px';
-          this.pointer.style.transform = 'rotateZ(90deg)';
-          this.pointer.style.left = '-7px';
-          this.pointer.style.top = '2px';
-        } // show
-
-
-        this.parent.style.opacity = '1';
-      }
-    }, {
-      key: "hide",
-      value: function hide() {
-        this.parent.style.opacity = '0';
-      }
-    }]);
-
-    return Popup;
   }();
 
-  function createFragment$1(htmlStr) {
-    var frag = document.createDocumentFragment(),
-        temp = document.createElement('div');
-    temp.innerHTML = htmlStr;
-
-    while (temp.firstChild) {
-      frag.appendChild(temp.firstChild);
-    }
-
-    return frag;
-  }
-
-  var Bar = /*#__PURE__*/function (_Internal) {
-    _inherits(Bar, _Internal);
-
-    var _super = _createSuper(Bar);
-
-    /**
-     *
-     * @param {import("./index").default} timeline
-     * @param {import("./task").default} task
-     */
-    function Bar(timeline, task) {
-      var _this;
-
-      _classCallCheck(this, Bar);
-
-      _this = _super.call(this, timeline);
-      _this.action_completed = false;
-      _this.task = task;
-      _this.invalid = _this.task.invalid;
-      _this.height = _this.task.height || _this.options.barHeight;
-      _this.x = _this.compute_x();
-      _this.y = _this.compute_y();
-      _this.corner_radius = _this.options.barCornerRadius;
-      _this.duration = _this.task.end.diff(_this.task.start, 'hour') / _this.options.step;
-      _this.width = _this.options.columnWidth * _this.duration;
-      _this.progress_width = _this.options.columnWidth * _this.duration * (_this.task.progress / 100) || 0;
-      _this.group = svg('g', {
-        "class": "bar-wrapper ".concat(_this.task.customClass || ''),
-        'data-id': _this.task.id
-      });
-      _this.bar_group = svg('g', {
-        "class": 'bar-group',
-        append_to: _this.group
-      });
-
-      _this.draw();
-
-      _this.bind();
-
-      return _this;
-    }
-
-    _createClass(Bar, [{
-      key: "draw",
-      value: function draw() {
-        this.draw_bar();
-        this.draw_progress_bar();
-        this.draw_label();
-      }
-    }, {
-      key: "draw_bar",
-      value: function draw_bar() {
-        this.$bar = svg('rect', {
-          x: this.x,
-          y: this.y,
-          width: this.width,
-          height: this.height,
-          rx: this.corner_radius,
-          ry: this.corner_radius,
-          "class": 'bar',
-          append_to: this.bar_group
-        }); //animateSVG(this.$bar, 'width', 0, this.width)
-
-        if (this.invalid) {
-          this.$bar.classList.add('bar-invalid');
-        }
-      }
-    }, {
-      key: "draw_progress_bar",
-      value: function draw_progress_bar() {
-        if (this.invalid) return;
-        this.$bar_progress = svg('rect', {
-          x: this.x,
-          y: this.y,
-          width: this.progress_width,
-          height: this.height,
-          rx: this.corner_radius,
-          ry: this.corner_radius,
-          "class": 'bar-progress',
-          append_to: this.bar_group
-        }); // animateSVG(this.$bar_progress, 'width', 0, this.progress_width)
-      }
-    }, {
-      key: "draw_label",
-      value: function draw_label() {
-        var _this2 = this;
-
-        var z = svg('text', {
-          x: this.x + this.width / 2,
-          y: this.y + this.height / 2,
-          "class": 'bar-label',
-          append_to: this.bar_group
-        });
-        z.appendChild(createFragment$1(this.task.name)); // labels get BBox in the next tick
-
-        requestAnimationFrame(function () {
-          return _this2.update_label_position();
-        });
-      }
-    }, {
-      key: "get_progress_polygon_points",
-      value: function get_progress_polygon_points() {
-        var bar_progress = this.$bar_progress;
-        return [bar_progress.getEndX() - 5, bar_progress.getY() + bar_progress.getHeight(), bar_progress.getEndX() + 5, bar_progress.getY() + bar_progress.getHeight(), bar_progress.getEndX(), bar_progress.getY() + bar_progress.getHeight() - 8.66];
-      }
-    }, {
-      key: "bind",
-      value: function bind() {
-        if (this.invalid) return;
-        this.setup_click_event();
-      }
-    }, {
-      key: "setup_click_event",
-      value: function setup_click_event() {
-        var _this3 = this;
-
-        on(this.group, "focus ".concat(this.options.popupTrigger), function (e) {
-          if (_this3.action_completed) {
-            // just finished a move action, wait for a few seconds
-            return;
-          }
-
-          if (e.type === 'click') {
-            _this3.timeline.trigger_event('click', [_this3.task]);
-          }
-
-          _this3.timeline.unselect_all();
-
-          _this3.group.classList.toggle('active');
-
-          _this3.show_popup();
-        });
-      }
-    }, {
-      key: "show_popup",
-      value: function show_popup() {
-        var start_date = this.task.start.format('MMM D');
-        var end_date = this.task.end.add(1, 'second').format('MMM D');
-        var subtitle = "".concat(start_date, " - ").concat(end_date);
-        this.timeline.show_popup({
-          target: this.$bar,
-          title: this.task.name,
-          subtitle: subtitle,
-          task: this.task
-        });
-      }
-    }, {
-      key: "set_action_completed",
-      value: function set_action_completed() {
-        var _this4 = this;
-
-        this.action_completed = true;
-        setTimeout(function () {
-          _this4.action_completed = false;
-        }, 1000);
-      }
-    }, {
-      key: "compute_progress",
-      value: function compute_progress() {
-        var progress = this.$bar_progress.getWidth() / this.$bar.getWidth() * 100;
-        return Math.floor(progress);
-      }
-    }, {
-      key: "compute_x",
-      value: function compute_x() {
-        var step = this.options.step,
-            column_width = this.options.columnWidth;
-        var task_start = this.task.start;
-        var gantt_start = this.timeline.grid.start;
-        var diff = task_start.diff(gantt_start, 'hour');
-        var x = diff / step * column_width;
-
-        if (this.timeline.grid.view_is('Month')) {
-          var d = task_start.diff(gantt_start, 'day');
-          x = d * column_width / 30;
-        }
-
-        return x;
-      }
-    }, {
-      key: "compute_y",
-      value: function compute_y() {
-        var sum = 0,
-            idx = this.getTasks().entries().indexOf(this.task);
-
-        for (var i = 0; i < idx; i++) {
-          sum += this.getTaskIdx(i).height + this.options.padding;
-        }
-
-        return this.options.headerHeight + this.options.padding + sum;
-      }
-    }, {
-      key: "update_label_position",
-      value: function update_label_position() {
-        var bar = this.$bar;
-        /** @type {SVGGraphicsElement} */
-
-        var label = this.group.querySelector('.bar-label');
-
-        if (label.getBBox().width > bar.getWidth()) {
-          label.classList.add('big');
-          label.setAttribute('x', bar.getX() + bar.getWidth() + 5 + '');
-        } else {
-          label.classList.remove('big');
-          label.setAttribute('x', bar.getX() + bar.getWidth() / 2 + '');
-        }
-      }
-    }]);
-
-    return Bar;
-  }(Internal);
-
-  var Milestone = /*#__PURE__*/function (_Internal) {
-    _inherits(Milestone, _Internal);
-
-    var _super = _createSuper(Milestone);
-
-    /**
-     *
-     * @param {import("./index").default} timeline
-     * @param {import("./task").default}  task
-     * @param {types.MilestoneOptions} opts
-     */
-    function Milestone(timeline, task, opts) {
-      var _this;
-
-      _classCallCheck(this, Milestone);
-
-      _this = _super.call(this, timeline);
-      /** @type {dayjs.Dayjs} */
-
-      _this.date = dayjs_min(opts.date);
-      /** @type {import("./task").default} */
-
-      _this.task = task;
-      /** @type {string} */
-
-      _this.href = opts.href;
-      /** @type {number} */
-
-      _this.height = opts.height || _this.options.barHeight;
-      /** @type {number} */
-
-      _this.x = _this.computeX();
-      /** @type {number} */
-
-      _this.y = _this.computeY();
-      /** @type {number} */
-
-      _this.width = 16;
-      /** @type {SVGElement} */
-
-      _this.group = _this.task.milestone_group;
-      /** @type {SVGElement} */
-
-      _this.$element = null;
-
-      _this.draw();
-
-      return _this;
-    }
-
-    _createClass(Milestone, [{
-      key: "draw",
-      value: function draw() {
-        this.$element = svg('image', {
-          x: this.x,
-          y: this.y,
-          width: this.width,
-          height: this.width,
-          href: this.href,
-          append_to: this.group
-        });
-      }
-      /** @returns {number} */
-
-    }, {
-      key: "computeX",
-      value: function computeX() {
-        var step = this.options.step,
-            column_width = this.options.columnWidth;
-        var task_start = this.date;
-        var gantt_start = this.timeline.grid.start;
-        var diff = task_start.diff(gantt_start, 'hour');
-        var x = diff / step * column_width;
-
-        if (this.timeline.grid.view_is('Month')) {
-          var d = task_start.diff(gantt_start, 'day');
-          x = d * column_width / 30;
-        }
-
-        return x;
-      }
-      /** @returns {number} */
-
-    }, {
-      key: "computeY",
-      value: function computeY() {
-        var idx = this.getTasks().entries().indexOf(this.task);
-        return this.options.headerHeight + this.options.padding + idx * (this.height + this.options.padding);
-      }
-    }]);
-
-    return Milestone;
-  }(Internal);
-
-  /**
-   *
-   * @param {Task} task
-   */
-
-  function generate_id(task) {
-    return task.name + '_' + Math.random().toString(36).slice(2, 12);
-  }
-
-  var Task = /*#__PURE__*/function (_Internal) {
-    _inherits(Task, _Internal);
-
-    var _super = _createSuper(Task);
-
-    /**
-     * @param {import("./index").default} timeline
-     * @param {types.TaskOptions} opts
-     */
-    function Task(timeline, opts) {
-      var _this;
-
-      _classCallCheck(this, Task);
-
-      _this = _super.call(this, timeline);
-      /** @type {dayjs.Dayjs} */
-
-      _this.start = dayjs_min(opts.start);
-      /** @type {dayjs.Dayjs} */
-
-      _this.end = dayjs_min(opts.end);
-      /** @type {number} */
-
-      _this.progress = opts.progress;
-      /** @type {string} */
-
-      _this.name = opts.name;
-      /** @type {number} */
-
-      _this.height = opts.height || _this.options.barHeight;
-      /** @type {Array<types.MilestoneOptions>} */
-
-      _this.milestones = opts.milestones || [];
-      /** @type {string} */
-
-      _this.customClass = opts.customClass;
-      /** @type {string} */
-
-      _this.id = opts.id;
-      /**
-       * @private
-       * @type {Array<Milestone>}
-       */
-
-      _this.$milestones = null;
-      /**
-       * @private
-       * @type {Bar}
-       */
-
-      _this.$bar = null; // make task invalid if duration too large
-
-      if (_this.end.diff(_this.start, 'year') > 10) {
-        _this.end = null;
-      } // invalid dates
-
-
-      if (!_this.start && !_this.end) {
-        _this.start = dayjs_min().startOf('day');
-        _this.end = _this.start.add(2, 'day');
-      }
-
-      if (!_this.start && _this.end) {
-        _this.start = _this.end.subtract(2, 'day');
-      }
-
-      if (_this.start && !_this.end) {
-        _this.end = _this.start.add(2, 'day');
-      } // if hours is not set, assume the last day is full day
-      // e.g: 2018-09-09 becomes 2018-09-09 23:59:59
-
-
-      if (_this.end.isSame(_this.end.startOf('day'))) {
-        _this.end = _this.end.add(24, 'hour');
-      } // invalid flag
-
-
-      if (!_this.start || !_this.end) {
-        _this.invalid = true;
-      }
-
-      if (!_this.id) {
-        _this.id = generate_id(_assertThisInitialized(_this));
-      }
-
-      return _this;
-    }
-
-    _createClass(Task, [{
-      key: "render",
-      value: function render() {
-        var _this2 = this;
-
-        this.milestone_group = svg('g', {
-          "class": "milestone-wrapper ".concat(this.customClass || ''),
-          'data-id': this.id
-        });
-        this.$bar = new Bar(this.timeline, this);
-        var layer = this.getLayer('bar');
-        layer.appendChild(this.$bar.group);
-        layer.appendChild(this.milestone_group);
-        this.$milestones = this.milestones.map(function (m) {
-          return new Milestone(_this2.timeline, _this2, m);
-        });
-      }
-    }]);
-
-    return Task;
-  }(Internal);
-
-  var Tasks = /*#__PURE__*/function (_Internal) {
-    _inherits(Tasks, _Internal);
-
-    var _super = _createSuper(Tasks);
-
-    /**
-     *
-     * @param {import("./index.js").timeline} timeline Timeline}
-     * @param {Array<types.TaskOptions>} tasks Array of task configurations
-     */
-    function Tasks(timeline, tasks) {
-      var _this;
-
-      _classCallCheck(this, Tasks);
-
-      _this = _super.call(this, timeline);
-      /**
-       * @private
-       * @type {Array<Task>}
-       */
-
-      _this.tasks = tasks.map(function (t) {
-        return new Task(timeline, t);
-      });
-      return _this;
-    }
-    /**
-     * @returns {{ gantt_start: dayjs.Dayjs, gantt_end: dayjs.Dayjs }}
-     */
-
-
-    _createClass(Tasks, [{
-      key: "getBoundingDates",
-      value: function getBoundingDates() {
-        /** @type {dayjs.Dayjs} */
-        var gantt_start = null;
-        /** @type {dayjs.Dayjs} */
-
-        var gantt_end = null;
-
-        var _iterator = _createForOfIteratorHelper(this.tasks),
-            _step;
-
-        try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var task = _step.value;
-
-            // set global start and end date
-            if (!gantt_start || task.start < gantt_start) {
-              gantt_start = task.start;
-            }
-
-            if (!gantt_end || task.end > gantt_end) {
-              gantt_end = task.end;
-            }
-
-            if (task.milestones) {
-              var _iterator2 = _createForOfIteratorHelper(task.milestones),
-                  _step2;
-
-              try {
-                for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-                  var milestone = _step2.value;
-                  var d = dayjs_min(milestone.date);
-
-                  if (d.isBefore(gantt_start)) {
-                    gantt_start = d;
-                  }
-
-                  if (d.isAfter(gantt_end)) {
-                    gantt_end = d;
-                  }
-                }
-              } catch (err) {
-                _iterator2.e(err);
-              } finally {
-                _iterator2.f();
-              }
-            }
-          }
-        } catch (err) {
-          _iterator.e(err);
-        } finally {
-          _iterator.f();
-        }
-
-        return {
-          gantt_start: gantt_start,
-          gantt_end: gantt_end
-        };
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        this.tasks.forEach(function (t) {
-          return t.render();
-        });
-      }
-      /** @returns {number} */
-
-    }, {
-      key: "getHeight",
-      value: function getHeight() {
-        var sum = this.options.padding * this.tasks.length;
-
-        var _iterator3 = _createForOfIteratorHelper(this.tasks),
-            _step3;
-
-        try {
-          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-            var task = _step3.value;
-            sum += task.height;
-          }
-        } catch (err) {
-          _iterator3.e(err);
-        } finally {
-          _iterator3.f();
-        }
-
-        return sum;
-      }
-    }, {
-      key: "entries",
-      value: function entries() {
-        return this.tasks;
-      }
-    }]);
-
-    return Tasks;
-  }(Internal);
-
-  /**
-   * @typedef {Timeline} timeline
-   */
-
   var Timeline = /*#__PURE__*/function () {
-    /**
-     *
-     * @param {string|HTMLElement|SVGElement} wrapper
-     * @param {*} tasks
-     * @param {types.TimelineOptions} options
-     */
-    function Timeline(wrapper, tasks, options) {
+    function Timeline(selector, tasks, options) {
+      var _this = this;
+
       _classCallCheck(this, Timeline);
 
-      this.options = _objectSpread2(_objectSpread2({}, TimelineOptions), options);
-      /** @type {SVGElement} */
+      _defineProperty(this, "options", {
+        headerHeight: 50,
+        columnWidth: 30,
+        step: 24,
+        barHeight: 20,
+        barCornerRadius: 3,
+        padding: 18,
+        viewMode: VIEW_MODE.DAY,
+        dateFormat: 'YYYY-MM-DD',
+        popup: true,
+        popupProducer: null,
+        events: null
+      });
 
-      this.$svg;
-      /** @type {HTMLDivElement} */
+      _defineProperty(this, "svg", void 0);
 
-      this.$container;
-      /** @type {HTMLDivElement} */
+      _defineProperty(this, "container", void 0);
 
-      this.popup_wrapper;
-      this.setup_wrapper(wrapper);
-      this.grid = new Grid(this);
-      this.tasks = new Tasks(this, tasks);
-      this.change_view_mode();
-      this.bind_events();
+      _defineProperty(this, "grid", void 0);
+
+      _defineProperty(this, "popup", void 0);
+
+      this.options = _objectSpread2(_objectSpread2({}, this.options), options);
+      this.options.dispatch = this.dispatch.bind(this);
+      var parent = document.querySelector(selector);
+      this.container = document.createElement('div');
+      this.container.style.overflow = 'auto';
+      this.container.style.position = 'relative';
+      this.svg = svg('svg', {
+        "class": 'gantt'
+      });
+      parent.appendChild(this.container);
+      this.container.appendChild(this.svg);
+      this.grid = new Grid(this.options, tasks);
+      this.render();
+      var popupContainer = document.createElement('div');
+      popupContainer.classList.add('popup-wrapper');
+      popupContainer.style.opacity = '0';
+      this.container.appendChild(popupContainer);
+      this.popup = new Popup(this.options, popupContainer);
+      delegate(this.svg, 'click', '.grid-row, .grid-header', function () {
+        _this.popup.hide();
+      });
     }
-    /** @param {string|HTMLElement|SVGElement} element */
-
 
     _createClass(Timeline, [{
-      key: "setup_wrapper",
-      value: function setup_wrapper(element) {
-        /** @type {SVGElement} */
-        var svg_element;
-        /** @type {Element|string} */
-
-        var wrapper_element = element; // CSS Selector is passed
-
-        if (typeof wrapper_element === 'string') {
-          wrapper_element = document.querySelector(wrapper_element);
-        } // get the SVGElement
-
-
-        if (wrapper_element instanceof HTMLElement) {
-          svg_element = wrapper_element.querySelector('svg');
-        } else if (wrapper_element instanceof SVGElement) {
-          svg_element = wrapper_element;
-        } else {
-          throw new TypeError('Frappé Gantt only supports usage of a string CSS selector,' + " HTML DOM element or SVG DOM element for the 'element' parameter");
-        } // svg element
-
-
-        if (!svg_element) {
-          // create it
-          this.$svg = svg('svg', {
-            append_to: wrapper_element,
-            "class": 'gantt'
-          });
-        } else {
-          this.$svg = svg_element;
-          console.log(this.$svg);
-          this.$svg.classList.add('gantt');
-        } // wrapper element
-
-
-        this.$container = document.createElement('div');
-        this.$container.classList.add('gantt-container');
-        var parent_element = this.$svg.parentNode;
-        parent_element.appendChild(this.$container);
-        this.$container.appendChild(this.$svg); // popup wrapper
-
-        this.popup_wrapper = document.createElement('div');
-        this.popup_wrapper.classList.add('popup-wrapper');
-        this.$container.appendChild(this.popup_wrapper);
-      }
-      /** @param {types.TaskOptions[]} tasks*/
-
-    }, {
-      key: "refresh",
-      value: function refresh(tasks) {
-        this.tasks = new Tasks(this, tasks);
-        this.change_view_mode();
-      }
-    }, {
-      key: "change_view_mode",
-      value: function change_view_mode() {
-        var mode = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.options.viewMode;
-        this.update_view_scale(mode);
-        this.grid.setup_dates();
-        this.render(); // fire viewmode_change event
-
-        this.trigger_event('view_change', [mode]);
-      }
-      /** @param {VIEW_MODE} viewMode */
-
-    }, {
-      key: "update_view_scale",
-      value: function update_view_scale(viewMode) {
-        this.options.viewMode = viewMode;
-
-        if (viewMode === VIEW_MODE.DAY) {
-          this.options.step = 24;
-          this.options.columnWidth = 38;
-        } else if (viewMode === VIEW_MODE.HALF_DAY) {
-          this.options.step = 24 / 2;
-          this.options.columnWidth = 38;
-        } else if (viewMode === VIEW_MODE.QUARTER_DAY) {
-          this.options.step = 24 / 4;
-          this.options.columnWidth = 38;
-        } else if (viewMode === VIEW_MODE.WEEK) {
-          this.options.step = 24 * 7;
-          this.options.columnWidth = 140;
-        } else if (viewMode === VIEW_MODE.MONTH) {
-          this.options.step = 24 * 30;
-          this.options.columnWidth = 120;
-        } else if (viewMode === VIEW_MODE.YEAR) {
-          this.options.step = 24 * 365;
-          this.options.columnWidth = 120;
-        }
-      }
-    }, {
-      key: "bind_events",
-      value: function bind_events() {
-        this.bind_grid_click();
-      }
-    }, {
       key: "render",
       value: function render() {
-        this.clear();
-        this.setup_layers();
-        this.grid.render();
-        this.tasks.render();
-        this.set_width();
-        this.set_scroll_position();
+        this.grid.render(this.svg);
       }
     }, {
-      key: "setup_layers",
-      value: function setup_layers() {
-        this.layers = {};
-        var layers = ['grid', 'date', 'progress', 'bar', 'details']; // make group layers
+      key: "dispatch",
+      value: function dispatch(key, payload) {
+        console.log(this);
 
-        for (var _i = 0, _layers = layers; _i < _layers.length; _i++) {
-          var layer = _layers[_i];
-          this.layers[layer] = svg('g', {
-            "class": layer,
-            append_to: this.$svg
-          });
+        switch (key) {
+          case EVENT.SHOW_POPUP:
+            this.popup.show(payload);
+            break;
+
+          case EVENT.HIDE_POPUP:
+            this.popup.hide();
+            break;
         }
-      }
-    }, {
-      key: "set_width",
-      value: function set_width() {
-        var cur_width = this.$svg.getBoundingClientRect().width;
-        var actual_width = this.$svg.querySelector('.grid .grid-row').getAttribute('width');
-
-        if (cur_width < actual_width) {
-          this.$svg.setAttribute('width', actual_width);
-        }
-      }
-    }, {
-      key: "set_scroll_position",
-      value: function set_scroll_position() {
-        var parent_element = this.$svg.parentElement;
-        if (!parent_element) return;
-        var hours_before_first_task = this.get_oldest_starting_date().diff(this.grid.start, 'hour');
-        var scroll_pos = hours_before_first_task / this.options.step * this.options.columnWidth - this.options.columnWidth;
-        parent_element.scrollLeft = scroll_pos;
-      }
-    }, {
-      key: "bind_grid_click",
-      value: function bind_grid_click() {
-        var _this = this;
-
-        on(this.$svg, this.options.popupTrigger, function () {
-          _this.unselect_all();
-
-          _this.hide_popup();
-        }, '.grid-row, .grid-header');
-      }
-    }, {
-      key: "unselect_all",
-      value: function unselect_all() {
-
-        _toConsumableArray(this.$svg.querySelectorAll('.bar-wrapper')).forEach(function (el) {
-          el.classList.remove('active');
-        });
-      }
-      /** @param {types.PopupOptions} options */
-
-    }, {
-      key: "show_popup",
-      value: function show_popup(options) {
-        if (!this.popup) {
-          this.popup = new Popup(this.popup_wrapper, this.options.producer);
-        }
-
-        this.popup.show(options);
-      }
-    }, {
-      key: "hide_popup",
-      value: function hide_popup() {
-        return this.popup && this.popup.hide();
-      }
-    }, {
-      key: "trigger_event",
-      value: function trigger_event(event, args) {
-        if (this.options['on_' + event]) {
-          this.options['on_' + event].apply(null, args);
-        }
-      }
-    }, {
-      key: "get_oldest_starting_date",
-      value: function get_oldest_starting_date() {
-        return this.tasks.tasks.map(function (task) {
-          return task.start;
-        }).reduce(function (prev_date, cur_date) {
-          return cur_date <= prev_date ? cur_date : prev_date;
-        });
-      }
-    }, {
-      key: "clear",
-      value: function clear() {
-        this.$svg.innerHTML = '';
       }
     }]);
 

@@ -1,14 +1,16 @@
+/** @module timeline */
+
 import './gantt.scss'
 import './prototypes.js'
 
 import { HtmlProducer, TaskOptions } from './task'
 import Popup, { PopupOptions } from './popup'
-import { VIEW_MODE, VIEW_MODES } from './view'
 import { delegate, svg } from './util'
 
 import { EVENT } from './events'
 import Grid from './grid'
 import { SVGElementX } from './types'
+import { VIEW_MODE } from './view'
 
 interface events {
   [key: string]: { (event: Event): void }
@@ -35,7 +37,6 @@ class Timeline {
     headerHeight: 50,
     columnWidth: 30,
     step: 24,
-    viewModes: VIEW_MODES,
     barHeight: 20,
     barCornerRadius: 3,
     padding: 18,

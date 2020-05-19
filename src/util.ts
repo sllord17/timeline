@@ -33,12 +33,17 @@ export const toDom = (html: string): Node => {
   return frag.firstChild
 }
 
-export const delegate = (element, event, selector, listener) => {
+export const delegate = (
+  element: SVGElementX,
+  event: string,
+  selector: string,
+  listener: { (event: Event, target: HTMLElement | SVGElementX): void }
+) => {
   element.addEventListener(event, function (e) {
-    const delegatedTarget = e.target.closest(selector)
+    const delegatedTarget = (e.target as SVGElementX).closest(selector)
     if (delegatedTarget) {
-      e.delegatedTarget = delegatedTarget
-      listener.call(this, e, delegatedTarget)
+      const delegateEvent = { ...e, target: delegatedTarget }
+      listener.call(this, delegateEvent)
     }
   })
 }
