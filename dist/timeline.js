@@ -1265,7 +1265,7 @@ var Timeline = (function () {
   }();
 
   function generate_id(task) {
-    return task.get('name') + '_' + Math.random().toString(36).slice(2, 12);
+    return 'task_' + Math.random().toString(36).slice(2, 12);
   }
 
   function isSingle(options) {
