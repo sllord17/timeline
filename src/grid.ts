@@ -171,8 +171,6 @@ export default class Grid {
       y: 0
     }
 
-    console.log(width)
-
     this.drawBackground(gridLayer, offset)
     this.drawRows(gridLayer, offset)
     this.drawHeader(gridLayer, offset)
@@ -201,7 +199,6 @@ export default class Grid {
         col.render(columnsLayer, offset)
         window.requestAnimationFrame(() => {
           offset.x += col.getWidth() + padding
-          console.log('done', col.getWidth())
           resolve()
         })
       }

@@ -946,13 +946,21 @@ var Timeline = (function () {
       value: function render(layer, offset) {
         var _this = this;
 
-        console.log(offset);
         this.container = svg('g', {
           append_to: layer,
           "class": 'column-wrapper',
           x: offset.x
         });
-        offset.y = this.options.headerHeight + this.options.padding + 6;
+        offset.y = this.options.headerHeight;
+        var title = svg('text', {
+          append_to: this.container,
+          "class": 'column-wrapper',
+          y: offset.y,
+          x: offset.x
+        });
+        var text = toTextFragment(this.config.text);
+        title.appendChild(text);
+        offset.y += this.options.padding + 6;
         this.tasks.forEach(function (t) {
           var label = svg('text', {
             append_to: _this.container,
@@ -1058,7 +1066,7 @@ var Timeline = (function () {
     }]);
 
     function Bar(options, config, task) {
-      var _config$progress, _config$y;
+      var _config$cornerRadius, _config$progress, _config$y;
 
       var _this;
 
@@ -1092,6 +1100,7 @@ var Timeline = (function () {
 
       _this.options = options;
       _this.config = _objectSpread2({}, config);
+      _this.config.cornerRadius = (_config$cornerRadius = config.cornerRadius) !== null && _config$cornerRadius !== void 0 ? _config$cornerRadius : 0;
       _this.task = task;
       _this._height = config.height || options.barHeight;
       _this._start = dayjs_min(config.start);
@@ -1152,7 +1161,6 @@ var Timeline = (function () {
           'data-id': this.task.get('id'),
           append_to: layer
         });
-        console.log(this.config.style);
         var barGroup = svg('g', {
           "class": 'bar-group',
           append_to: this.group
@@ -1169,13 +1177,14 @@ var Timeline = (function () {
     }, {
       key: "drawBar",
       value: function drawBar(layer) {
+        console.log(this.x, this.y);
         this.bar = svg('rect', {
           x: this.x,
           y: this.y,
           width: this.width,
           height: this.height,
-          rx: this.options.barCornerRadius,
-          ry: this.options.barCornerRadius,
+          rx: this.config.cornerRadius,
+          ry: this.config.cornerRadius,
           "class": 'bar',
           append_to: layer
         });
@@ -1190,8 +1199,8 @@ var Timeline = (function () {
           y: this.y,
           width: this.width * (this.config.progress / 100) || 0,
           height: this.height,
-          rx: this.options.barCornerRadius,
-          ry: this.options.barCornerRadius,
+          rx: this.config.cornerRadius,
+          ry: this.config.cornerRadius,
           "class": 'bar-progress',
           append_to: layer
         });
@@ -1361,9 +1370,10 @@ var Timeline = (function () {
           var max = Math.max.apply(Math, _toConsumableArray(arr.map(function (b) {
             return b.height;
           })));
-          rowOffsets.push(max);
+          rowOffsets.push((idx > 0 ? rowOffsets[idx - 1] : 0) + max);
           return arr;
         });
+        console.log(rowOffsets);
         _this._milestones = config.milestones.map(function (m, idx) {
           return m.map(function (m2) {
             if (idx > 0 && rowOffsets[idx - 1]) m2.y = rowOffsets[idx - 1];
@@ -1371,8 +1381,6 @@ var Timeline = (function () {
           });
         });
       }
-
-      console.log(_assertThisInitialized(_this));
 
       _this.computeHeight();
 
@@ -1384,8 +1392,6 @@ var Timeline = (function () {
     _createClass(Task, [{
       key: "computeHeight",
       value: function computeHeight() {
-        var _this2 = this;
-
         this.set('height', this._plans.map(function (a) {
           return Math.max.apply(Math, _toConsumableArray(a.map(function (p) {
             return p.height;
@@ -1393,17 +1399,11 @@ var Timeline = (function () {
         }).reduce(function (a, b) {
           return a + b;
         }, 0));
-
-        this._plans.forEach(function (a) {
-          return a.forEach(function (p) {
-            return _this2.set('height', Math.max(_this2.get('height'), p.height));
-          });
-        });
       }
     }, {
       key: "computeBoundingDates",
       value: function computeBoundingDates() {
-        var _this3 = this;
+        var _this2 = this;
 
         if (!this.get('start')) {
           this.set('start', this._plans[0][0].start.clone());
@@ -1415,24 +1415,24 @@ var Timeline = (function () {
 
         this._plans.forEach(function (a) {
           return a.forEach(function (p) {
-            if (!_this3.get('start') || p.start.isBefore(_this3.get('start'))) {
-              _this3.set('start', p.start.clone());
+            if (!_this2.get('start') || p.start.isBefore(_this2.get('start'))) {
+              _this2.set('start', p.start.clone());
             }
 
-            if (!_this3.get('end') || p.end.isAfter(_this3.get('end'))) {
-              _this3.set('end', p.end.clone());
+            if (!_this2.get('end') || p.end.isAfter(_this2.get('end'))) {
+              _this2.set('end', p.end.clone());
             }
           });
         });
 
         this._milestones.forEach(function (a) {
           return a.forEach(function (p) {
-            if (!_this3.get('start') || p.date.isBefore(_this3.get('start'))) {
-              _this3.set('start', p.date.clone());
+            if (!_this2.get('start') || p.date.isBefore(_this2.get('start'))) {
+              _this2.set('start', p.date.clone());
             }
 
-            if (!_this3.get('end') || p.date.isAfter(_this3.get('end'))) {
-              _this3.set('end', p.date.clone());
+            if (!_this2.get('end') || p.date.isAfter(_this2.get('end'))) {
+              _this2.set('end', p.date.clone());
             }
           });
         });
@@ -1445,7 +1445,7 @@ var Timeline = (function () {
           append_to: layer
         });
         var milestoneGroup = svg('g', {
-          "class": "milestone-wrapper ".concat(this.get('customClass') || ''),
+          "class": "milestone-wrapper",
           'data-id': this.get('id'),
           append_to: layer
         });
@@ -1666,7 +1666,6 @@ var Timeline = (function () {
           x: width,
           y: 0
         };
-        console.log(width);
         this.drawBackground(gridLayer, offset);
         this.drawRows(gridLayer, offset);
         this.drawHeader(gridLayer, offset);
@@ -1697,7 +1696,6 @@ var Timeline = (function () {
             col.render(columnsLayer, offset);
             window.requestAnimationFrame(function () {
               offset.x += col.getWidth() + padding;
-              console.log('done', col.getWidth());
               resolve();
             });
           };
@@ -1950,7 +1948,6 @@ var Timeline = (function () {
         columnWidth: 30,
         step: 24,
         barHeight: 20,
-        barCornerRadius: 3,
         padding: 18,
         viewMode: VIEW_MODE.DAY,
         dateFormat: 'YYYY-MM-DD',
@@ -1974,6 +1971,7 @@ var Timeline = (function () {
       this.container = document.createElement('div');
       this.container.style.overflow = 'auto';
       this.container.style.position = 'relative';
+      this.container.style.paddingBottom = '100px';
       this.svg = svg('svg', {
         "class": 'gantt'
       });
@@ -1999,8 +1997,6 @@ var Timeline = (function () {
     }, {
       key: "dispatch",
       value: function dispatch(key, payload) {
-        console.log(this);
-
         switch (key) {
           case EVENT.SHOW_POPUP:
             this.popup.show(payload);

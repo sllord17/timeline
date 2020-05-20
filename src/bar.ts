@@ -16,7 +16,8 @@ export interface BarOptions {
   label: string
   y: number
   text: string
-  style: ElementCSSInlineStyle
+  cornerRadius?: number
+  style?: ElementCSSInlineStyle
 }
 
 export default class Bar extends Prop implements EventListenerObject {
@@ -54,6 +55,7 @@ export default class Bar extends Prop implements EventListenerObject {
 
     this.options = options
     this.config = { ...config }
+    this.config.cornerRadius = config.cornerRadius ?? 0
     this.task = task
     this._height = config.height || options.barHeight
 
@@ -113,8 +115,6 @@ export default class Bar extends Prop implements EventListenerObject {
       append_to: layer
     })
 
-    console.log(this.config.style)
-
     const barGroup = svg('g', {
       class: 'bar-group',
       append_to: this.group
@@ -130,13 +130,14 @@ export default class Bar extends Prop implements EventListenerObject {
   }
 
   private drawBar(layer: SVGElementX) {
+    console.log(this.x, this.y)
     this.bar = svg('rect', {
       x: this.x,
       y: this.y,
       width: this.width,
       height: this.height,
-      rx: this.options.barCornerRadius,
-      ry: this.options.barCornerRadius,
+      rx: this.config.cornerRadius,
+      ry: this.config.cornerRadius,
       class: 'bar',
       append_to: layer
     })
@@ -148,8 +149,8 @@ export default class Bar extends Prop implements EventListenerObject {
       y: this.y,
       width: this.width * (this.config.progress / 100) || 0,
       height: this.height,
-      rx: this.options.barCornerRadius,
-      ry: this.options.barCornerRadius,
+      rx: this.config.cornerRadius,
+      ry: this.config.cornerRadius,
       class: 'bar-progress',
       append_to: layer
     })

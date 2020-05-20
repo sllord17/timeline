@@ -24,7 +24,6 @@ export interface TimelineOptions {
   step?: number
   viewModes?: VIEW_MODE[]
   barHeight?: number
-  barCornerRadius?: number
   padding?: number
   viewMode?: VIEW_MODE
   dateFormat?: string
@@ -41,7 +40,6 @@ class Timeline {
     columnWidth: 30,
     step: 24,
     barHeight: 20,
-    barCornerRadius: 3,
     padding: 18,
     viewMode: VIEW_MODE.DAY,
     dateFormat: 'YYYY-MM-DD',
@@ -66,6 +64,7 @@ class Timeline {
     this.container = document.createElement('div')
     this.container.style.overflow = 'auto'
     this.container.style.position = 'relative'
+    this.container.style.paddingBottom = '100px'
 
     this.svg = svg('svg', {
       class: 'gantt'
@@ -94,7 +93,6 @@ class Timeline {
   }
 
   private dispatch(key: EVENT, payload?: PopupOptions): void {
-    console.log(this)
     switch (key) {
       case EVENT.SHOW_POPUP:
         this.popup.show(payload)

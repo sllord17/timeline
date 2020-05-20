@@ -24,14 +24,25 @@ export default class Column {
   }
 
   render(layer: SVGElementX, offset: Offset) {
-    console.log(offset)
     this.container = svg('g', {
       append_to: layer,
       class: 'column-wrapper',
       x: offset.x
     })
 
-    offset.y = this.options.headerHeight + this.options.padding + 6
+    offset.y = this.options.headerHeight
+
+    const title = svg('text', {
+      append_to: this.container,
+      class: 'column-wrapper',
+      y: offset.y,
+      x: offset.x
+    })
+
+    const text = toTextFragment(this.config.text)
+    title.appendChild(text)
+
+    offset.y += this.options.padding + 6
 
     this.tasks.forEach((t) => {
       const label = svg('text', {

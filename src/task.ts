@@ -67,9 +67,11 @@ export default class Task extends Prop {
           return new Bar(options, b, this)
         })
         const max = Math.max(...arr.map((b) => b.height))
-        rowOffsets.push(max)
+        rowOffsets.push((idx > 0 ? rowOffsets[idx - 1] : 0) + max)
         return arr
       })
+
+      console.log(rowOffsets)
 
       this._milestones = (<MilestoneOptions[][]>config.milestones).map((m, idx) =>
         m.map((m2) => {
@@ -79,8 +81,6 @@ export default class Task extends Prop {
       )
     }
 
-    console.log(this)
-
     this.computeHeight()
     this.computeBoundingDates()
   }
@@ -89,9 +89,6 @@ export default class Task extends Prop {
     this.set(
       'height',
       this._plans.map((a) => Math.max(...a.map((p) => p.height))).reduce((a, b) => a + b, 0)
-    )
-    this._plans.forEach((a) =>
-      a.forEach((p) => this.set('height', Math.max(this.get('height'), p.height)))
     )
   }
 
@@ -136,12 +133,13 @@ export default class Task extends Prop {
     })
 
     const milestoneGroup = svg('g', {
-      class: `milestone-wrapper ${this.get('customClass') || ''}`,
+      class: `milestone-wrapper`,
       'data-id': this.get('id'),
       append_to: layer
     })
 
     this._plans.forEach((row) => row.forEach((p) => p.render(barGroup, startDate, offset)))
+
     this._milestones.forEach((row) =>
       row.forEach((m) => m.render(milestoneGroup, startDate, offset))
     )
