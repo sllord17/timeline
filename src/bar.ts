@@ -9,13 +9,13 @@ import dayjs from 'dayjs'
 
 export interface BarOptions {
   progress?: number
-  customClass?: string
   height?: number
   start: string
   end: string
   label: string
   y: number
   text: string
+  style: ElementCSSInlineStyle
 }
 
 export default class Bar implements EventListenerObject {
@@ -102,10 +102,12 @@ export default class Bar implements EventListenerObject {
     this.y = this.config.y + offset.y
 
     this.group = svg('g', {
-      class: `bar-wrapper ${this.config.customClass || ''}`,
+      class: 'bar-wrapper',
       'data-id': this.task.get('id'),
       append_to: layer
     })
+
+    console.log(this.config.style)
 
     const barGroup = svg('g', {
       class: 'bar-group',
@@ -135,7 +137,7 @@ export default class Bar implements EventListenerObject {
   }
 
   private drawProgressBar(layer: SVGElementX) {
-    svg('rect', {
+    const rect = svg('rect', {
       x: this.x,
       y: this.y,
       width: this.width * (this.config.progress / 100) || 0,
@@ -145,6 +147,10 @@ export default class Bar implements EventListenerObject {
       class: 'bar-progress',
       append_to: layer
     })
+
+    if (this.config.style) {
+      Object.keys(this.config.style).forEach((k) => (rect.style[k] = this.config.style[k]))
+    }
   }
 
   private drawLabel(layer: SVGElementX) {

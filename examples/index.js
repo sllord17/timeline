@@ -102,7 +102,10 @@ var tasks = [
       start: '2020-05-29T05:00:00.000Z',
       end: '2020-05-29T05:00:00.000Z',
       progress: 42,
-      height: 29
+      height: 29,
+      style: {
+        fill: 'red'
+      }
     },
     name: 'Go Live!',
     id: 'Task 5',

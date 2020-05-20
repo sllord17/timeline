@@ -1095,10 +1095,11 @@ var Timeline = (function () {
         this.x = this.computeX(startDate) + offset.x;
         this.y = this.config.y + offset.y;
         this.group = svg('g', {
-          "class": "bar-wrapper ".concat(this.config.customClass || ''),
+          "class": 'bar-wrapper',
           'data-id': this.task.get('id'),
           append_to: layer
         });
+        console.log(this.config.style);
         var barGroup = svg('g', {
           "class": 'bar-group',
           append_to: this.group
@@ -1129,7 +1130,9 @@ var Timeline = (function () {
     }, {
       key: "drawProgressBar",
       value: function drawProgressBar(layer) {
-        svg('rect', {
+        var _this = this;
+
+        var rect = svg('rect', {
           x: this.x,
           y: this.y,
           width: this.width * (this.config.progress / 100) || 0,
@@ -1139,11 +1142,17 @@ var Timeline = (function () {
           "class": 'bar-progress',
           append_to: layer
         });
+
+        if (this.config.style) {
+          Object.keys(this.config.style).forEach(function (k) {
+            return rect.style[k] = _this.config.style[k];
+          });
+        }
       }
     }, {
       key: "drawLabel",
       value: function drawLabel(layer) {
-        var _this = this;
+        var _this2 = this;
 
         if (!this.config.text) return;
         this.label = svg('text', {
@@ -1154,7 +1163,7 @@ var Timeline = (function () {
         });
         this.label.appendChild(toTextFragment(this.config.text));
         requestAnimationFrame(function () {
-          return _this.updateLabelPosition();
+          return _this2.updateLabelPosition();
         });
       }
     }, {
