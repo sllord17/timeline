@@ -2,6 +2,7 @@
 
 import './gantt.scss'
 import './prototypes.js'
+import 'promise-polyfill/src/polyfill'
 
 import { HtmlProducer, TaskOptions } from './task'
 import Popup, { PopupOptions } from './popup'

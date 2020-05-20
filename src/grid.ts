@@ -4,7 +4,6 @@ import { Offset, SVGElementX } from './types'
 import { svg, toTextFragment } from './util'
 
 import Column from './column'
-import Promise from 'promise-polyfill'
 import { TaskOptions } from './task'
 import Tasks from './tasks'
 import { TimelineOptions } from './timeline'
