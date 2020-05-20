@@ -79,13 +79,13 @@ class Timeline {
 
     const popupContainer = document.createElement('div')
     popupContainer.classList.add('popup-wrapper')
-    popupContainer.style.opacity = '0'
     this.container.appendChild(popupContainer)
 
     this.popup = new Popup(this.options, popupContainer)
     delegate(this.svg, 'click', '.grid-row, .grid-header', () => {
       this.popup.hide()
     })
+    this.popup.hide()
   }
 
   public render() {

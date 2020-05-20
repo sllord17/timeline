@@ -874,6 +874,7 @@ var Timeline = (function () {
       key: "show",
       value: function show(config) {
         if (!config.positionTarget) throw new Error('target is required to show popup');
+        this.parent.style.display = 'block';
 
         if (!config.position) {
           config.position = 'left';
@@ -898,18 +899,16 @@ var Timeline = (function () {
           this.pointer.style.left = '-7px';
           this.pointer.style.top = '2px';
         }
-
-        this.parent.style.opacity = '1';
       }
     }, {
       key: "hide",
       value: function hide() {
-        this.parent.style.opacity = '0';
+        this.parent.style.display = 'none';
       }
     }, {
       key: "isVisible",
       value: function isVisible() {
-        return this.parent.style.opacity == '0';
+        return this.parent.style.display == 'none';
       }
     }]);
 
@@ -1263,7 +1262,11 @@ var Timeline = (function () {
     return Bar;
   }(Prop);
 
-  var Milestone = /*#__PURE__*/function () {
+  var Milestone = /*#__PURE__*/function (_Prop) {
+    _inherits(Milestone, _Prop);
+
+    var _super = _createSuper(Milestone);
+
     _createClass(Milestone, [{
       key: "date",
       get: function get() {
@@ -1271,33 +1274,62 @@ var Timeline = (function () {
       }
     }]);
 
-    function Milestone(options, config) {
+    function Milestone(options, config, task) {
       var _config$y;
+
+      var _this;
 
       _classCallCheck(this, Milestone);
 
-      _defineProperty(this, "href", void 0);
+      _this = _super.call(this);
 
-      _defineProperty(this, "height", void 0);
+      _defineProperty(_assertThisInitialized(_this), "href", void 0);
 
-      _defineProperty(this, "width", void 0);
+      _defineProperty(_assertThisInitialized(_this), "height", void 0);
 
-      _defineProperty(this, "_date", void 0);
+      _defineProperty(_assertThisInitialized(_this), "width", void 0);
 
-      _defineProperty(this, "options", void 0);
+      _defineProperty(_assertThisInitialized(_this), "_date", void 0);
 
-      _defineProperty(this, "config", void 0);
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
 
-      this.options = options;
-      this.config = _objectSpread2({}, config);
-      this.config.y = (_config$y = config.y) !== null && _config$y !== void 0 ? _config$y : 0;
-      this.href = config.href;
-      this.height = config.height || 16;
-      this.width = config.width || 16;
-      this._date = dayjs_min(config.date);
-    }
+      _defineProperty(_assertThisInitialized(_this), "config", void 0);
+
+      _defineProperty(_assertThisInitialized(_this), "task", void 0);
+
+      _defineProperty(_assertThisInitialized(_this), "dom", void 0);
+
+      _this.options = options;
+      _this.config = _objectSpread2({}, config);
+      _this.task = task;
+      _this.config.y = (_config$y = config.y) !== null && _config$y !== void 0 ? _config$y : 0;
+      _this.href = config.href;
+      _this.height = config.height || 16;
+      _this.width = config.width || 16;
+      _this._date = dayjs_min(config.date);
+      return _this;
+    } // TODO: Support events better
+
 
     _createClass(Milestone, [{
+      key: "handleEvent",
+      value: function handleEvent(evt) {
+        var key = evt.type;
+
+        if (key == 'click' && this.options.popup) {
+          this.options.dispatch(EVENT.SHOW_POPUP, {
+            eventTarget: this,
+            positionTarget: this.dom,
+            title: this.task.get('name'),
+            subtitle: this.date.format('MMM DD')
+          });
+          return;
+        }
+
+        if (!this.options.events || !this.options.events[key]) throw new Error('Event not implemented.');
+        this.options.events[key].call(this, evt);
+      }
+    }, {
       key: "computeX",
       value: function computeX(startDate) {
         if (VIEW_MODE.MONTH == this.options.viewMode) {
@@ -1309,7 +1341,7 @@ var Timeline = (function () {
     }, {
       key: "render",
       value: function render(layer, startDate, offset) {
-        svg('image', {
+        this.dom = svg('image', {
           x: this.computeX(startDate) + offset.x,
           y: this.config.y + offset.y,
           width: this.width,
@@ -1317,11 +1349,15 @@ var Timeline = (function () {
           href: this.href,
           append_to: layer
         });
+
+        if (this.options.popup) {
+          this.dom.addEventListener('click', this, false);
+        }
       }
     }]);
 
     return Milestone;
-  }();
+  }(Prop);
 
   function generate_id(task) {
     return 'task_' + Math.random().toString(36).slice(2, 12);
@@ -1358,7 +1394,7 @@ var Timeline = (function () {
       if (isSingle(config)) {
         _this._plans = [[new Bar(options, config.plan, _assertThisInitialized(_this))]];
         _this._milestones = [config.milestones.map(function (m) {
-          return new Milestone(options, m);
+          return new Milestone(options, m, _assertThisInitialized(_this));
         })];
       } else {
         var rowOffsets = [];
@@ -1377,7 +1413,7 @@ var Timeline = (function () {
         _this._milestones = config.milestones.map(function (m, idx) {
           return m.map(function (m2) {
             if (idx > 0 && rowOffsets[idx - 1]) m2.y = rowOffsets[idx - 1];
-            return new Milestone(options, m2);
+            return new Milestone(options, m2, _assertThisInitialized(_this));
           });
         });
       }
@@ -1981,12 +2017,12 @@ var Timeline = (function () {
       this.render();
       var popupContainer = document.createElement('div');
       popupContainer.classList.add('popup-wrapper');
-      popupContainer.style.opacity = '0';
       this.container.appendChild(popupContainer);
       this.popup = new Popup(this.options, popupContainer);
       delegate(this.svg, 'click', '.grid-row, .grid-header', function () {
         _this.popup.hide();
       });
+      this.popup.hide();
     }
 
     _createClass(Timeline, [{

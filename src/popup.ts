@@ -37,6 +37,8 @@ export default class Popup {
   public show(config: PopupOptions): void {
     if (!config.positionTarget) throw new Error('target is required to show popup')
 
+    this.parent.style.display = 'block'
+
     if (!config.position) {
       config.position = 'left'
     }
@@ -60,15 +62,13 @@ export default class Popup {
       this.pointer.style.left = '-7px'
       this.pointer.style.top = '2px'
     }
-
-    this.parent.style.opacity = '1'
   }
 
   public hide(): void {
-    this.parent.style.opacity = '0'
+    this.parent.style.display = 'none'
   }
 
   public isVisible(): boolean {
-    return this.parent.style.opacity == '0'
+    return this.parent.style.display == 'none'
   }
 }

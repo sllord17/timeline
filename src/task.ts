@@ -56,7 +56,7 @@ export default class Task extends Prop {
     if (isSingle(config)) {
       this._plans = [[new Bar(options, config.plan, this)]]
       this._milestones = [
-        (<MilestoneOptions[]>config.milestones).map((m) => new Milestone(options, m))
+        (<MilestoneOptions[]>config.milestones).map((m) => new Milestone(options, m, this))
       ]
     } else {
       let rowOffsets: number[] = []
@@ -75,7 +75,7 @@ export default class Task extends Prop {
       this._milestones = (<MilestoneOptions[][]>config.milestones).map((m, idx) =>
         m.map((m2) => {
           if (idx > 0 && rowOffsets[idx - 1]) m2.y = rowOffsets[idx - 1]
-          return new Milestone(options, m2)
+          return new Milestone(options, m2, this)
         })
       )
     }
