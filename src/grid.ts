@@ -4,18 +4,12 @@ import { Offset, SVGElementX } from './types'
 import { svg, toTextFragment } from './util'
 
 import Column from './column'
+import Promise from 'promise-polyfill'
 import { TaskOptions } from './task'
 import Tasks from './tasks'
 import { TimelineOptions } from './timeline'
 import { VIEW_MODE } from './view'
 import dayjs from 'dayjs'
-
-export interface ColumnOptions {
-  id: string
-  text: string
-  field: string
-  customClass?: string
-}
 
 export default class Grid {
   private options: TimelineOptions
@@ -81,12 +75,12 @@ export default class Grid {
 
   private setBoundingDates() {
     this.tasks.forEach((task) => {
-      if (!this._start || task.start.isBefore(this._start)) {
-        this._start = task.start.clone()
+      if (!this._start || task.get('start').isBefore(this._start)) {
+        this._start = task.get('start').clone()
       }
 
-      if (!this._end || task.end.isAfter(this._end)) {
-        this._end = task.end.clone()
+      if (!this._end || task.get('end').isAfter(this._end)) {
+        this._end = task.get('end').clone()
       }
     })
   }
@@ -123,12 +117,13 @@ export default class Grid {
       class: 'columns'
     })
 
-    this.drawColumns(columnLayer)
+    this.drawColumns(columnLayer).then(() =>
+      this.renderStage2(
+        parent,
+        columnLayer.getBBox().width + this.options.padding * this.columns.length
+      )
+    )
     parent.appendChild(columnLayer)
-
-    requestAnimationFrame(() => this.renderStage2(parent, columnLayer.getBBox().width))
-
-    console.log(columnLayer.getBBox())
   }
 
   private renderStage2(parent: SVGElementX, width: number) {
@@ -152,6 +147,8 @@ export default class Grid {
       y: 0
     }
 
+    console.log(width)
+
     this.drawBackground(gridLayer, offset)
     this.drawRows(gridLayer, offset)
     this.drawHeader(gridLayer, offset)
@@ -162,17 +159,39 @@ export default class Grid {
     offset.y = this.options.headerHeight + this.options.padding
     this.tasks.forEach((t) => {
       t.render(taskLayer, this._start, offset)
-      offset.y += t.height + this.options.padding
+      offset.y += t.get('height') + this.options.padding
     })
   }
 
-  private drawColumns(layer: SVGElementX) {
+  private drawColumns(layer: SVGElementX): Promise {
     const columnsLayer = svg('g', { append_to: layer })
 
-    let width = 0
-    this.columns.forEach((c) => {
-      c.render(columnsLayer, width)
-      width += c.getWidth()
+    const offset: Offset = { x: this.options.padding, y: 0 }
+
+    let idx = 0,
+      len = this.columns.length,
+      padding = this.options.padding
+
+    const renderers = this.columns.map((col) => {
+      return function (resolve: CallableFunction, reject: CallableFunction) {
+        col.render(columnsLayer, offset)
+        window.requestAnimationFrame(() => {
+          offset.x += col.getWidth() + padding
+          console.log('done', col.getWidth())
+          resolve()
+        })
+      }
+    })
+
+    return new Promise(function (resolve, reject) {
+      ;(function recurse(idx) {
+        if (idx >= len) {
+          resolve()
+          return
+        }
+
+        new Promise(renderers[idx]).then(() => recurse(++idx))
+      })(idx)
     })
   }
 
@@ -195,7 +214,7 @@ export default class Grid {
     let y = this.options.headerHeight + this.options.padding / 2
 
     this.tasks.forEach((task) => {
-      const rowHeight = task.height + this.options.padding
+      const rowHeight = task.get('height') + this.options.padding
 
       svg('rect', {
         x: 0,

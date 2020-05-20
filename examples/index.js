@@ -115,5 +115,10 @@ var tasks = [
   }
 ]
 
-var gantt_chart = new Timeline('#abc123', tasks, { columns: [{ text: 'Name', id: 'Name' }] })
+var gantt_chart = new Timeline('#abc123', tasks, {
+  columns: [
+    { text: 'Name', field: 'name' },
+    { text: 'Id', field: 'id' }
+  ]
+})
 // document.querySelector(".gantt-container").scrollLeft = 2045;

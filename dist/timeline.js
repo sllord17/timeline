@@ -70,6 +70,85 @@ var Timeline = (function () {
     return target;
   }
 
+  function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf(subClass, superClass);
+  }
+
+  function _getPrototypeOf(o) {
+    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf(o);
+  }
+
+  function _setPrototypeOf(o, p) {
+    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf(o, p);
+  }
+
+  function _isNativeReflectConstruct() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+
+    try {
+      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function _assertThisInitialized(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _possibleConstructorReturn(self, call) {
+    if (call && (typeof call === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized(self);
+  }
+
+  function _createSuper(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
+    return function () {
+      var Super = _getPrototypeOf(Derived),
+          result;
+
+      if (hasNativeReflectConstruct) {
+        var NewTarget = _getPrototypeOf(this).constructor;
+
+        result = Reflect.construct(Super, arguments, NewTarget);
+      } else {
+        result = Super.apply(this, arguments);
+      }
+
+      return _possibleConstructorReturn(this, result);
+    };
+  }
+
   function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
   }
@@ -473,6 +552,84 @@ var Timeline = (function () {
     });
   };
 
+  var Popup = /*#__PURE__*/function () {
+    function Popup(options, parent) {
+      _classCallCheck(this, Popup);
+
+      _defineProperty(this, "options", void 0);
+
+      _defineProperty(this, "parent", void 0);
+
+      _defineProperty(this, "title", void 0);
+
+      _defineProperty(this, "subtitle", void 0);
+
+      _defineProperty(this, "pointer", void 0);
+
+      this.options = options;
+      this.parent = parent;
+      this.title = toDom('<div class="title"></div>');
+      this.subtitle = toDom('<div class="subtitle"></div>');
+      this.pointer = toDom('<div class="pointer"></div>');
+      parent.appendChild(this.title);
+      parent.appendChild(this.subtitle);
+      parent.appendChild(this.pointer);
+    }
+
+    _createClass(Popup, [{
+      key: "show",
+      value: function show(config) {
+        if (!config.positionTarget) throw new Error('target is required to show popup');
+
+        if (!config.position) {
+          config.position = 'left';
+        }
+
+        if (this.options.popupProducer) {
+          this.parent.innerHTML = this.options.popupProducer(config.eventTarget);
+          this.pointer = toDom('<div class="pointer"></div>');
+          this.parent.appendChild(this.pointer);
+        } else {
+          this.title.innerHTML = config.title;
+          this.subtitle.innerHTML = config.subtitle;
+          this.parent.style.width = this.parent.clientWidth + 'px';
+        }
+
+        var pos = config.positionTarget.getBBox();
+
+        if (config.position == 'left') {
+          this.parent.style.left = pos.x + (pos.width + 10) + 'px';
+          this.parent.style.top = pos.y + 'px';
+          this.pointer.style.transform = 'rotateZ(90deg)';
+          this.pointer.style.left = '-7px';
+          this.pointer.style.top = '2px';
+        }
+
+        this.parent.style.opacity = '1';
+      }
+    }, {
+      key: "hide",
+      value: function hide() {
+        this.parent.style.opacity = '0';
+      }
+    }, {
+      key: "isVisible",
+      value: function isVisible() {
+        return this.parent.style.opacity == '0';
+      }
+    }]);
+
+    return Popup;
+  }();
+
+  var EVENT;
+
+  (function (EVENT) {
+    EVENT[EVENT["SHOW_POPUP"] = 0] = "SHOW_POPUP";
+    EVENT[EVENT["HIDE_POPUP"] = 1] = "HIDE_POPUP";
+    EVENT[EVENT["TOGGLE_POPUP"] = 2] = "TOGGLE_POPUP";
+  })(EVENT || (EVENT = {}));
+
   var Column = /*#__PURE__*/function () {
     function Column(options, config, tasks) {
       _classCallCheck(this, Column);
@@ -492,25 +649,26 @@ var Timeline = (function () {
 
     _createClass(Column, [{
       key: "render",
-      value: function render(layer, x) {
+      value: function render(layer, offset) {
         var _this = this;
 
+        console.log(offset);
         this.container = svg('g', {
           append_to: layer,
           "class": 'column-wrapper',
-          x: x
+          x: offset.x
         });
-        var y = this.options.headerHeight + this.options.padding + 6;
+        offset.y = this.options.headerHeight + this.options.padding + 6;
         this.tasks.forEach(function (t) {
           var label = svg('text', {
             append_to: _this.container,
             "class": 'column-wrapper',
-            y: y,
-            x: x
+            y: offset.y,
+            x: offset.x
           });
-          var text = toTextFragment(t.name);
+          var text = toTextFragment(t.get(_this.config.field));
           label.appendChild(text);
-          y += t.height + _this.options.padding;
+          offset.y += t.get('height') + _this.options.padding;
         });
       }
     }, {
@@ -523,13 +681,276 @@ var Timeline = (function () {
     return Column;
   }();
 
-  var EVENT;
+  /**
+   * @this {Promise}
+   */
+  function finallyConstructor(callback) {
+    var constructor = this.constructor;
+    return this.then(
+      function(value) {
+        // @ts-ignore
+        return constructor.resolve(callback()).then(function() {
+          return value;
+        });
+      },
+      function(reason) {
+        // @ts-ignore
+        return constructor.resolve(callback()).then(function() {
+          // @ts-ignore
+          return constructor.reject(reason);
+        });
+      }
+    );
+  }
 
-  (function (EVENT) {
-    EVENT[EVENT["SHOW_POPUP"] = 0] = "SHOW_POPUP";
-    EVENT[EVENT["HIDE_POPUP"] = 1] = "HIDE_POPUP";
-    EVENT[EVENT["TOGGLE_POPUP"] = 2] = "TOGGLE_POPUP";
-  })(EVENT || (EVENT = {}));
+  // Store setTimeout reference so promise-polyfill will be unaffected by
+  // other code modifying setTimeout (like sinon.useFakeTimers())
+  var setTimeoutFunc = setTimeout;
+
+  function isArray(x) {
+    return Boolean(x && typeof x.length !== 'undefined');
+  }
+
+  function noop() {}
+
+  // Polyfill for Function.prototype.bind
+  function bind(fn, thisArg) {
+    return function() {
+      fn.apply(thisArg, arguments);
+    };
+  }
+
+  /**
+   * @constructor
+   * @param {Function} fn
+   */
+  function Promise(fn) {
+    if (!(this instanceof Promise))
+      throw new TypeError('Promises must be constructed via new');
+    if (typeof fn !== 'function') throw new TypeError('not a function');
+    /** @type {!number} */
+    this._state = 0;
+    /** @type {!boolean} */
+    this._handled = false;
+    /** @type {Promise|undefined} */
+    this._value = undefined;
+    /** @type {!Array<!Function>} */
+    this._deferreds = [];
+
+    doResolve(fn, this);
+  }
+
+  function handle(self, deferred) {
+    while (self._state === 3) {
+      self = self._value;
+    }
+    if (self._state === 0) {
+      self._deferreds.push(deferred);
+      return;
+    }
+    self._handled = true;
+    Promise._immediateFn(function() {
+      var cb = self._state === 1 ? deferred.onFulfilled : deferred.onRejected;
+      if (cb === null) {
+        (self._state === 1 ? resolve : reject)(deferred.promise, self._value);
+        return;
+      }
+      var ret;
+      try {
+        ret = cb(self._value);
+      } catch (e) {
+        reject(deferred.promise, e);
+        return;
+      }
+      resolve(deferred.promise, ret);
+    });
+  }
+
+  function resolve(self, newValue) {
+    try {
+      // Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
+      if (newValue === self)
+        throw new TypeError('A promise cannot be resolved with itself.');
+      if (
+        newValue &&
+        (typeof newValue === 'object' || typeof newValue === 'function')
+      ) {
+        var then = newValue.then;
+        if (newValue instanceof Promise) {
+          self._state = 3;
+          self._value = newValue;
+          finale(self);
+          return;
+        } else if (typeof then === 'function') {
+          doResolve(bind(then, newValue), self);
+          return;
+        }
+      }
+      self._state = 1;
+      self._value = newValue;
+      finale(self);
+    } catch (e) {
+      reject(self, e);
+    }
+  }
+
+  function reject(self, newValue) {
+    self._state = 2;
+    self._value = newValue;
+    finale(self);
+  }
+
+  function finale(self) {
+    if (self._state === 2 && self._deferreds.length === 0) {
+      Promise._immediateFn(function() {
+        if (!self._handled) {
+          Promise._unhandledRejectionFn(self._value);
+        }
+      });
+    }
+
+    for (var i = 0, len = self._deferreds.length; i < len; i++) {
+      handle(self, self._deferreds[i]);
+    }
+    self._deferreds = null;
+  }
+
+  /**
+   * @constructor
+   */
+  function Handler(onFulfilled, onRejected, promise) {
+    this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
+    this.onRejected = typeof onRejected === 'function' ? onRejected : null;
+    this.promise = promise;
+  }
+
+  /**
+   * Take a potentially misbehaving resolver function and make sure
+   * onFulfilled and onRejected are only called once.
+   *
+   * Makes no guarantees about asynchrony.
+   */
+  function doResolve(fn, self) {
+    var done = false;
+    try {
+      fn(
+        function(value) {
+          if (done) return;
+          done = true;
+          resolve(self, value);
+        },
+        function(reason) {
+          if (done) return;
+          done = true;
+          reject(self, reason);
+        }
+      );
+    } catch (ex) {
+      if (done) return;
+      done = true;
+      reject(self, ex);
+    }
+  }
+
+  Promise.prototype['catch'] = function(onRejected) {
+    return this.then(null, onRejected);
+  };
+
+  Promise.prototype.then = function(onFulfilled, onRejected) {
+    // @ts-ignore
+    var prom = new this.constructor(noop);
+
+    handle(this, new Handler(onFulfilled, onRejected, prom));
+    return prom;
+  };
+
+  Promise.prototype['finally'] = finallyConstructor;
+
+  Promise.all = function(arr) {
+    return new Promise(function(resolve, reject) {
+      if (!isArray(arr)) {
+        return reject(new TypeError('Promise.all accepts an array'));
+      }
+
+      var args = Array.prototype.slice.call(arr);
+      if (args.length === 0) return resolve([]);
+      var remaining = args.length;
+
+      function res(i, val) {
+        try {
+          if (val && (typeof val === 'object' || typeof val === 'function')) {
+            var then = val.then;
+            if (typeof then === 'function') {
+              then.call(
+                val,
+                function(val) {
+                  res(i, val);
+                },
+                reject
+              );
+              return;
+            }
+          }
+          args[i] = val;
+          if (--remaining === 0) {
+            resolve(args);
+          }
+        } catch (ex) {
+          reject(ex);
+        }
+      }
+
+      for (var i = 0; i < args.length; i++) {
+        res(i, args[i]);
+      }
+    });
+  };
+
+  Promise.resolve = function(value) {
+    if (value && typeof value === 'object' && value.constructor === Promise) {
+      return value;
+    }
+
+    return new Promise(function(resolve) {
+      resolve(value);
+    });
+  };
+
+  Promise.reject = function(value) {
+    return new Promise(function(resolve, reject) {
+      reject(value);
+    });
+  };
+
+  Promise.race = function(arr) {
+    return new Promise(function(resolve, reject) {
+      if (!isArray(arr)) {
+        return reject(new TypeError('Promise.race accepts an array'));
+      }
+
+      for (var i = 0, len = arr.length; i < len; i++) {
+        Promise.resolve(arr[i]).then(resolve, reject);
+      }
+    });
+  };
+
+  // Use polyfill for setImmediate for performance gains
+  Promise._immediateFn =
+    // @ts-ignore
+    (typeof setImmediate === 'function' &&
+      function(fn) {
+        // @ts-ignore
+        setImmediate(fn);
+      }) ||
+    function(fn) {
+      setTimeoutFunc(fn, 0);
+    };
+
+  Promise._unhandledRejectionFn = function _unhandledRejectionFn(err) {
+    if (typeof console !== 'undefined' && console) {
+      console.warn('Possible Unhandled Promise Rejection:', err); // eslint-disable-line no-console
+    }
+  };
 
   var VIEW_MODE;
 
@@ -652,7 +1073,7 @@ var Timeline = (function () {
         this.y = this.config.y + offset.y;
         this.group = svg('g', {
           "class": "bar-wrapper ".concat(this.config.customClass || ''),
-          'data-id': this.task.id,
+          'data-id': this.task.get('id'),
           append_to: layer
         });
         var barGroup = svg('g', {
@@ -734,8 +1155,8 @@ var Timeline = (function () {
           this.options.dispatch(EVENT.SHOW_POPUP, {
             eventTarget: this,
             positionTarget: this.group,
-            title: this.task.name,
-            subtitle: this.task.start.format('MMM DD') + ' - ' + this.task.end.format('MMM DD')
+            title: this.task.get('name'),
+            subtitle: this.task.get('start').format('MMM DD') + ' - ' + this.task.get('end').format('MMM DD')
           });
           return;
         }
@@ -808,82 +1229,84 @@ var Timeline = (function () {
     return Milestone;
   }();
 
+  var Prop = /*#__PURE__*/function () {
+    function Prop() {
+      _classCallCheck(this, Prop);
+
+      _defineProperty(this, "_properties", {});
+    }
+
+    _createClass(Prop, [{
+      key: "set",
+      value: function set(key, value) {
+        this._properties[key] = value;
+      }
+    }, {
+      key: "get",
+      value: function get(key) {
+        return this._properties[key];
+      }
+    }, {
+      key: "unset",
+      value: function unset(key) {
+        delete this._properties[key];
+      }
+    }, {
+      key: "properties",
+      get: function get() {
+        return _objectSpread2({}, this._properties);
+      },
+      set: function set(o) {
+        this._properties = _objectSpread2(_objectSpread2({}, this._properties), o);
+      }
+    }]);
+
+    return Prop;
+  }();
+
   function generate_id(task) {
-    return task.name + '_' + Math.random().toString(36).slice(2, 12);
+    return task.get('name') + '_' + Math.random().toString(36).slice(2, 12);
   }
 
   function isSingle(options) {
     return 'plan' in options;
   }
 
-  var Task = /*#__PURE__*/function () {
-    _createClass(Task, [{
-      key: "start",
-      get: function get() {
-        return this._start;
-      }
-    }, {
-      key: "end",
-      get: function get() {
-        return this._end;
-      }
-    }, {
-      key: "name",
-      get: function get() {
-        return this.config.name;
-      }
-    }, {
-      key: "height",
-      get: function get() {
-        return this._height;
-      }
-    }, {
-      key: "id",
-      get: function get() {
-        return this._id;
-      }
-    }]);
+  var Task = /*#__PURE__*/function (_Prop) {
+    _inherits(Task, _Prop);
+
+    var _super = _createSuper(Task);
 
     function Task(options, config) {
-      var _this = this;
+      var _this;
 
       _classCallCheck(this, Task);
 
-      _defineProperty(this, "options", void 0);
+      _this = _super.call(this);
 
-      _defineProperty(this, "config", void 0);
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
 
-      _defineProperty(this, "_start", void 0);
+      _defineProperty(_assertThisInitialized(_this), "_plans", []);
 
-      _defineProperty(this, "_end", void 0);
+      _defineProperty(_assertThisInitialized(_this), "_milestones", []);
 
-      _defineProperty(this, "_height", void 0);
-
-      _defineProperty(this, "_id", void 0);
-
-      _defineProperty(this, "_plans", []);
-
-      _defineProperty(this, "_milestones", []);
-
-      this.options = options;
-      this.config = _objectSpread2({}, config);
-      this._height = 0;
-
-      if (!this._id) {
-        this._id = generate_id(this);
-      }
+      _this.options = options;
+      _this.properties = _objectSpread2(_objectSpread2({}, config), {}, {
+        height: 0,
+        id: generate_id(_assertThisInitialized(_this))
+      });
 
       if (isSingle(config)) {
-        this._plans = [[new Bar(options, config.plan, this)]];
-        this._milestones = [config.milestones.map(function (m) {
+        _this._plans = [[new Bar(options, config.plan, _assertThisInitialized(_this))]];
+        _this._milestones = [config.milestones.map(function (m) {
           return new Milestone(options, m);
         })];
       } else {
         var rowOffsets = [];
-        this._plans = config.plans.map(function (bo, idx) {
+        _this._plans = config.plans.map(function (bo, idx) {
           var arr = bo.map(function (b) {
             if (idx > 0) b.y = rowOffsets[idx - 1];
-            return new Bar(options, b, _this);
+            return new Bar(options, b, _assertThisInitialized(_this));
           });
           var max = Math.max.apply(Math, _toConsumableArray(arr.map(function (b) {
             return b.height;
@@ -891,7 +1314,7 @@ var Timeline = (function () {
           rowOffsets.push(max);
           return arr;
         });
-        this._milestones = config.milestones.map(function (m, idx) {
+        _this._milestones = config.milestones.map(function (m, idx) {
           return m.map(function (m2) {
             if (idx > 0 && rowOffsets[idx - 1]) m2.y = rowOffsets[idx - 1];
             return new Milestone(options, m2);
@@ -899,8 +1322,13 @@ var Timeline = (function () {
         });
       }
 
-      this.computeHeight();
-      this.computeBoundingDates();
+      console.log(_assertThisInitialized(_this));
+
+      _this.computeHeight();
+
+      _this.computeBoundingDates();
+
+      return _this;
     }
 
     _createClass(Task, [{
@@ -908,17 +1336,17 @@ var Timeline = (function () {
       value: function computeHeight() {
         var _this2 = this;
 
-        this._height = this._plans.map(function (a) {
+        this.set('height', this._plans.map(function (a) {
           return Math.max.apply(Math, _toConsumableArray(a.map(function (p) {
             return p.height;
           })));
         }).reduce(function (a, b) {
           return a + b;
-        }, 0);
+        }, 0));
 
         this._plans.forEach(function (a) {
           return a.forEach(function (p) {
-            return _this2._height = Math.max(_this2._height, p.height);
+            return _this2.set('height', Math.max(_this2.get('height'), p.height));
           });
         });
       }
@@ -927,30 +1355,34 @@ var Timeline = (function () {
       value: function computeBoundingDates() {
         var _this3 = this;
 
-        if (!this._end) {
-          this._end = this._plans[0][0].end.clone();
+        if (!this.get('start')) {
+          this.set('start', this._plans[0][0].start.clone());
+        }
+
+        if (!this.get('end')) {
+          this.set('end', this._plans[0][0].end.clone());
         }
 
         this._plans.forEach(function (a) {
           return a.forEach(function (p) {
-            if (!_this3._start || p.start.isBefore(_this3._start)) {
-              _this3._start = p.start.clone();
+            if (!_this3.get('start') || p.start.isBefore(_this3.get('start'))) {
+              _this3.set('start', p.start.clone());
             }
 
-            if (!_this3._end || p.end.isAfter(_this3._end)) {
-              _this3._end = p.end.clone();
+            if (!_this3.get('end') || p.end.isAfter(_this3.get('end'))) {
+              _this3.set('end', p.end.clone());
             }
           });
         });
 
         this._milestones.forEach(function (a) {
           return a.forEach(function (p) {
-            if (!_this3._start || p.date.isBefore(_this3._start)) {
-              _this3._start = p.date.clone();
+            if (!_this3.get('start') || p.date.isBefore(_this3.get('start'))) {
+              _this3.set('start', p.date.clone());
             }
 
-            if (!_this3._end || p.date.isAfter(_this3._end)) {
-              _this3._end = p.date.clone();
+            if (!_this3.get('end') || p.date.isAfter(_this3.get('end'))) {
+              _this3.set('end', p.date.clone());
             }
           });
         });
@@ -958,14 +1390,13 @@ var Timeline = (function () {
     }, {
       key: "render",
       value: function render(layer, startDate, offset) {
-        console.log(this._height);
         var barGroup = svg('g', {
           "class": 'bar',
           append_to: layer
         });
         var milestoneGroup = svg('g', {
-          "class": "milestone-wrapper ".concat(this.config.customClass || ''),
-          'data-id': this.id,
+          "class": "milestone-wrapper ".concat(this.get('customClass') || ''),
+          'data-id': this.get('id'),
           append_to: layer
         });
 
@@ -984,7 +1415,7 @@ var Timeline = (function () {
     }]);
 
     return Task;
-  }();
+  }(Prop);
 
   var Tasks = /*#__PURE__*/function () {
     function Tasks(options, config) {
@@ -1011,7 +1442,7 @@ var Timeline = (function () {
         var _this = this;
 
         return this._tasks.map(function (t) {
-          return t.height;
+          return t.get('height');
         }).reduce(function (a, b) {
           return a + b + _this.options.padding;
         });
@@ -1104,12 +1535,12 @@ var Timeline = (function () {
         var _this3 = this;
 
         this.tasks.forEach(function (task) {
-          if (!_this3._start || task.start.isBefore(_this3._start)) {
-            _this3._start = task.start.clone();
+          if (!_this3._start || task.get('start').isBefore(_this3._start)) {
+            _this3._start = task.get('start').clone();
           }
 
-          if (!_this3._end || task.end.isAfter(_this3._end)) {
-            _this3._end = task.end.clone();
+          if (!_this3._end || task.get('end').isAfter(_this3._end)) {
+            _this3._end = task.get('end').clone();
           }
         });
       }
@@ -1133,12 +1564,10 @@ var Timeline = (function () {
         var columnLayer = svg('g', {
           "class": 'columns'
         });
-        this.drawColumns(columnLayer);
-        parent.appendChild(columnLayer);
-        requestAnimationFrame(function () {
-          return _this4.renderStage2(parent, columnLayer.getBBox().width);
+        this.drawColumns(columnLayer).then(function () {
+          return _this4.renderStage2(parent, columnLayer.getBBox().width + _this4.options.padding * _this4.columns.length);
         });
-        console.log(columnLayer.getBBox());
+        parent.appendChild(columnLayer);
       }
     }, {
       key: "renderStage2",
@@ -1161,6 +1590,7 @@ var Timeline = (function () {
           x: width,
           y: 0
         };
+        console.log(width);
         this.drawBackground(gridLayer, offset);
         this.drawRows(gridLayer, offset);
         this.drawHeader(gridLayer, offset);
@@ -1170,7 +1600,7 @@ var Timeline = (function () {
         offset.y = this.options.headerHeight + this.options.padding;
         this.tasks.forEach(function (t) {
           t.render(taskLayer, _this5._start, offset);
-          offset.y += t.height + _this5.options.padding;
+          offset.y += t.get('height') + _this5.options.padding;
         });
       }
     }, {
@@ -1179,10 +1609,35 @@ var Timeline = (function () {
         var columnsLayer = svg('g', {
           append_to: layer
         });
-        var width = 0;
-        this.columns.forEach(function (c) {
-          c.render(columnsLayer, width);
-          width += c.getWidth();
+        var offset = {
+          x: this.options.padding,
+          y: 0
+        };
+        var idx = 0,
+            len = this.columns.length,
+            padding = this.options.padding;
+        var renderers = this.columns.map(function (col) {
+          return function (resolve, reject) {
+            col.render(columnsLayer, offset);
+            window.requestAnimationFrame(function () {
+              offset.x += col.getWidth() + padding;
+              console.log('done', col.getWidth());
+              resolve();
+            });
+          };
+        });
+        return new Promise(function (resolve, reject) {
+
+          (function recurse(idx) {
+            if (idx >= len) {
+              resolve();
+              return;
+            }
+
+            new Promise(renderers[idx]).then(function () {
+              return recurse(++idx);
+            });
+          })(idx);
         });
       }
     }, {
@@ -1211,7 +1666,8 @@ var Timeline = (function () {
         var rowWidth = this.getWidth() + offset.x;
         var y = this.options.headerHeight + this.options.padding / 2;
         this.tasks.forEach(function (task) {
-          var rowHeight = task.height + _this6.options.padding;
+          var rowHeight = task.get('height') + _this6.options.padding;
+
           svg('rect', {
             x: 0,
             y: y,
@@ -1405,76 +1861,6 @@ var Timeline = (function () {
     }]);
 
     return Grid;
-  }();
-
-  var Popup = /*#__PURE__*/function () {
-    function Popup(options, parent) {
-      _classCallCheck(this, Popup);
-
-      _defineProperty(this, "options", void 0);
-
-      _defineProperty(this, "parent", void 0);
-
-      _defineProperty(this, "title", void 0);
-
-      _defineProperty(this, "subtitle", void 0);
-
-      _defineProperty(this, "pointer", void 0);
-
-      this.options = options;
-      this.parent = parent;
-      this.title = toDom('<div class="title"></div>');
-      this.subtitle = toDom('<div class="subtitle"></div>');
-      this.pointer = toDom('<div class="pointer"></div>');
-      parent.appendChild(this.title);
-      parent.appendChild(this.subtitle);
-      parent.appendChild(this.pointer);
-    }
-
-    _createClass(Popup, [{
-      key: "show",
-      value: function show(config) {
-        if (!config.positionTarget) throw new Error('target is required to show popup');
-
-        if (!config.position) {
-          config.position = 'left';
-        }
-
-        if (this.options.popupProducer) {
-          this.parent.innerHTML = this.options.popupProducer(config.eventTarget);
-          this.pointer = toDom('<div class="pointer"></div>');
-          this.parent.appendChild(this.pointer);
-        } else {
-          this.title.innerHTML = config.title;
-          this.subtitle.innerHTML = config.subtitle;
-          this.parent.style.width = this.parent.clientWidth + 'px';
-        }
-
-        var pos = config.positionTarget.getBBox();
-
-        if (config.position == 'left') {
-          this.parent.style.left = pos.x + (pos.width + 10) + 'px';
-          this.parent.style.top = pos.y + 'px';
-          this.pointer.style.transform = 'rotateZ(90deg)';
-          this.pointer.style.left = '-7px';
-          this.pointer.style.top = '2px';
-        }
-
-        this.parent.style.opacity = '1';
-      }
-    }, {
-      key: "hide",
-      value: function hide() {
-        this.parent.style.opacity = '0';
-      }
-    }, {
-      key: "isVisible",
-      value: function isVisible() {
-        return this.parent.style.opacity == '0';
-      }
-    }]);
-
-    return Popup;
   }();
 
   var Timeline = /*#__PURE__*/function () {

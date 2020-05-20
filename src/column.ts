@@ -1,9 +1,15 @@
+import { Offset, SVGElementX } from './types'
 import { svg, toTextFragment } from './util'
 
-import { ColumnOptions } from './grid'
-import { SVGElementX } from './types'
 import Tasks from './tasks'
 import { TimelineOptions } from './timeline'
+
+export interface ColumnOptions {
+  id: string
+  text: string
+  field: string
+  customClass?: string
+}
 
 export default class Column {
   private options: TimelineOptions
@@ -17,26 +23,27 @@ export default class Column {
     this.tasks = tasks
   }
 
-  render(layer: SVGElementX, x: number) {
+  render(layer: SVGElementX, offset: Offset) {
+    console.log(offset)
     this.container = svg('g', {
       append_to: layer,
       class: 'column-wrapper',
-      x: x
+      x: offset.x
     })
 
-    let y = this.options.headerHeight + this.options.padding + 6
+    offset.y = this.options.headerHeight + this.options.padding + 6
 
     this.tasks.forEach((t) => {
       const label = svg('text', {
         append_to: this.container,
         class: 'column-wrapper',
-        y: y,
-        x: x
+        y: offset.y,
+        x: offset.x
       })
 
-      const text = toTextFragment(t.name)
+      const text = toTextFragment(t.get(this.config.field))
       label.appendChild(text)
-      y += t.height + this.options.padding
+      offset.y += t.get('height') + this.options.padding
     })
   }
 

@@ -103,7 +103,7 @@ export default class Bar implements EventListenerObject {
 
     this.group = svg('g', {
       class: `bar-wrapper ${this.config.customClass || ''}`,
-      'data-id': this.task.id,
+      'data-id': this.task.get('id'),
       append_to: layer
     })
 
@@ -178,8 +178,9 @@ export default class Bar implements EventListenerObject {
       this.options.dispatch(EVENT.SHOW_POPUP, {
         eventTarget: this,
         positionTarget: this.group,
-        title: this.task.name,
-        subtitle: this.task.start.format('MMM DD') + ' - ' + this.task.end.format('MMM DD')
+        title: this.task.get('name'),
+        subtitle:
+          this.task.get('start').format('MMM DD') + ' - ' + this.task.get('end').format('MMM DD')
       })
 
       return

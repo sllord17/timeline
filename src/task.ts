@@ -5,6 +5,7 @@ import { SVGElementX, Offset } from './types'
 import { TimelineOptions } from './timeline'
 import dayjs from 'dayjs'
 import { svg } from './util'
+import Prop from './prop'
 
 export interface HtmlProducer {
   (target: Task | Bar | Milestone): string
@@ -29,52 +30,28 @@ interface TaskBaseOptions {
 export type TaskOptions = SingleBarOptions & MultiBarOptions
 
 function generate_id(task: Task) {
-  return task.name + '_' + Math.random().toString(36).slice(2, 12)
+  return task.get('name') + '_' + Math.random().toString(36).slice(2, 12)
 }
 
 function isSingle(options: TaskOptions): boolean {
   return 'plan' in options
 }
 
-export default class Task {
+export default class Task extends Prop {
   private options: TimelineOptions
-  private config: TaskOptions
-
-  private _start: dayjs.Dayjs
-  public get start(): dayjs.Dayjs {
-    return this._start
-  }
-
-  private _end: dayjs.Dayjs
-  public get end(): dayjs.Dayjs {
-    return this._end
-  }
-
-  public get name(): string {
-    return this.config.name
-  }
-
-  private _height: number
-  public get height(): number {
-    return this._height
-  }
-
-  private _id: string
-  public get id(): string {
-    return this._id
-  }
 
   private _plans: Bar[][] = []
   private _milestones: Milestone[][] = []
 
   constructor(options: TimelineOptions, config: TaskOptions) {
+    super()
+
     this.options = options
-    this.config = { ...config }
 
-    this._height = 0
-
-    if (!this._id) {
-      this._id = generate_id(this)
+    this.properties = {
+      ...config,
+      height: 0,
+      id: generate_id(this)
     }
 
     if (isSingle(config)) {
@@ -102,57 +79,65 @@ export default class Task {
       )
     }
 
+    console.log(this)
+
     this.computeHeight()
     this.computeBoundingDates()
   }
 
   private computeHeight() {
-    this._height = this._plans
-      .map((a) => Math.max(...a.map((p) => p.height)))
-      .reduce((a, b) => a + b, 0)
-    this._plans.forEach((a) => a.forEach((p) => (this._height = Math.max(this._height, p.height))))
+    this.set(
+      'height',
+      this._plans.map((a) => Math.max(...a.map((p) => p.height))).reduce((a, b) => a + b, 0)
+    )
+    this._plans.forEach((a) =>
+      a.forEach((p) => this.set('height', Math.max(this.get('height'), p.height)))
+    )
   }
 
   private computeBoundingDates() {
-    if (!this._end) {
-      this._end = this._plans[0][0].end.clone()
+    if (!this.get('start')) {
+      this.set('start', this._plans[0][0].start.clone())
+    }
+
+    if (!this.get('end')) {
+      this.set('end', this._plans[0][0].end.clone())
     }
 
     this._plans.forEach((a) =>
       a.forEach((p) => {
-        if (!this._start || p.start.isBefore(this._start)) {
-          this._start = p.start.clone()
+        if (!this.get('start') || p.start.isBefore(this.get('start'))) {
+          this.set('start', p.start.clone())
         }
 
-        if (!this._end || p.end.isAfter(this._end)) {
-          this._end = p.end.clone()
+        if (!this.get('end') || p.end.isAfter(this.get('end'))) {
+          this.set('end', p.end.clone())
         }
       })
     )
 
     this._milestones.forEach((a) =>
       a.forEach((p) => {
-        if (!this._start || p.date.isBefore(this._start)) {
-          this._start = p.date.clone()
+        if (!this.get('start') || p.date.isBefore(this.get('start'))) {
+          this.set('start', p.date.clone())
         }
 
-        if (!this._end || p.date.isAfter(this._end)) {
-          this._end = p.date.clone()
+        if (!this.get('end') || p.date.isAfter(this.get('end'))) {
+          this.set('end', p.date.clone())
         }
       })
     )
   }
 
   public render(layer: SVGElementX, startDate: dayjs.Dayjs, offset: Offset) {
-    console.log(this._height)
     const barGroup = svg('g', {
       class: 'bar',
       append_to: layer
     })
 
     const milestoneGroup = svg('g', {
-      class: `milestone-wrapper ${this.config.customClass || ''}`,
-      'data-id': this.id,
+      class: `milestone-wrapper ${this.get('customClass') || ''}`,
+      'data-id': this.get('id'),
       append_to: layer
     })
 

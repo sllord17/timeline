@@ -17,6 +17,6 @@ export default class Tasks {
   }
 
   public getHeight(): number {
-    return this._tasks.map((t) => t.height).reduce((a, b) => a + b + this.options.padding)
+    return this._tasks.map((t) => t.get('height')).reduce((a, b) => a + b + this.options.padding)
   }
 }
