@@ -29,3 +29,8 @@ export interface ImageOptions {
   height: number
   href: string
 }
+
+export interface Offset {
+  x: number
+  y: number
+}

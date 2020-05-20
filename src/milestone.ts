@@ -1,4 +1,4 @@
-import { ImageOptions, SVGElementX } from './types'
+import { ImageOptions, Offset, SVGElementX } from './types'
 
 import { TimelineOptions } from './timeline'
 import { VIEW_MODE } from './view'
@@ -45,10 +45,10 @@ export default class Milestone {
     return (this.date.diff(startDate, 'hour') / this.options.step) * this.options.columnWidth
   }
 
-  public render(layer: SVGElementX, startDate: dayjs.Dayjs, x: number, y: number) {
+  public render(layer: SVGElementX, startDate: dayjs.Dayjs, offset: Offset) {
     svg('image', {
-      x: this.computeX(startDate) + x,
-      y: y + this.config.y,
+      x: this.computeX(startDate) + offset.x,
+      y: this.config.y + offset.y,
       width: this.width,
       height: this.height,
       href: this.href,

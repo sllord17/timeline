@@ -1,7 +1,7 @@
 import Bar, { BarOptions } from './bar'
 import Milestone, { MilestoneOptions } from './milestone'
 
-import { SVGElementX } from './types'
+import { SVGElementX, Offset } from './types'
 import { TimelineOptions } from './timeline'
 import dayjs from 'dayjs'
 import { svg } from './util'
@@ -143,7 +143,7 @@ export default class Task {
     )
   }
 
-  public render(layer: SVGElementX, startDate: dayjs.Dayjs, x: number, y: number) {
+  public render(layer: SVGElementX, startDate: dayjs.Dayjs, offset: Offset) {
     console.log(this._height)
     const barGroup = svg('g', {
       class: 'bar',
@@ -156,7 +156,9 @@ export default class Task {
       append_to: layer
     })
 
-    this._plans.forEach((row) => row.forEach((p) => p.render(barGroup, startDate, x, y)))
-    this._milestones.forEach((row) => row.forEach((m) => m.render(milestoneGroup, startDate, x, y)))
+    this._plans.forEach((row) => row.forEach((p) => p.render(barGroup, startDate, offset)))
+    this._milestones.forEach((row) =>
+      row.forEach((m) => m.render(milestoneGroup, startDate, offset))
+    )
   }
 }

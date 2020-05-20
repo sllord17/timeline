@@ -1,9 +1,9 @@
 /** @module timeline/grid */
 
+import { Offset, SVGElementX } from './types'
 import { svg, toTextFragment } from './util'
 
 import Column from './column'
-import { SVGElementX } from './types'
 import { TaskOptions } from './task'
 import Tasks from './tasks'
 import { TimelineOptions } from './timeline'
@@ -147,17 +147,22 @@ export default class Grid {
       prepend_to: parent
     })
 
-    this.drawBackground(gridLayer, width)
-    this.drawRows(gridLayer, width)
-    this.drawHeader(gridLayer, width)
-    this.drawTicks(gridLayer, width)
-    this.highlightCurrentDay(gridLayer, width)
-    this.drawDates(dateLayer, width)
+    const offset: Offset = {
+      x: width,
+      y: 0
+    }
 
-    let y = this.options.headerHeight + this.options.padding
+    this.drawBackground(gridLayer, offset)
+    this.drawRows(gridLayer, offset)
+    this.drawHeader(gridLayer, offset)
+    this.drawTicks(gridLayer, offset)
+    this.highlightCurrentDay(gridLayer, offset)
+    this.drawDates(dateLayer, offset)
+
+    offset.y = this.options.headerHeight + this.options.padding
     this.tasks.forEach((t) => {
-      t.render(taskLayer, this._start, width, y)
-      y += t.height + this.options.padding
+      t.render(taskLayer, this._start, offset)
+      offset.y += t.height + this.options.padding
     })
   }
 
@@ -171,22 +176,22 @@ export default class Grid {
     })
   }
 
-  private drawBackground(layer: SVGElementX, x: number) {
+  private drawBackground(layer: SVGElementX, offset: Offset) {
     svg('rect', {
       x: 0,
       y: 0,
-      width: this.getWidth() + x,
+      width: this.getWidth() + offset.x,
       height: this.getHeight(),
       class: 'grid-background',
       append_to: layer
     })
   }
 
-  private drawRows(layer: SVGElementX, x: number) {
+  private drawRows(layer: SVGElementX, offset: Offset) {
     const rowsLayer = svg('g', { append_to: layer })
     const linesLayer = svg('g', { append_to: layer })
 
-    const rowWidth = this.getWidth() + x
+    const rowWidth = this.getWidth() + offset.x
     let y = this.options.headerHeight + this.options.padding / 2
 
     this.tasks.forEach((task) => {
@@ -214,9 +219,9 @@ export default class Grid {
     })
   }
 
-  private drawHeader(layer: SVGElementX, x: number) {
+  private drawHeader(layer: SVGElementX, offset: Offset) {
     svg('rect', {
-      x: x,
+      x: offset.x,
       y: 0,
       width: this.getWidth(),
       height: this.options.headerHeight + 10,
@@ -225,8 +230,8 @@ export default class Grid {
     })
   }
 
-  private drawTicks(layer: SVGElementX, xOffset: number) {
-    let x = xOffset
+  private drawTicks(layer: SVGElementX, offset: Offset) {
+    let x = offset.x
     const y = this.options.headerHeight + this.options.padding / 2,
       height = this.tasks.getHeight()
 
@@ -255,12 +260,12 @@ export default class Grid {
     }
   }
 
-  private highlightCurrentDay(layer: SVGElementX, xOffset: number) {
+  private highlightCurrentDay(layer: SVGElementX, offset: Offset) {
     if (VIEW_MODE.DAY == this.options.viewMode) {
       const x = (dayjs().diff(this.start, 'hour') / this.options.step) * this.options.columnWidth
 
       svg('rect', {
-        x: x + xOffset,
+        x: x + offset.x,
         y: 0,
         width: this.options.columnWidth,
         height: this.getHeight(),
@@ -270,7 +275,7 @@ export default class Grid {
     }
   }
 
-  private drawDates(layer: SVGElementX, x: number) {
+  private drawDates(layer: SVGElementX, offset: Offset) {
     let lastDate = null
     let i: number = 0
     for (const d of this.dates) {
@@ -278,7 +283,7 @@ export default class Grid {
       lastDate = d
 
       const lowerText = svg('text', {
-        x: date.lower_x + x,
+        x: date.lower_x + offset.x,
         y: date.lower_y,
         class: 'lower-text',
         append_to: layer
@@ -288,7 +293,7 @@ export default class Grid {
 
       if (date.upper_text) {
         const upperText = svg('text', {
-          x: date.upper_x + x,
+          x: date.upper_x + offset.x,
           y: date.upper_y,
           class: 'upper-text',
           append_to: layer

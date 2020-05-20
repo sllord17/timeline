@@ -1,7 +1,7 @@
+import { Offset, SVGElementX } from './types'
 import { svg, toTextFragment } from './util'
 
 import { EVENT } from './events'
-import { SVGElementX } from './types'
 import Task from './task'
 import { TimelineOptions } from './timeline'
 import { VIEW_MODE } from './view'
@@ -15,6 +15,7 @@ export interface BarOptions {
   end: string
   label: string
   y: number
+  text: string
 }
 
 export default class Bar implements EventListenerObject {
@@ -96,9 +97,9 @@ export default class Bar implements EventListenerObject {
     return (this.start.diff(startDate, 'hour') / this.options.step) * this.options.columnWidth
   }
 
-  public render(layer: SVGElementX, startDate: dayjs.Dayjs, x: number, y: number) {
-    this.x = this.computeX(startDate) + x
-    this.y = y + this.config.y
+  public render(layer: SVGElementX, startDate: dayjs.Dayjs, offset: Offset) {
+    this.x = this.computeX(startDate) + offset.x
+    this.y = this.config.y + offset.y
 
     this.group = svg('g', {
       class: `bar-wrapper ${this.config.customClass || ''}`,
@@ -147,6 +148,8 @@ export default class Bar implements EventListenerObject {
   }
 
   private drawLabel(layer: SVGElementX) {
+    if (!this.config.text) return
+
     this.label = svg('text', {
       x: this.x + this.width / 2,
       y: this.y + this.height / 2,
@@ -154,7 +157,7 @@ export default class Bar implements EventListenerObject {
       append_to: layer
     })
 
-    this.label.appendChild(toTextFragment(this.task.name))
+    this.label.appendChild(toTextFragment(this.config.text))
     requestAnimationFrame(() => this.updateLabelPosition())
   }
 
@@ -168,6 +171,7 @@ export default class Bar implements EventListenerObject {
     }
   }
 
+  // TODO: Support events better
   handleEvent(evt: Event): void {
     const key = evt.type
     if (key == 'click' && this.options.popup) {
@@ -177,6 +181,8 @@ export default class Bar implements EventListenerObject {
         title: this.task.name,
         subtitle: this.task.start.format('MMM DD') + ' - ' + this.task.end.format('MMM DD')
       })
+
+      return
     }
 
     if (!this.options.events || !this.options.events[key]) throw new Error('Event not implemented.')

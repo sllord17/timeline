@@ -647,9 +647,9 @@ var Timeline = (function () {
       }
     }, {
       key: "render",
-      value: function render(layer, startDate, x, y) {
-        this.x = this.computeX(startDate) + x;
-        this.y = y + this.config.y;
+      value: function render(layer, startDate, offset) {
+        this.x = this.computeX(startDate) + offset.x;
+        this.y = this.config.y + offset.y;
         this.group = svg('g', {
           "class": "bar-wrapper ".concat(this.config.customClass || ''),
           'data-id': this.task.id,
@@ -701,13 +701,14 @@ var Timeline = (function () {
       value: function drawLabel(layer) {
         var _this = this;
 
+        if (!this.config.text) return;
         this.label = svg('text', {
           x: this.x + this.width / 2,
           y: this.y + this.height / 2,
           "class": 'bar-label',
           append_to: layer
         });
-        this.label.appendChild(toTextFragment(this.task.name));
+        this.label.appendChild(toTextFragment(this.config.text));
         requestAnimationFrame(function () {
           return _this.updateLabelPosition();
         });
@@ -722,7 +723,8 @@ var Timeline = (function () {
           this.label.classList.remove('big');
           this.label.setAttribute('x', this.bar.getX() + this.bar.getWidth() / 2 + '');
         }
-      }
+      } // TODO: Support events better
+
     }, {
       key: "handleEvent",
       value: function handleEvent(evt) {
@@ -735,6 +737,7 @@ var Timeline = (function () {
             title: this.task.name,
             subtitle: this.task.start.format('MMM DD') + ' - ' + this.task.end.format('MMM DD')
           });
+          return;
         }
 
         if (!this.options.events || !this.options.events[key]) throw new Error('Event not implemented.');
@@ -790,10 +793,10 @@ var Timeline = (function () {
       }
     }, {
       key: "render",
-      value: function render(layer, startDate, x, y) {
+      value: function render(layer, startDate, offset) {
         svg('image', {
-          x: this.computeX(startDate) + x,
-          y: y + this.config.y,
+          x: this.computeX(startDate) + offset.x,
+          y: this.config.y + offset.y,
           width: this.width,
           height: this.height,
           href: this.href,
@@ -954,7 +957,7 @@ var Timeline = (function () {
       }
     }, {
       key: "render",
-      value: function render(layer, startDate, x, y) {
+      value: function render(layer, startDate, offset) {
         console.log(this._height);
         var barGroup = svg('g', {
           "class": 'bar',
@@ -968,13 +971,13 @@ var Timeline = (function () {
 
         this._plans.forEach(function (row) {
           return row.forEach(function (p) {
-            return p.render(barGroup, startDate, x, y);
+            return p.render(barGroup, startDate, offset);
           });
         });
 
         this._milestones.forEach(function (row) {
           return row.forEach(function (m) {
-            return m.render(milestoneGroup, startDate, x, y);
+            return m.render(milestoneGroup, startDate, offset);
           });
         });
       }
@@ -1154,16 +1157,20 @@ var Timeline = (function () {
           "class": 'grid',
           prepend_to: parent
         });
-        this.drawBackground(gridLayer, width);
-        this.drawRows(gridLayer, width);
-        this.drawHeader(gridLayer, width);
-        this.drawTicks(gridLayer, width);
-        this.highlightCurrentDay(gridLayer, width);
-        this.drawDates(dateLayer, width);
-        var y = this.options.headerHeight + this.options.padding;
+        var offset = {
+          x: width,
+          y: 0
+        };
+        this.drawBackground(gridLayer, offset);
+        this.drawRows(gridLayer, offset);
+        this.drawHeader(gridLayer, offset);
+        this.drawTicks(gridLayer, offset);
+        this.highlightCurrentDay(gridLayer, offset);
+        this.drawDates(dateLayer, offset);
+        offset.y = this.options.headerHeight + this.options.padding;
         this.tasks.forEach(function (t) {
-          t.render(taskLayer, _this5._start, width, y);
-          y += t.height + _this5.options.padding;
+          t.render(taskLayer, _this5._start, offset);
+          offset.y += t.height + _this5.options.padding;
         });
       }
     }, {
@@ -1180,11 +1187,11 @@ var Timeline = (function () {
       }
     }, {
       key: "drawBackground",
-      value: function drawBackground(layer, x) {
+      value: function drawBackground(layer, offset) {
         svg('rect', {
           x: 0,
           y: 0,
-          width: this.getWidth() + x,
+          width: this.getWidth() + offset.x,
           height: this.getHeight(),
           "class": 'grid-background',
           append_to: layer
@@ -1192,7 +1199,7 @@ var Timeline = (function () {
       }
     }, {
       key: "drawRows",
-      value: function drawRows(layer, x) {
+      value: function drawRows(layer, offset) {
         var _this6 = this;
 
         var rowsLayer = svg('g', {
@@ -1201,7 +1208,7 @@ var Timeline = (function () {
         var linesLayer = svg('g', {
           append_to: layer
         });
-        var rowWidth = this.getWidth() + x;
+        var rowWidth = this.getWidth() + offset.x;
         var y = this.options.headerHeight + this.options.padding / 2;
         this.tasks.forEach(function (task) {
           var rowHeight = task.height + _this6.options.padding;
@@ -1226,9 +1233,9 @@ var Timeline = (function () {
       }
     }, {
       key: "drawHeader",
-      value: function drawHeader(layer, x) {
+      value: function drawHeader(layer, offset) {
         svg('rect', {
-          x: x,
+          x: offset.x,
           y: 0,
           width: this.getWidth(),
           height: this.options.headerHeight + 10,
@@ -1238,8 +1245,8 @@ var Timeline = (function () {
       }
     }, {
       key: "drawTicks",
-      value: function drawTicks(layer, xOffset) {
-        var x = xOffset;
+      value: function drawTicks(layer, offset) {
+        var x = offset.x;
         var y = this.options.headerHeight + this.options.padding / 2,
             height = this.tasks.getHeight();
 
@@ -1275,11 +1282,11 @@ var Timeline = (function () {
       }
     }, {
       key: "highlightCurrentDay",
-      value: function highlightCurrentDay(layer, xOffset) {
+      value: function highlightCurrentDay(layer, offset) {
         if (VIEW_MODE.DAY == this.options.viewMode) {
           var x = dayjs_min().diff(this.start, 'hour') / this.options.step * this.options.columnWidth;
           svg('rect', {
-            x: x + xOffset,
+            x: x + offset.x,
             y: 0,
             width: this.options.columnWidth,
             height: this.getHeight(),
@@ -1290,7 +1297,7 @@ var Timeline = (function () {
       }
     }, {
       key: "drawDates",
-      value: function drawDates(layer, x) {
+      value: function drawDates(layer, offset) {
         var lastDate = null;
         var i = 0;
 
@@ -1303,7 +1310,7 @@ var Timeline = (function () {
             var date = this.getDateInfo(d, lastDate, i++);
             lastDate = d;
             var lowerText = svg('text', {
-              x: date.lower_x + x,
+              x: date.lower_x + offset.x,
               y: date.lower_y,
               "class": 'lower-text',
               append_to: layer
@@ -1312,7 +1319,7 @@ var Timeline = (function () {
 
             if (date.upper_text) {
               var upperText = svg('text', {
-                x: date.upper_x + x,
+                x: date.upper_x + offset.x,
                 y: date.upper_y,
                 "class": 'upper-text',
                 append_to: layer
