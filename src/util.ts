@@ -7,6 +7,9 @@ export const svg = (tag: string, attrs: any): SVGElementX => {
     if (attr === 'append_to') {
       const parent = attrs.append_to
       parent.appendChild(elem)
+    } else if (attr === 'prepend_to') {
+      const parent = attrs.prepend_to
+      parent.prepend(elem)
     } else if (attr === 'innerHTML') {
       elem.innerHTML = attrs.innerHTML
     } else {

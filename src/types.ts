@@ -23,3 +23,9 @@ export class SVGElementX extends SVGElement {
     return null
   }
 }
+
+export interface ImageOptions {
+  width: number
+  height: number
+  href: string
+}

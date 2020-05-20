@@ -143,7 +143,7 @@ export default class Task {
     )
   }
 
-  public render(layer: SVGElementX, startDate: dayjs.Dayjs, y: number) {
+  public render(layer: SVGElementX, startDate: dayjs.Dayjs, x: number, y: number) {
     console.log(this._height)
     const barGroup = svg('g', {
       class: 'bar',
@@ -156,7 +156,7 @@ export default class Task {
       append_to: layer
     })
 
-    this._plans.forEach((row) => row.forEach((p) => p.render(barGroup, startDate, y)))
-    this._milestones.forEach((row) => row.forEach((m) => m.render(milestoneGroup, startDate, y)))
+    this._plans.forEach((row) => row.forEach((p) => p.render(barGroup, startDate, x, y)))
+    this._milestones.forEach((row) => row.forEach((m) => m.render(milestoneGroup, startDate, x, y)))
   }
 }

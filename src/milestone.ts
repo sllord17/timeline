@@ -1,16 +1,16 @@
-import { SVGElementX } from './types'
+import { ImageOptions, SVGElementX } from './types'
+
 import { TimelineOptions } from './timeline'
 import { VIEW_MODE } from './view'
 import dayjs from 'dayjs'
 import { svg } from './util'
 
-export interface MilestoneOptions {
-  href: string
-  height: number
-  width: number
+interface MilestoneBaseOptions {
   date: string
   y: number
 }
+
+export type MilestoneOptions = MilestoneBaseOptions & ImageOptions
 
 export default class Milestone {
   private href: string
@@ -45,9 +45,9 @@ export default class Milestone {
     return (this.date.diff(startDate, 'hour') / this.options.step) * this.options.columnWidth
   }
 
-  public render(layer: SVGElementX, startDate: dayjs.Dayjs, y: number) {
+  public render(layer: SVGElementX, startDate: dayjs.Dayjs, x: number, y: number) {
     svg('image', {
-      x: this.computeX(startDate),
+      x: this.computeX(startDate) + x,
       y: y + this.config.y,
       width: this.width,
       height: this.height,

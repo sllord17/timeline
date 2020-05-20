@@ -3,12 +3,12 @@
 import './gantt.scss'
 import './prototypes.js'
 
+import Grid, { ColumnOptions } from './grid'
 import { HtmlProducer, TaskOptions } from './task'
 import Popup, { PopupOptions } from './popup'
 import { delegate, svg } from './util'
 
 import { EVENT } from './events'
-import Grid from './grid'
 import { SVGElementX } from './types'
 import { VIEW_MODE } from './view'
 
@@ -30,6 +30,7 @@ export interface TimelineOptions {
   popupProducer?: HtmlProducer
   events?: events
   dispatch?: { (key: EVENT, paylod?: PopupOptions): void }
+  columns: ColumnOptions[]
 }
 
 class Timeline {
@@ -44,7 +45,8 @@ class Timeline {
     dateFormat: 'YYYY-MM-DD',
     popup: true,
     popupProducer: null,
-    events: null
+    events: null,
+    columns: []
   }
 
   private svg: SVGElementX

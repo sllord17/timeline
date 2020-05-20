@@ -2,6 +2,7 @@
 
 import { svg, toTextFragment } from './util'
 
+import Column from './column'
 import { SVGElementX } from './types'
 import { TaskOptions } from './task'
 import Tasks from './tasks'
@@ -12,6 +13,7 @@ import dayjs from 'dayjs'
 export interface ColumnOptions {
   id: string
   text: string
+  field: string
   customClass?: string
 }
 
@@ -24,9 +26,12 @@ export default class Grid {
   private dates: dayjs.Dayjs[]
   private tasks: Tasks
 
+  private columns: Column[] = []
+
   constructor(options: TimelineOptions, taskOptions: TaskOptions[]) {
     this.options = options
     this.tasks = new Tasks(this.options, taskOptions)
+    this.columns = options.columns.map((c) => new Column(this.options, c, this.tasks))
 
     this.setupDates()
   }
@@ -114,51 +119,74 @@ export default class Grid {
     parent.setAttribute('width', `${this.getWidth()}`)
     parent.setAttribute('height', `${this.getHeight()}`)
 
-    const gridLayer = svg('g', {
-      class: 'grid',
-      append_to: parent
+    const columnLayer = svg('g', {
+      class: 'columns'
+    })
+
+    this.drawColumns(columnLayer)
+    parent.appendChild(columnLayer)
+
+    requestAnimationFrame(() => this.renderStage2(parent, columnLayer.getBBox().width))
+
+    console.log(columnLayer.getBBox())
+  }
+
+  private renderStage2(parent: SVGElementX, width: number) {
+    const taskLayer = svg('g', {
+      class: 'bar',
+      prepend_to: parent
     })
 
     const dateLayer = svg('g', {
       class: 'date',
-      append_to: parent
+      prepend_to: parent
     })
 
-    const taskLayer = svg('g', {
-      class: 'bar',
-      append_to: parent
+    const gridLayer = svg('g', {
+      class: 'grid',
+      prepend_to: parent
     })
 
-    this.drawBackground(gridLayer)
-    this.drawRows(gridLayer)
-    this.drawHeader(gridLayer)
-    this.drawColumns(gridLayer)
-    this.highlightCurrentDay(gridLayer)
-    this.drawDates(dateLayer)
+    this.drawBackground(gridLayer, width)
+    this.drawRows(gridLayer, width)
+    this.drawHeader(gridLayer, width)
+    this.drawTicks(gridLayer, width)
+    this.highlightCurrentDay(gridLayer, width)
+    this.drawDates(dateLayer, width)
 
     let y = this.options.headerHeight + this.options.padding
     this.tasks.forEach((t) => {
-      t.render(taskLayer, this._start, y)
+      t.render(taskLayer, this._start, width, y)
       y += t.height + this.options.padding
     })
   }
 
-  private drawBackground(layer: SVGElementX) {
+  private drawColumns(layer: SVGElementX) {
+    const columnsLayer = svg('g', { append_to: layer })
+
+    let width = 0
+    this.columns.forEach((c) => {
+      c.render(columnsLayer, width)
+      width += c.getWidth()
+    })
+  }
+
+  private drawBackground(layer: SVGElementX, x: number) {
     svg('rect', {
       x: 0,
       y: 0,
-      width: this.getWidth(),
+      width: this.getWidth() + x,
       height: this.getHeight(),
       class: 'grid-background',
       append_to: layer
     })
   }
 
-  private drawRows(layer: SVGElementX) {
+  private drawRows(layer: SVGElementX, x: number) {
     const rowsLayer = svg('g', { append_to: layer })
     const linesLayer = svg('g', { append_to: layer })
 
-    const rowWidth = this.getWidth()
+    const rowWidth = this.getWidth() + x
     let y = this.options.headerHeight + this.options.padding / 2
 
     this.tasks.forEach((task) => {
@@ -186,9 +214,9 @@ export default class Grid {
     })
   }
 
-  private drawHeader(layer: SVGElementX) {
+  private drawHeader(layer: SVGElementX, x: number) {
     svg('rect', {
-      x: 0,
+      x: x,
       y: 0,
       width: this.getWidth(),
       height: this.options.headerHeight + 10,
@@ -197,8 +225,8 @@ export default class Grid {
     })
   }
 
-  private drawColumns(layer: SVGElementX) {
-    let x = 0
+  private drawTicks(layer: SVGElementX, xOffset: number) {
+    let x = xOffset
     const y = this.options.headerHeight + this.options.padding / 2,
       height = this.tasks.getHeight()
 
@@ -227,12 +255,12 @@ export default class Grid {
     }
   }
 
-  private highlightCurrentDay(layer: SVGElementX) {
+  private highlightCurrentDay(layer: SVGElementX, xOffset: number) {
     if (VIEW_MODE.DAY == this.options.viewMode) {
       const x = (dayjs().diff(this.start, 'hour') / this.options.step) * this.options.columnWidth
 
       svg('rect', {
-        x,
+        x: x + xOffset,
         y: 0,
         width: this.options.columnWidth,
         height: this.getHeight(),
@@ -242,7 +270,7 @@ export default class Grid {
     }
   }
 
-  private drawDates(layer: SVGElementX) {
+  private drawDates(layer: SVGElementX, x: number) {
     let lastDate = null
     let i: number = 0
     for (const d of this.dates) {
@@ -250,7 +278,7 @@ export default class Grid {
       lastDate = d
 
       const lowerText = svg('text', {
-        x: date.lower_x,
+        x: date.lower_x + x,
         y: date.lower_y,
         class: 'lower-text',
         append_to: layer
@@ -260,7 +288,7 @@ export default class Grid {
 
       if (date.upper_text) {
         const upperText = svg('text', {
-          x: date.upper_x,
+          x: date.upper_x + x,
           y: date.upper_y,
           class: 'upper-text',
           append_to: layer

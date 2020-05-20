@@ -96,8 +96,8 @@ export default class Bar implements EventListenerObject {
     return (this.start.diff(startDate, 'hour') / this.options.step) * this.options.columnWidth
   }
 
-  public render(layer: SVGElementX, startDate: dayjs.Dayjs, y: number) {
-    this.x = this.computeX(startDate)
+  public render(layer: SVGElementX, startDate: dayjs.Dayjs, x: number, y: number) {
+    this.x = this.computeX(startDate) + x
     this.y = y + this.config.y
 
     this.group = svg('g', {
