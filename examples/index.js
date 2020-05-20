@@ -119,6 +119,7 @@ var tasks = [
 ]
 
 var gantt_chart = new Timeline('#abc123', tasks, {
+  viewMode: 'Week',
   columns: [
     { text: 'Name', field: 'name' },
     { text: 'Id', field: 'id' }

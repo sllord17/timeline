@@ -3,6 +3,10 @@ type obj = { [key: string]: any }
 export default class Prop {
   private _properties: obj = {}
 
+  constructor(o: obj = {}) {
+    this.properties = o
+  }
+
   get properties(): obj {
     return { ...this._properties }
   }

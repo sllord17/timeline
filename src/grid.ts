@@ -23,6 +23,8 @@ export default class Grid {
 
   constructor(options: TimelineOptions, taskOptions: TaskOptions[]) {
     this.options = options
+    this.updateViewScale()
+
     this.tasks = new Tasks(this.options, taskOptions)
     this.columns = options.columns.map((c) => new Column(this.options, c, this.tasks))
 
@@ -51,6 +53,29 @@ export default class Grid {
       }
       this.dates.push(d)
     } while (d.isBefore(this._end))
+  }
+
+  private updateViewScale() {
+    const mode = this.options.viewMode
+    if (mode === VIEW_MODE.DAY) {
+      this.options.step = 24
+      this.options.columnWidth = 38
+    } else if (mode === VIEW_MODE.HALF_DAY) {
+      this.options.step = 24 / 2
+      this.options.columnWidth = 38
+    } else if (mode === VIEW_MODE.QUARTER_DAY) {
+      this.options.step = 24 / 4
+      this.options.columnWidth = 38
+    } else if (mode === VIEW_MODE.WEEK) {
+      this.options.step = 24 * 7
+      this.options.columnWidth = 140
+    } else if (mode === VIEW_MODE.MONTH) {
+      this.options.step = 24 * 30
+      this.options.columnWidth = 120
+    } else if (mode === VIEW_MODE.YEAR) {
+      this.options.step = 24 * 365
+      this.options.columnWidth = 120
+    }
   }
 
   private convertDates() {

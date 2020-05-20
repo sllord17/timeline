@@ -2,6 +2,7 @@ import { Offset, SVGElementX } from './types'
 import { svg, toTextFragment } from './util'
 
 import { EVENT } from './events'
+import Prop from './prop'
 import Task from './task'
 import { TimelineOptions } from './timeline'
 import { VIEW_MODE } from './view'
@@ -18,7 +19,7 @@ export interface BarOptions {
   style: ElementCSSInlineStyle
 }
 
-export default class Bar implements EventListenerObject {
+export default class Bar extends Prop implements EventListenerObject {
   private options: TimelineOptions
   private config: BarOptions
 
@@ -49,6 +50,8 @@ export default class Bar implements EventListenerObject {
   }
 
   constructor(options: TimelineOptions, config: BarOptions, task: Task) {
+    super(config)
+
     this.options = options
     this.config = { ...config }
     this.task = task
@@ -84,6 +87,9 @@ export default class Bar implements EventListenerObject {
     if (this._end.isSame(this._end.startOf('day'))) {
       this._end = this._end.add(24, 'hour')
     }
+
+    this.set('start', this._start)
+    this.set('end', this._end)
 
     const duration = this.end.diff(this.start, 'hour') / this.options.step
     this.width = duration * this.options.columnWidth
@@ -185,8 +191,7 @@ export default class Bar implements EventListenerObject {
         eventTarget: this,
         positionTarget: this.group,
         title: this.task.get('name'),
-        subtitle:
-          this.task.get('start').format('MMM DD') + ' - ' + this.task.get('end').format('MMM DD')
+        subtitle: this.get('start').format('MMM DD') + ' - ' + this.get('end').format('MMM DD')
       })
 
       return
