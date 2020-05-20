@@ -1155,6 +1155,9 @@ var Timeline = (function () {
 
       _this.set('height', config.height || options.barHeight);
 
+      console.assert(!!config.start, 'Plan must have a start date');
+      console.assert(!!config.end, 'Plan must have an end date');
+
       _this.set('start', dayjs_min(config.start));
 
       _this.set('end', dayjs_min(config.end)); // if hours is not set, assume the last day is full day
@@ -1207,7 +1210,7 @@ var Timeline = (function () {
     }, {
       key: "drawBar",
       value: function drawBar(layer) {
-        this.set('bar', svg('rect', {
+        var rect = this.set('bar', svg('rect', {
           x: this.get('x'),
           y: this.get('y'),
           width: this.get('width'),
@@ -1217,6 +1220,13 @@ var Timeline = (function () {
           "class": 'bar',
           append_to: layer
         }));
+
+        if (this.get('backgroundStyle')) {
+          var style = this.get('backgroundStyle');
+          Object.keys(style).forEach(function (k) {
+            return rect.style[k] = style[k];
+          });
+        }
       }
     }, {
       key: "drawProgressBar",
@@ -1232,8 +1242,8 @@ var Timeline = (function () {
           append_to: layer
         });
 
-        if (this.get('style')) {
-          var style = this.get('style');
+        if (this.get('progressStyle')) {
+          var style = this.get('progressStyle');
           Object.keys(style).forEach(function (k) {
             return rect.style[k] = style[k];
           });
@@ -1251,6 +1261,14 @@ var Timeline = (function () {
           "class": 'bar-label',
           append_to: layer
         }));
+
+        if (this.get('labelStyle')) {
+          var style = this.get('labelStyle');
+          Object.keys(style).forEach(function (k) {
+            return _this2.get('text').style[k] = style[k];
+          });
+        }
+
         this.get('text').appendChild(toTextFragment(this.get('label')));
         requestAnimationFrame(function () {
           return _this2.updateLabelPosition();

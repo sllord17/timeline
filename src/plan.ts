@@ -15,7 +15,9 @@ interface BasePlanOptions {
   end: string
   label: string
   cornerRadius?: number
-  style?: ElementCSSInlineStyle
+  progressStyle?: ElementCSSInlineStyle
+  backgroundStyle?: ElementCSSInlineStyle
+  labelStyle?: ElementCSSInlineStyle
 }
 
 export type PlanOptions = BasePlanOptions & Offset
@@ -39,6 +41,9 @@ export default class Plan extends Prop implements EventListenerObject {
     this.options = options
     this.task = task
     this.set('height', config.height || options.barHeight)
+
+    console.assert(!!config.start, 'Plan must have a start date')
+    console.assert(!!config.end, 'Plan must have an end date')
 
     this.set('start', dayjs(config.start))
     this.set('end', dayjs(config.end))
@@ -91,7 +96,7 @@ export default class Plan extends Prop implements EventListenerObject {
   }
 
   private drawBar(layer: SVGElementX) {
-    this.set(
+    const rect = this.set(
       'bar',
       svg('rect', {
         x: this.get('x'),
@@ -104,6 +109,11 @@ export default class Plan extends Prop implements EventListenerObject {
         append_to: layer
       })
     )
+
+    if (this.get('backgroundStyle')) {
+      const style = this.get('backgroundStyle')
+      Object.keys(style).forEach((k) => (rect.style[k] = style[k]))
+    }
   }
 
   private drawProgressBar(layer: SVGElementX) {
@@ -118,8 +128,8 @@ export default class Plan extends Prop implements EventListenerObject {
       append_to: layer
     })
 
-    if (this.get('style')) {
-      const style = this.get('style')
+    if (this.get('progressStyle')) {
+      const style = this.get('progressStyle')
       Object.keys(style).forEach((k) => (rect.style[k] = style[k]))
     }
   }
@@ -136,6 +146,11 @@ export default class Plan extends Prop implements EventListenerObject {
         append_to: layer
       })
     )
+
+    if (this.get('labelStyle')) {
+      const style = this.get('labelStyle')
+      Object.keys(style).forEach((k) => (this.get('text').style[k] = style[k]))
+    }
 
     this.get('text').appendChild(toTextFragment(this.get('label')))
     requestAnimationFrame(() => this.updateLabelPosition())

@@ -7,8 +7,13 @@ var tasks = [
           end: '2020-05-26T05:00:00.000Z',
           progress: 18,
           height: 22,
-          style: {
+          label: 'Plan bar 1',
+          progressStyle: {
             fill: '#f2c329'
+          },
+          labelStyle: {
+            fill: 'black',
+            fontWeight: 'bold'
           }
         }
       ],
@@ -17,8 +22,9 @@ var tasks = [
           start: '2020-05-21T05:00:00.000Z',
           end: '2020-06-26T05:00:00.000Z',
           progress: 100,
+          label: 'Plan bar 2',
           height: 22,
-          style: {
+          progressStyle: {
             fill: '#8fdaff',
             stroke: 'black',
             strokeWidth: '1px'
@@ -31,7 +37,8 @@ var tasks = [
           end: '2020-06-20T05:00:00.000Z',
           progress: 100,
           height: 22,
-          style: {
+          label: 'Plan bar 4',
+          progressStyle: {
             fill: '#8fdaff',
             stroke: 'black',
             strokeWidth: '1px'
@@ -44,7 +51,7 @@ var tasks = [
           end: '2020-06-02T05:00:00.000Z',
           progress: 100,
           height: 22,
-          style: {
+          progressStyle: {
             fill: '#8fdaff',
             stroke: 'black',
             strokeWidth: '1px'
@@ -78,7 +85,7 @@ var tasks = [
           end: '2020-05-23T05:00:00.000Z',
           progress: 10,
           height: 50,
-          style: {
+          progressStyle: {
             fill: '#f2c329'
           }
         },
@@ -86,7 +93,7 @@ var tasks = [
           start: '2020-05-15T05:00:00.000Z',
           end: '2020-05-18T05:00:00.000Z',
           height: 20,
-          style: {
+          progressStyle: {
             fill: '#f2c329'
           }
         }
@@ -96,7 +103,8 @@ var tasks = [
           start: '2020-05-15T05:00:00.000Z',
           end: '2020-05-18T05:00:00.000Z',
           height: 30,
-          style: {
+          label: 'Plan bar 7',
+          progressStyle: {
             fill: '#68de84'
           }
         },
@@ -104,7 +112,7 @@ var tasks = [
           start: '2020-05-21T05:00:00.000Z',
           end: '2020-06-18T05:00:00.000Z',
           height: 30,
-          style: {
+          progressStyle: {
             fill: '#8fdaff'
           }
         }
@@ -132,7 +140,7 @@ var tasks = [
       end: '2020-05-25T05:00:00.000Z',
       progress: 87,
       height: 10,
-      style: {
+      progressStyle: {
         fill: '#f2c329'
       }
     },
