@@ -31,6 +31,6 @@ export interface ImageOptions {
 }
 
 export interface Offset {
-  x: number
-  y: number
+  x?: number
+  y?: number
 }

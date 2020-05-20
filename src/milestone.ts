@@ -14,35 +14,27 @@ interface MilestoneBaseOptions {
 
 export type MilestoneOptions = MilestoneBaseOptions & ImageOptions & Offset
 
+const defaultMilestoneOptions: MilestoneOptions = Object.freeze({
+  height: 16,
+  width: 16,
+  date: null,
+  href: '',
+  y: 0
+})
+
 export default class Milestone extends Prop implements EventListenerObject {
-  private href: string
-  private height: number
-  private width: number
-  private _date: dayjs.Dayjs
-
   private options: TimelineOptions
-  private config: MilestoneOptions
   private task: Task
-
-  public get date(): dayjs.Dayjs {
-    return this._date
-  }
 
   private dom: SVGElementX
 
   constructor(options: TimelineOptions, config: MilestoneOptions, task: Task) {
-    super()
+    super({ ...defaultMilestoneOptions, ...config })
 
     this.options = options
-    this.config = { ...config }
     this.task = task
 
-    this.config.y = config.y ?? 0
-
-    this.href = config.href
-    this.height = config.height || 16
-    this.width = config.width || 16
-    this._date = dayjs(config.date)
+    this.set('date', dayjs(config.date))
   }
 
   // TODO: Support events better
@@ -53,7 +45,7 @@ export default class Milestone extends Prop implements EventListenerObject {
         eventTarget: this,
         positionTarget: this.dom,
         title: this.task.get('name'),
-        subtitle: this.date.format('MMM DD')
+        subtitle: this.get('date').format('MMM DD')
       })
 
       return
@@ -66,19 +58,19 @@ export default class Milestone extends Prop implements EventListenerObject {
 
   private computeX(startDate: dayjs.Dayjs): number {
     if (VIEW_MODE.MONTH == this.options.viewMode) {
-      return (this.date.diff(startDate, 'day') * this.options.columnWidth) / 30
+      return (this.get('date').diff(startDate, 'day') * this.options.columnWidth) / 30
     }
 
-    return (this.date.diff(startDate, 'hour') / this.options.step) * this.options.columnWidth
+    return (this.get('date').diff(startDate, 'hour') / this.options.step) * this.options.columnWidth
   }
 
   public render(layer: SVGElementX, startDate: dayjs.Dayjs, offset: Offset) {
     this.dom = svg('image', {
       x: this.computeX(startDate) + offset.x,
-      y: this.config.y + offset.y,
-      width: this.width,
-      height: this.height,
-      href: this.href,
+      y: this.get('y') + offset.y,
+      width: this.get('width'),
+      height: this.get('height'),
+      href: this.get('href'),
       append_to: layer
     })
 

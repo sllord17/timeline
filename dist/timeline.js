@@ -1262,51 +1262,37 @@ var Timeline = (function () {
     return Bar;
   }(Prop);
 
+  var defaultMilestoneOptions = Object.freeze({
+    height: 16,
+    width: 16,
+    date: null,
+    href: '',
+    y: 0
+  });
+
   var Milestone = /*#__PURE__*/function (_Prop) {
     _inherits(Milestone, _Prop);
 
     var _super = _createSuper(Milestone);
 
-    _createClass(Milestone, [{
-      key: "date",
-      get: function get() {
-        return this._date;
-      }
-    }]);
-
     function Milestone(options, config, task) {
-      var _config$y;
-
       var _this;
 
       _classCallCheck(this, Milestone);
 
-      _this = _super.call(this);
-
-      _defineProperty(_assertThisInitialized(_this), "href", void 0);
-
-      _defineProperty(_assertThisInitialized(_this), "height", void 0);
-
-      _defineProperty(_assertThisInitialized(_this), "width", void 0);
-
-      _defineProperty(_assertThisInitialized(_this), "_date", void 0);
+      _this = _super.call(this, _objectSpread2(_objectSpread2({}, defaultMilestoneOptions), config));
 
       _defineProperty(_assertThisInitialized(_this), "options", void 0);
-
-      _defineProperty(_assertThisInitialized(_this), "config", void 0);
 
       _defineProperty(_assertThisInitialized(_this), "task", void 0);
 
       _defineProperty(_assertThisInitialized(_this), "dom", void 0);
 
       _this.options = options;
-      _this.config = _objectSpread2({}, config);
       _this.task = task;
-      _this.config.y = (_config$y = config.y) !== null && _config$y !== void 0 ? _config$y : 0;
-      _this.href = config.href;
-      _this.height = config.height || 16;
-      _this.width = config.width || 16;
-      _this._date = dayjs_min(config.date);
+
+      _this.set('date', dayjs_min(config.date));
+
       return _this;
     } // TODO: Support events better
 
@@ -1321,7 +1307,7 @@ var Timeline = (function () {
             eventTarget: this,
             positionTarget: this.dom,
             title: this.task.get('name'),
-            subtitle: this.date.format('MMM DD')
+            subtitle: this.get('date').format('MMM DD')
           });
           return;
         }
@@ -1333,20 +1319,20 @@ var Timeline = (function () {
       key: "computeX",
       value: function computeX(startDate) {
         if (VIEW_MODE.MONTH == this.options.viewMode) {
-          return this.date.diff(startDate, 'day') * this.options.columnWidth / 30;
+          return this.get('date').diff(startDate, 'day') * this.options.columnWidth / 30;
         }
 
-        return this.date.diff(startDate, 'hour') / this.options.step * this.options.columnWidth;
+        return this.get('date').diff(startDate, 'hour') / this.options.step * this.options.columnWidth;
       }
     }, {
       key: "render",
       value: function render(layer, startDate, offset) {
         this.dom = svg('image', {
           x: this.computeX(startDate) + offset.x,
-          y: this.config.y + offset.y,
-          width: this.width,
-          height: this.height,
-          href: this.href,
+          y: this.get('y') + offset.y,
+          width: this.get('width'),
+          height: this.get('height'),
+          href: this.get('href'),
           append_to: layer
         });
 
@@ -1463,12 +1449,12 @@ var Timeline = (function () {
 
         this._milestones.forEach(function (a) {
           return a.forEach(function (p) {
-            if (!_this2.get('start') || p.date.isBefore(_this2.get('start'))) {
-              _this2.set('start', p.date.clone());
+            if (!_this2.get('start') || p.get('date').isBefore(_this2.get('start'))) {
+              _this2.set('start', p.get('date').clone());
             }
 
-            if (!_this2.get('end') || p.date.isAfter(_this2.get('end'))) {
-              _this2.set('end', p.date.clone());
+            if (!_this2.get('end') || p.get('date').isAfter(_this2.get('end'))) {
+              _this2.set('end', p.get('date').clone());
             }
           });
         });

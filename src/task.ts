@@ -114,12 +114,12 @@ export default class Task extends Prop {
 
     this._milestones.forEach((a) =>
       a.forEach((p) => {
-        if (!this.get('start') || p.date.isBefore(this.get('start'))) {
-          this.set('start', p.date.clone())
+        if (!this.get('start') || p.get('date').isBefore(this.get('start'))) {
+          this.set('start', p.get('date').clone())
         }
 
-        if (!this.get('end') || p.date.isAfter(this.get('end'))) {
-          this.set('end', p.date.clone())
+        if (!this.get('end') || p.get('date').isAfter(this.get('end'))) {
+          this.set('end', p.get('date').clone())
         }
       })
     )
