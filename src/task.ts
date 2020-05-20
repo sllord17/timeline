@@ -1,4 +1,3 @@
-import Bar, { BarOptions } from './bar'
 import Milestone, { MilestoneOptions } from './milestone'
 
 import { SVGElementX, Offset } from './types'
@@ -6,18 +5,19 @@ import { TimelineOptions } from './timeline'
 import dayjs from 'dayjs'
 import { svg } from './util'
 import Prop from './prop'
+import Plan, { PlanOptions } from './plan'
 
 export interface HtmlProducer {
-  (target: Task | Bar | Milestone): string
+  (target: Task | Plan | Milestone): string
 }
 
 export interface SingleBarOptions extends TaskBaseOptions {
-  plan: BarOptions
+  plan: PlanOptions
   milestones?: MilestoneOptions[]
 }
 
 export interface MultiBarOptions extends TaskBaseOptions {
-  plans: BarOptions[][]
+  plans: PlanOptions[][]
   milestones?: MilestoneOptions[][]
 }
 
@@ -39,7 +39,7 @@ function isSingle(options: TaskOptions): boolean {
 export default class Task extends Prop {
   private options: TimelineOptions
 
-  private _plans: Bar[][] = []
+  private _plans: Plan[][] = []
   private _milestones: Milestone[][] = []
 
   constructor(options: TimelineOptions, config: TaskOptions) {
@@ -54,7 +54,7 @@ export default class Task extends Prop {
     }
 
     if (isSingle(config)) {
-      this._plans = [[new Bar(options, config.plan, this)]]
+      this._plans = [[new Plan(options, config.plan, this)]]
       this._milestones = [
         (<MilestoneOptions[]>config.milestones).map((m) => new Milestone(options, m, this))
       ]
@@ -63,9 +63,9 @@ export default class Task extends Prop {
       this._plans = config.plans.map((bo, idx) => {
         const arr = bo.map((b) => {
           if (idx > 0) b.y = rowOffsets[idx - 1]
-          return new Bar(options, b, this)
+          return new Plan(options, b, this)
         })
-        const max = Math.max(...arr.map((b) => b.height))
+        const max = Math.max(...arr.map((b) => b.get('height')))
         rowOffsets.push((idx > 0 ? rowOffsets[idx - 1] : 0) + max)
         return arr
       })
@@ -87,27 +87,27 @@ export default class Task extends Prop {
   private computeHeight() {
     this.set(
       'height',
-      this._plans.map((a) => Math.max(...a.map((p) => p.height))).reduce((a, b) => a + b, 0)
+      this._plans.map((a) => Math.max(...a.map((p) => p.get('height')))).reduce((a, b) => a + b, 0)
     )
   }
 
   private computeBoundingDates() {
     if (!this.get('start')) {
-      this.set('start', this._plans[0][0].start.clone())
+      this.set('start', this._plans[0][0].get('start').clone())
     }
 
     if (!this.get('end')) {
-      this.set('end', this._plans[0][0].end.clone())
+      this.set('end', this._plans[0][0].get('end').clone())
     }
 
     this._plans.forEach((a) =>
       a.forEach((p) => {
-        if (!this.get('start') || p.start.isBefore(this.get('start'))) {
-          this.set('start', p.start.clone())
+        if (!this.get('start') || p.get('start').isBefore(this.get('start'))) {
+          this.set('start', p.get('start').clone())
         }
 
-        if (!this.get('end') || p.end.isAfter(this.get('end'))) {
-          this.set('end', p.end.clone())
+        if (!this.get('end') || p.get('end').isAfter(this.get('end'))) {
+          this.set('end', p.get('end').clone())
         }
       })
     )

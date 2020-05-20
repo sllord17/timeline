@@ -1,5 +1,5 @@
-import Bar from './bar'
 import Milestone from './milestone'
+import Plan from './plan'
 import { SVGElementX } from './types'
 import Task from './task'
 import { TimelineOptions } from './timeline'
@@ -10,7 +10,7 @@ export interface PopupOptions {
   title?: string
   subtitle?: string
   positionTarget: SVGElementX
-  eventTarget: Bar | Milestone | Task
+  eventTarget: Plan | Milestone | Task
 }
 
 export default class Popup {
