@@ -24,7 +24,6 @@ export interface MultiBarOptions extends TaskBaseOptions {
 interface TaskBaseOptions {
   id: string
   name: string
-  customClass?: string
 }
 
 export type TaskOptions = SingleBarOptions & MultiBarOptions

@@ -1,67 +1,69 @@
-<div align="center">
-    <img src="https://github.com/frappe/design/blob/master/logos/logo-2019/frappe-gantt-logo.png" height="128">
-    <h2>Frappe Gantt</h2>
-    <p align="center">
-        <p>A simple, interactive, modern gantt chart library for the web</p>
-        <a href="https://frappe.github.io/gantt">
-            <b>View the demo »</b>
-        </a>
-    </p>
-</div>
+# Timeline
 
-<p align="center">
-    <a href="https://frappe.github.io/gantt">
-        <img src="https://cloud.githubusercontent.com/assets/9355208/21537921/4a38b194-cdbd-11e6-8110-e0da19678a6d.png">
-    </a>
-</p>
+## An open-source timeline view of schedules/itineraries based on [frappe gantt](https://frappe.github.io/gantt)
 
-### Install
-```
-npm install frappe-gantt
+#### Note: anything about this library is subject to change as it is in development
+
+This project is built with TypeScript for ease of development and is transpiled to support IE11.
+
+Timeline aims to be data driven with little intervention from developers.
+
+Date parsing is powered by a tiny library [dayjs](https://github.com/iamkun/dayjs)
+
+# Using
+
+1. Create a `div` to target
+
+```html
+<div class="gantt-container" id="abc123" pointer-events="auto"></div>
 ```
 
-### Usage
-Include it in your HTML:
-```
-<script src="frappe-gantt.min.js"></script>
-<link rel="stylesheet" href="frappe-gantt.css">
-```
+2. Create your data and timeline configuration
 
-And start hacking:
 ```js
+// Plans and milestones are multi-dimensional arrays to support multiple bars within a task view
 var tasks = [
-  {
-    id: 'Task 1',
-    name: 'Redesign website',
-    start: '2016-12-28',
-    end: '2016-12-31',
-    progress: 20,
-    dependencies: 'Task 2, Task 3',
-    custom_class: 'bar-milestone' // optional
-  },
-  ...
+  [
+    {
+      name: 'Task 1',
+      plans: [
+        [
+          {
+            start: '2012-05-22',
+            end: '2012-06-25'
+          }
+        ]
+      ],
+      milestones: []
+    }
+  ]
 ]
-var gantt = new Gantt("#gantt", tasks);
+
+var timelineOptions = {
+  headerHeight: 50,
+  columnWidth: 30,
+  step: 24,
+  barHeight: 20,
+  padding: 18,
+  viewMode: 'Day'
+}
 ```
 
-You can also pass various options to the Gantt constructor:
+3. Pass your css selector to identify your div and options to a timeline object
+
 ```js
-var gantt = new Gantt("#gantt", tasks, {
-    header_height: 50,
-    column_width: 30,
-    step: 24,
-    view_modes: ['Quarter Day', 'Half Day', 'Day', 'Week', 'Month'],
-    bar_height: 20,
-    bar_corner_radius: 3,
-    arrow_curve: 5,
-    padding: 18,
-    view_mode: 'Day',   
-    date_format: 'YYYY-MM-DD',
-    custom_popup_html: null
-});
+var gantt = new Gantt('#abc123', tasks)
+
+or
+
+var gantt = new Gantt('#abc123', tasks, timelineOptions)
 ```
 
-If you want to contribute:
+#### See the [example](https://github.com/raiyni/timeline/tree/master/examples) for more thourough usage
+
+Additional config options can be seen within each class.
+
+# Contributing
 
 1. Clone this repo.
 2. `cd` into project directory
@@ -70,5 +72,6 @@ If you want to contribute:
 
 License: MIT
 
-------------------
-Project maintained by [frappe](https://github.com/frappe)
+---
+
+Project maintained by [Ron Young](https://github.com/raiyni)
