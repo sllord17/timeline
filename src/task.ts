@@ -23,7 +23,6 @@ export interface MultiBarOptions extends TaskBaseOptions {
 
 interface TaskBaseOptions {
   id: string
-  name: string
 }
 
 export type TaskOptions = SingleBarOptions & MultiBarOptions
@@ -87,7 +86,7 @@ export default class Task extends Prop {
   private computeHeight() {
     this.set(
       'height',
-      this._plans.map((a) => Math.max(...a.map((p) => p.get('height')))).reduce((a, b) => a + b, 0)
+      this._plans.map((a, idx) => this.getRowHeight(idx)).reduce((a, b) => a + b, 0)
     )
   }
 
@@ -123,6 +122,14 @@ export default class Task extends Prop {
         }
       })
     )
+  }
+
+  public getRowHeight(idx: number) {
+    console.assert(idx < this._plans.length, 'Row index outside of number of plan rows')
+
+    const row = this._plans[idx]
+
+    return Math.max(...row.map((p) => p.get('height')))
   }
 
   public render(layer: SVGElementX, startDate: dayjs.Dayjs, offset: Offset) {

@@ -118,7 +118,20 @@ var tasks = [
         }
       ]
     ],
-    name: 'Write new content',
+    name: [
+      {
+        label: 'Hannah 1',
+        labelStyle: {
+          fill: 'red',
+          fontWeight: 'bold',
+          fontFamily: 'Arial',
+          fontSize: '2em'
+        }
+      },
+      {
+        label: 'Boston 24'
+      }
+    ],
     id: 'Task 1',
     pieces: 444,
     area: '22k',

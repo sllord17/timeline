@@ -256,6 +256,14 @@ var Timeline = (function () {
   SVGElement.prototype.getEndX = function () {
     return this.getX() + this.getWidth();
   };
+
+  SVGElement.prototype.applyStyle = function (style) {
+    var _this = this;
+
+    Object.keys(style).forEach(function (k) {
+      return _this.style[k] = style[k];
+    });
+  };
   /*
    * classList.js: Cross-browser full element.classList implementation.
    * 1.2.20171210
@@ -965,12 +973,9 @@ var Timeline = (function () {
             height: t.get('height'),
             transform: "translate(0, ".concat(offset.y, ")")
           });
-          var label = svg('tspan', {
-            append_to: column,
-            "class": 'column-text'
-          });
-          var text = toTextFragment(t.get(_this.config.field));
-          label.appendChild(text);
+
+          _this.renderRow(column, t);
+
           offset.y += t.get('height') + _this.options.padding;
         });
       }
@@ -978,6 +983,52 @@ var Timeline = (function () {
       key: "getWidth",
       value: function getWidth() {
         return this.container.getBBox().width;
+      }
+    }, {
+      key: "renderRow",
+      value: function renderRow(layer, task) {
+        var _this2 = this;
+
+        var value = task.get(this.config.field);
+        if (!value) return;
+
+        if (typeof value == 'string' || typeof value == 'number') {
+          return this.renderTspan(layer, task, {
+            label: value
+          });
+        }
+
+        console.assert(Array.isArray(value), "Column value isn't a string or array");
+        var offset = {
+          x: 0,
+          y: 0
+        };
+        value.forEach(function (v, idx) {
+          _this2.renderTspan(layer, task, v, offset);
+
+          offset.y += task.getRowHeight(idx);
+        });
+      }
+    }, {
+      key: "renderTspan",
+      value: function renderTspan(layer, task, obj) {
+        var offset = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {
+          x: 0,
+          y: 0
+        };
+        var label = svg('tspan', {
+          append_to: layer,
+          "class": 'column-text',
+          dy: offset.y,
+          x: 0
+        });
+
+        if (obj.labelStyle) {
+          label.applyStyle(obj.labelStyle);
+        }
+
+        var text = toTextFragment(obj.label);
+        label.appendChild(text);
       }
     }]);
 
@@ -1212,7 +1263,7 @@ var Timeline = (function () {
     }, {
       key: "drawBar",
       value: function drawBar(layer) {
-        var rect = this.set('bar', svg('rect', {
+        this.set('bar', svg('rect', {
           x: this.get('x'),
           y: this.get('y'),
           width: this.get('width'),
@@ -1225,9 +1276,7 @@ var Timeline = (function () {
 
         if (this.get('backgroundStyle')) {
           var style = this.get('backgroundStyle');
-          Object.keys(style).forEach(function (k) {
-            return rect.style[k] = style[k];
-          });
+          this.get('rect').applyStyle(style);
         }
       }
     }, {
@@ -1246,9 +1295,7 @@ var Timeline = (function () {
 
         if (this.get('progressStyle')) {
           var style = this.get('progressStyle');
-          Object.keys(style).forEach(function (k) {
-            return rect.style[k] = style[k];
-          });
+          rect.applyStyle(style);
         }
       }
     }, {
@@ -1266,9 +1313,7 @@ var Timeline = (function () {
 
         if (this.get('labelStyle')) {
           var style = this.get('labelStyle');
-          Object.keys(style).forEach(function (k) {
-            return _this2.get('text').style[k] = style[k];
-          });
+          this.get('text').applyStyle(style);
         }
 
         this.get('text').appendChild(toTextFragment(this.get('label')));
@@ -1380,10 +1425,10 @@ var Timeline = (function () {
     _createClass(Task, [{
       key: "computeHeight",
       value: function computeHeight() {
-        this.set('height', this._plans.map(function (a) {
-          return Math.max.apply(Math, _toConsumableArray(a.map(function (p) {
-            return p.get('height');
-          })));
+        var _this2 = this;
+
+        this.set('height', this._plans.map(function (a, idx) {
+          return _this2.getRowHeight(idx);
         }).reduce(function (a, b) {
           return a + b;
         }, 0));
@@ -1391,7 +1436,7 @@ var Timeline = (function () {
     }, {
       key: "computeBoundingDates",
       value: function computeBoundingDates() {
-        var _this2 = this;
+        var _this3 = this;
 
         if (!this.get('start')) {
           this.set('start', this._plans[0][0].get('start').clone());
@@ -1403,27 +1448,36 @@ var Timeline = (function () {
 
         this._plans.forEach(function (a) {
           return a.forEach(function (p) {
-            if (!_this2.get('start') || p.get('start').isBefore(_this2.get('start'))) {
-              _this2.set('start', p.get('start').clone());
+            if (!_this3.get('start') || p.get('start').isBefore(_this3.get('start'))) {
+              _this3.set('start', p.get('start').clone());
             }
 
-            if (!_this2.get('end') || p.get('end').isAfter(_this2.get('end'))) {
-              _this2.set('end', p.get('end').clone());
+            if (!_this3.get('end') || p.get('end').isAfter(_this3.get('end'))) {
+              _this3.set('end', p.get('end').clone());
             }
           });
         });
 
         this._milestones.forEach(function (a) {
           return a.forEach(function (p) {
-            if (!_this2.get('start') || p.get('date').isBefore(_this2.get('start'))) {
-              _this2.set('start', p.get('date').clone());
+            if (!_this3.get('start') || p.get('date').isBefore(_this3.get('start'))) {
+              _this3.set('start', p.get('date').clone());
             }
 
-            if (!_this2.get('end') || p.get('date').isAfter(_this2.get('end'))) {
-              _this2.set('end', p.get('date').clone());
+            if (!_this3.get('end') || p.get('date').isAfter(_this3.get('end'))) {
+              _this3.set('end', p.get('date').clone());
             }
           });
         });
+      }
+    }, {
+      key: "getRowHeight",
+      value: function getRowHeight(idx) {
+        console.assert(idx < this._plans.length, 'Row index outside of number of plan rows');
+        var row = this._plans[idx];
+        return Math.max.apply(Math, _toConsumableArray(row.map(function (p) {
+          return p.get('height');
+        })));
       }
     }, {
       key: "render",

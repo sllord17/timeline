@@ -18,6 +18,10 @@ SVGElement.prototype.getEndX = function () {
   return this.getX() + this.getWidth()
 }
 
+SVGElement.prototype.applyStyle = function (style) {
+  Object.keys(style).forEach((k) => (this.style[k] = style[k]))
+}
+
 /*
  * classList.js: Cross-browser full element.classList implementation.
  * 1.2.20171210

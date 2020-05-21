@@ -22,6 +22,8 @@ export class SVGElementX extends SVGElement {
   public getBBox(): DOMRect {
     return null
   }
+
+  public applyStyle(obj: any) {}
 }
 
 export interface ImageOptions {

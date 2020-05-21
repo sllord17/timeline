@@ -1,6 +1,7 @@
 import { Offset, SVGElementX } from './types'
 import { svg, toTextFragment } from './util'
 
+import Task from './task'
 import Tasks from './tasks'
 import { TimelineOptions } from './timeline'
 
@@ -50,18 +51,46 @@ export default class Column {
         transform: `translate(0, ${offset.y})`
       })
 
-      const label = svg('tspan', {
-        append_to: column,
-        class: 'column-text'
-      })
-
-      const text = toTextFragment(t.get(this.config.field))
-      label.appendChild(text)
+      this.renderRow(column, t)
       offset.y += t.get('height') + this.options.padding
     })
   }
 
   getWidth(): number {
     return this.container.getBBox().width
+  }
+
+  private renderRow(layer: SVGElementX, task: Task) {
+    const value = task.get(this.config.field)
+    if (!value) return
+
+    if (typeof value == 'string' || typeof value == 'number') {
+      return this.renderTspan(layer, task, { label: value })
+    }
+
+    console.assert(Array.isArray(value), "Column value isn't a string or array")
+
+    const offset: Offset = { x: 0, y: 0 }
+
+    ;(<{ [key: string]: any }[]>value).forEach((v, idx) => {
+      this.renderTspan(layer, task, v, offset)
+      offset.y += task.getRowHeight(idx)
+    })
+  }
+
+  private renderTspan(layer: SVGElementX, task: Task, obj: any, offset: Offset = { x: 0, y: 0 }) {
+    const label = svg('tspan', {
+      append_to: layer,
+      class: 'column-text',
+      dy: offset.y,
+      x: 0
+    })
+
+    if (obj.labelStyle) {
+      label.applyStyle(obj.labelStyle)
+    }
+
+    const text = toTextFragment(obj.label)
+    label.appendChild(text)
   }
 }

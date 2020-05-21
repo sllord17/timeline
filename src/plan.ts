@@ -96,7 +96,7 @@ export default class Plan extends Prop implements EventListenerObject {
   }
 
   private drawBar(layer: SVGElementX) {
-    const rect = this.set(
+    this.set(
       'bar',
       svg('rect', {
         x: this.get('x'),
@@ -112,7 +112,7 @@ export default class Plan extends Prop implements EventListenerObject {
 
     if (this.get('backgroundStyle')) {
       const style = this.get('backgroundStyle')
-      Object.keys(style).forEach((k) => (rect.style[k] = style[k]))
+      this.get('rect').applyStyle(style)
     }
   }
 
@@ -130,7 +130,7 @@ export default class Plan extends Prop implements EventListenerObject {
 
     if (this.get('progressStyle')) {
       const style = this.get('progressStyle')
-      Object.keys(style).forEach((k) => (rect.style[k] = style[k]))
+      rect.applyStyle(style)
     }
   }
 
@@ -149,7 +149,7 @@ export default class Plan extends Prop implements EventListenerObject {
 
     if (this.get('labelStyle')) {
       const style = this.get('labelStyle')
-      Object.keys(style).forEach((k) => (this.get('text').style[k] = style[k]))
+      this.get('text').applyStyle(style)
     }
 
     this.get('text').appendChild(toTextFragment(this.get('label')))
