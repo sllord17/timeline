@@ -960,12 +960,19 @@ var Timeline = (function () {
         var text = toTextFragment(this.config.text);
         title.appendChild(text);
         offset.y += this.options.padding + 6;
+        var column = svg('g', {
+          append_to: this.container,
+          "class": 'column',
+          height: this.tasks.getHeight(),
+          transform: "translate(".concat(offset.x, ", ").concat(offset.y, ")")
+        });
+        offset.y = 0;
         this.tasks.forEach(function (t) {
           var label = svg('text', {
-            append_to: _this.container,
+            append_to: column,
             "class": 'column-wrapper',
-            y: offset.y,
-            x: offset.x
+            dy: offset.y,
+            dx: 0
           });
           var text = toTextFragment(t.get(_this.config.field));
           label.appendChild(text);

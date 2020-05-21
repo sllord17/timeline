@@ -44,12 +44,21 @@ export default class Column {
 
     offset.y += this.options.padding + 6
 
+    const column = svg('g', {
+      append_to: this.container,
+      class: 'column',
+      height: this.tasks.getHeight(),
+      transform: `translate(${offset.x}, ${offset.y})`
+    })
+
+    offset.y = 0
+
     this.tasks.forEach((t) => {
       const label = svg('text', {
-        append_to: this.container,
+        append_to: column,
         class: 'column-wrapper',
-        y: offset.y,
-        x: offset.x
+        dy: offset.y,
+        dx: 0
       })
 
       const text = toTextFragment(t.get(this.config.field))
@@ -61,4 +70,6 @@ export default class Column {
   getWidth(): number {
     return this.container.getBBox().width
   }
+
+  private renderBlock(layer: SVGElementX)
 }
