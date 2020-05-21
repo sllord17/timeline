@@ -24,41 +24,35 @@ export default class Column {
   }
 
   render(layer: SVGElementX, offset: Offset) {
+    offset.y = this.options.headerHeight
+
     this.container = svg('g', {
       append_to: layer,
       class: 'column-wrapper',
-      x: offset.x
+      transform: `translate(${offset.x}, ${offset.y})`
     })
-
-    offset.y = this.options.headerHeight
 
     const title = svg('text', {
       append_to: this.container,
-      class: 'column-wrapper',
-      y: offset.y,
-      x: offset.x
+      class: 'column-header'
     })
 
     const text = toTextFragment(this.config.text)
     title.appendChild(text)
 
-    offset.y += this.options.padding + 6
-
-    const column = svg('g', {
-      append_to: this.container,
-      class: 'column',
-      height: this.tasks.getHeight(),
-      transform: `translate(${offset.x}, ${offset.y})`
-    })
-
-    offset.y = 0
+    offset.y = this.options.padding + 6
 
     this.tasks.forEach((t) => {
-      const label = svg('text', {
+      const column = svg('text', {
+        append_to: this.container,
+        class: 'column-' + this.config.field,
+        height: t.get('height'),
+        transform: `translate(0, ${offset.y})`
+      })
+
+      const label = svg('tspan', {
         append_to: column,
-        class: 'column-wrapper',
-        dy: offset.y,
-        dx: 0
+        class: 'column-text'
       })
 
       const text = toTextFragment(t.get(this.config.field))
@@ -70,6 +64,4 @@ export default class Column {
   getWidth(): number {
     return this.container.getBBox().width
   }
-
-  private renderBlock(layer: SVGElementX)
 }

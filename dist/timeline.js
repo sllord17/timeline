@@ -945,34 +945,29 @@ var Timeline = (function () {
       value: function render(layer, offset) {
         var _this = this;
 
+        offset.y = this.options.headerHeight;
         this.container = svg('g', {
           append_to: layer,
           "class": 'column-wrapper',
-          x: offset.x
+          transform: "translate(".concat(offset.x, ", ").concat(offset.y, ")")
         });
-        offset.y = this.options.headerHeight;
         var title = svg('text', {
           append_to: this.container,
-          "class": 'column-wrapper',
-          y: offset.y,
-          x: offset.x
+          "class": 'column-header'
         });
         var text = toTextFragment(this.config.text);
         title.appendChild(text);
-        offset.y += this.options.padding + 6;
-        var column = svg('g', {
-          append_to: this.container,
-          "class": 'column',
-          height: this.tasks.getHeight(),
-          transform: "translate(".concat(offset.x, ", ").concat(offset.y, ")")
-        });
-        offset.y = 0;
+        offset.y = this.options.padding + 6;
         this.tasks.forEach(function (t) {
-          var label = svg('text', {
+          var column = svg('text', {
+            append_to: _this.container,
+            "class": 'column-' + _this.config.field,
+            height: t.get('height'),
+            transform: "translate(0, ".concat(offset.y, ")")
+          });
+          var label = svg('tspan', {
             append_to: column,
-            "class": 'column-wrapper',
-            dy: offset.y,
-            dx: 0
+            "class": 'column-text'
           });
           var text = toTextFragment(t.get(_this.config.field));
           label.appendChild(text);
