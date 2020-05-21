@@ -52,11 +52,11 @@ var timelineOptions = {
 3. Pass your css selector to identify your div and options to a timeline object
 
 ```js
-var gantt = new Gantt('#abc123', tasks)
+var timeline = new Timeline('#abc123', tasks)
 
 or
 
-var gantt = new Gantt('#abc123', tasks, timelineOptions)
+var timeline = new Timeline('#abc123', tasks, timelineOptions)
 ```
 
 #### See the [example](https://github.com/raiyni/timeline/tree/master/examples) for more thourough usage
