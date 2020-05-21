@@ -110,7 +110,7 @@ export default class Grid {
   }
 
   private getWidth(): number {
-    return this.dates.length * this.options.columnWidth
+    return this.dates.length * this.options.columnWidth + this.options.padding
   }
 
   private getHeight(): number {
@@ -361,7 +361,7 @@ export default class Grid {
     lower_y: number
   } {
     if (!last_date) {
-      last_date = date.add(1, 'year')
+      last_date = date.add(1, 'year').add(1, 'day')
     }
 
     const date_text: { [key: string]: string } = {

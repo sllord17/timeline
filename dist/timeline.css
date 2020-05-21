@@ -7,7 +7,7 @@
 }
 .gantt .grid-header {
   fill: #ffffff;
-  stroke: #e0e0e0;
+  stroke: #bbbbbb;
   stroke-width: 1.4;
 }
 .gantt .grid-row {
@@ -20,7 +20,7 @@
   stroke: #ebeff2;
 }
 .gantt .tick {
-  stroke: #e0e0e0;
+  stroke: #bbbbbb;
   stroke-width: 0.2;
 }
 .gantt .tick.thick {
@@ -36,7 +36,7 @@
   stroke-width: 1.4;
 }
 .gantt .bar {
-  fill: #b8c2cc;
+  fill: #9ca1a7;
   stroke: #8d99a6;
   stroke-width: 0;
   transition: stroke-width 0.3s ease;
@@ -77,7 +77,7 @@
   outline: none;
 }
 .gantt .bar-wrapper:hover .bar {
-  fill: #a9b5c1;
+  fill: #8f949b;
 }
 .gantt .bar-wrapper:hover .bar-progress {
   fill: #8a8aff;
@@ -87,7 +87,7 @@
   opacity: 1;
 }
 .gantt .bar-wrapper.active .bar {
-  fill: #a9b5c1;
+  fill: #8f949b;
 }
 .gantt .bar-wrapper.active .bar-progress {
   fill: #8a8aff;

@@ -1609,7 +1609,7 @@ var Timeline = (function () {
     }, {
       key: "getWidth",
       value: function getWidth() {
-        return this.dates.length * this.options.columnWidth;
+        return this.dates.length * this.options.columnWidth + this.options.padding;
       }
     }, {
       key: "getHeight",
@@ -1856,7 +1856,7 @@ var Timeline = (function () {
       key: "getDateInfo",
       value: function getDateInfo(date, last_date, i) {
         if (!last_date) {
-          last_date = date.add(1, 'year');
+          last_date = date.add(1, 'year').add(1, 'day');
         }
 
         var date_text = {
