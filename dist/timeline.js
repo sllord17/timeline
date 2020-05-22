@@ -820,7 +820,7 @@ var Timeline = (function (exports) {
       key: "set",
       value: function set(key, value) {
         this._properties[key] = value;
-        return value;
+        return this;
       }
     }, {
       key: "get",
@@ -942,13 +942,14 @@ var Timeline = (function (exports) {
         }
 
         var pos = config.positionTarget.getBBox();
+        console.log(pos);
 
         if (config.position == 'left') {
           parent.style.left = pos.x + (pos.width + 10) + 'px';
           parent.style.top = pos.y + 'px';
-          parent.style.transform = 'rotateZ(90deg)';
-          parent.style.left = '-7px';
-          parent.style.top = '2px';
+          this.get('pointer').style.transform = 'rotateZ(90deg)';
+          this.get('pointer').style.left = '-7px';
+          this.get('pointer').style.top = '2px';
         }
       }
     }, {
@@ -1289,7 +1290,6 @@ var Timeline = (function (exports) {
           rowOffsets.push((idx > 0 ? rowOffsets[idx - 1] : 0) + max);
           return arr;
         });
-        console.log(rowOffsets);
         _this._milestones = config.milestones.map(function (m, idx) {
           return m.map(function (m2) {
             if (idx > 0 && rowOffsets[idx - 1]) m2.y = rowOffsets[idx - 1];
@@ -1390,6 +1390,138 @@ var Timeline = (function (exports) {
     }]);
 
     return Task;
+  }(Prop);
+
+  var Background = /*#__PURE__*/function (_Prop) {
+    _inherits(Background, _Prop);
+
+    var _super = _createSuper(Background);
+
+    function Background(options) {
+      var _this;
+
+      _classCallCheck(this, Background);
+
+      _this = _super.call(this, {
+        width: 0,
+        height: 0
+      });
+
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
+
+      _this.options = options;
+      return _this;
+    }
+
+    _createClass(Background, [{
+      key: "render",
+      value: function render(layer, offset, dates, tasks) {
+        this.drawBackground(layer, offset);
+        this.drawRows(layer, offset, tasks);
+        this.drawTicks(layer, offset, dates);
+      }
+    }, {
+      key: "drawBackground",
+      value: function drawBackground(layer, offset) {
+        svg('rect', {
+          x: 0,
+          y: 0,
+          width: this.get('width') + offset.x,
+          height: this.get('height'),
+          "class": 'grid-background',
+          append_to: layer
+        });
+      }
+    }, {
+      key: "drawRows",
+      value: function drawRows(layer, offset, tasks) {
+        var _this2 = this;
+
+        var rowsLayer = svg('g', {
+          append_to: layer
+        });
+        var linesLayer = svg('g', {
+          append_to: layer
+        });
+        var rowWidth = this.get('width') + offset.x;
+        var y = this.options.headerHeight + this.options.padding / 2;
+        tasks.forEach(function (task) {
+          var rowHeight = task.get('height') + _this2.options.padding;
+
+          svg('rect', {
+            x: 0,
+            y: y,
+            width: rowWidth,
+            height: rowHeight,
+            "class": 'grid-row',
+            append_to: rowsLayer
+          });
+          svg('line', {
+            x1: 0,
+            y1: y + rowHeight,
+            x2: rowWidth,
+            y2: y + rowHeight,
+            "class": 'row-line',
+            append_to: linesLayer
+          });
+          y += rowHeight;
+        });
+      }
+    }, {
+      key: "drawTicks",
+      value: function drawTicks(layer, offset, dates) {
+        var x = offset.x;
+        var y = this.options.headerHeight + this.options.padding / 2,
+            height = this.get('height') - this.options.headerHeight;
+
+        var _iterator = _createForOfIteratorHelper(dates),
+            _step;
+
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var date = _step.value;
+            var clazz = 'tick';
+
+            if (VIEW_MODE.DAY == this.options.viewMode && date.date() == 1 || VIEW_MODE.WEEK == this.options.viewMode && date.date() >= 1 && date.date() < 8 || VIEW_MODE.MONTH == this.options.viewMode && (date.month() + 1) % 3 === 0) {
+              clazz += ' thick';
+            }
+
+            svg('path', {
+              d: "M ".concat(x, " ").concat(y, " v ").concat(height),
+              "class": clazz,
+              append_to: layer
+            });
+
+            if (VIEW_MODE.MONTH == this.options.viewMode) {
+              x += date.daysInMonth() * this.options.columnWidth / 30;
+            } else {
+              x += this.options.columnWidth;
+            }
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+      }
+    }, {
+      key: "highlightCurrentDay",
+      value: function highlightCurrentDay(layer, offset) {
+        if (VIEW_MODE.DAY == this.options.viewMode) {
+          var x = dayjs_min().diff(this.get('start'), 'hour') / this.options.step * this.options.columnWidth;
+          svg('rect', {
+            x: x + offset.x,
+            y: 0,
+            width: this.options.columnWidth,
+            height: this.get('height'),
+            "class": 'today-highlight',
+            append_to: layer
+          });
+        }
+      }
+    }]);
+
+    return Background;
   }(Prop);
 
   var Column = /*#__PURE__*/function () {
@@ -1496,354 +1628,57 @@ var Timeline = (function (exports) {
     return Column;
   }();
 
-  var Grid = /*#__PURE__*/function () {
-    function Grid(options, taskOptions) {
-      var _this = this;
+  var Header = /*#__PURE__*/function (_Prop) {
+    _inherits(Header, _Prop);
 
-      _classCallCheck(this, Grid);
+    var _super = _createSuper(Header);
 
-      _defineProperty(this, "options", void 0);
+    function Header(options) {
+      var _this;
 
-      _defineProperty(this, "_start", void 0);
+      _classCallCheck(this, Header);
 
-      _defineProperty(this, "_end", void 0);
-
-      _defineProperty(this, "dates", void 0);
-
-      _defineProperty(this, "tasks", void 0);
-
-      _defineProperty(this, "columns", []);
-
-      this.options = options;
-      this.updateViewScale();
-      this.tasks = taskOptions.map(function (o) {
-        return new Task(options, o);
+      _this = _super.call(this, {
+        width: 0,
+        height: 0
       });
-      this.columns = options.columns.map(function (c) {
-        return new Column(_this.options, c, _this.tasks);
-      });
-      this.setupDates();
+
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
+
+      _this.options = options;
+      return _this;
     }
 
-    _createClass(Grid, [{
-      key: "setupDates",
-      value: function setupDates() {
-        this.setBoundingDates();
-        this.convertDates();
-        this.fillDates();
-      }
-    }, {
-      key: "fillDates",
-      value: function fillDates() {
-        this.dates = [];
-        var d = null;
-
-        do {
-          if (!d) {
-            d = dayjs_min(this.start);
-          } else if (VIEW_MODE.YEAR == this.options.viewMode) {
-            d = d.add(1, 'year');
-          } else if (VIEW_MODE.MONTH == this.options.viewMode) {
-            d = d.add(1, 'month');
-          } else {
-            d = d.add(this.options.step, 'hour');
-          }
-
-          this.dates.push(d);
-        } while (d.isBefore(this._end));
-      }
-    }, {
-      key: "updateViewScale",
-      value: function updateViewScale() {
-        var mode = this.options.viewMode;
-
-        if (mode === VIEW_MODE.DAY) {
-          this.options.step = 24;
-          this.options.columnWidth = 38;
-        } else if (mode === VIEW_MODE.HALF_DAY) {
-          this.options.step = 24 / 2;
-          this.options.columnWidth = 38;
-        } else if (mode === VIEW_MODE.QUARTER_DAY) {
-          this.options.step = 24 / 4;
-          this.options.columnWidth = 38;
-        } else if (mode === VIEW_MODE.WEEK) {
-          this.options.step = 24 * 7;
-          this.options.columnWidth = 140;
-        } else if (mode === VIEW_MODE.MONTH) {
-          this.options.step = 24 * 30;
-          this.options.columnWidth = 120;
-        } else if (mode === VIEW_MODE.YEAR) {
-          this.options.step = 24 * 365;
-          this.options.columnWidth = 120;
-        }
-      }
-    }, {
-      key: "convertDates",
-      value: function convertDates() {
-        var _this2 = this;
-
-        this._start = this._start.startOf('day');
-        this._end = this._end.startOf('day');
-
-        if ([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY].some(function (k) {
-          return k == _this2.options.viewMode;
-        })) {
-          this._start = this._start.subtract(7, 'day');
-          this._end = this._end.add(7, 'day');
-        } else if (VIEW_MODE.MONTH == this.options.viewMode) {
-          this._start = this._start.subtract(1, 'year');
-          this._end = this._end.add(1, 'year');
-        } else if (VIEW_MODE.YEAR == this.options.viewMode) {
-          this._start = this._start.subtract(2, 'year');
-          this._end = this._end.add(2, 'year');
-        } else {
-          this._start = this._start.subtract(1, 'month');
-          this._end = this._end.add(1, 'month');
-        }
-      }
-    }, {
-      key: "setBoundingDates",
-      value: function setBoundingDates() {
-        var _this3 = this;
-
-        this.tasks.forEach(function (task) {
-          if (!_this3._start || task.get('start').isBefore(_this3._start)) {
-            _this3._start = task.get('start').clone();
-          }
-
-          if (!_this3._end || task.get('end').isAfter(_this3._end)) {
-            _this3._end = task.get('end').clone();
-          }
-        });
-      }
-    }, {
-      key: "getWidth",
-      value: function getWidth() {
-        return this.dates.length * this.options.columnWidth + this.options.padding;
-      }
-    }, {
-      key: "getHeight",
-      value: function getHeight() {
-        return this.options.headerHeight + this.getTasksHeight() + this.options.padding;
-      }
-    }, {
-      key: "getTasksHeight",
-      value: function getTasksHeight() {
-        var _this4 = this;
-
-        return this.tasks.map(function (t) {
-          return t.get('height');
-        }).reduce(function (a, b) {
-          return a + b + _this4.options.padding;
-        });
-      }
-    }, {
+    _createClass(Header, [{
       key: "render",
-      value: function render(parent) {
-        var _this5 = this;
-
-        parent.setAttribute('width', "".concat(this.getWidth()));
-        parent.setAttribute('height', "".concat(this.getHeight()));
-        var columnLayer = svg('g', {
-          "class": 'columns'
-        });
-        this.drawColumns(columnLayer).then(function () {
-          return _this5.renderStage2(parent, columnLayer.getBBox().width + _this5.options.padding * _this5.columns.length);
-        });
-        parent.appendChild(columnLayer);
-      }
-    }, {
-      key: "renderStage2",
-      value: function renderStage2(parent, width) {
-        var _this6 = this;
-
-        var taskLayer = svg('g', {
-          "class": 'bar',
-          prepend_to: parent
-        });
-        var dateLayer = svg('g', {
-          "class": 'date',
-          prepend_to: parent
-        });
-        var gridLayer = svg('g', {
-          "class": 'grid',
-          prepend_to: parent
-        });
-        var offset = {
-          x: width,
-          y: 0
-        };
-        this.drawBackground(gridLayer, offset);
-        this.drawRows(gridLayer, offset);
-        this.drawHeader(gridLayer, offset);
-        this.drawTicks(gridLayer, offset);
-        this.highlightCurrentDay(gridLayer, offset);
-        this.drawDates(dateLayer, offset);
-        offset.y = this.options.headerHeight + this.options.padding;
-        this.tasks.forEach(function (t) {
-          t.render(taskLayer, _this6._start, offset);
-          offset.y += t.get('height') + _this6.options.padding;
-        });
-      }
-    }, {
-      key: "drawColumns",
-      value: function drawColumns(layer) {
-        var columnsLayer = svg('g', {
-          append_to: layer
-        });
-        var offset = {
-          x: this.options.padding,
-          y: 0
-        };
-        var idx = 0,
-            len = this.columns.length,
-            padding = this.options.padding;
-        var renderers = this.columns.map(function (col) {
-          return function (resolve, reject) {
-            col.render(columnsLayer, offset);
-            window.requestAnimationFrame(function () {
-              offset.x += col.getWidth() + padding;
-              resolve();
-            });
-          };
-        });
-        return new Promise(function (resolve, reject) {
-
-          (function recurse(idx) {
-            if (idx >= len) {
-              resolve();
-              return;
-            }
-
-            new Promise(renderers[idx]).then(function () {
-              return recurse(++idx);
-            });
-          })(idx);
-        });
+      value: function render(layer, offset, dates) {
+        this.drawBackground(layer, offset);
+        this.drawDates(layer, offset, dates);
       }
     }, {
       key: "drawBackground",
       value: function drawBackground(layer, offset) {
         svg('rect', {
-          x: 0,
-          y: 0,
-          width: this.getWidth() + offset.x,
-          height: this.getHeight(),
-          "class": 'grid-background',
-          append_to: layer
-        });
-      }
-    }, {
-      key: "drawRows",
-      value: function drawRows(layer, offset) {
-        var _this7 = this;
-
-        var rowsLayer = svg('g', {
-          append_to: layer
-        });
-        var linesLayer = svg('g', {
-          append_to: layer
-        });
-        var rowWidth = this.getWidth() + offset.x;
-        var y = this.options.headerHeight + this.options.padding / 2;
-        this.tasks.forEach(function (task) {
-          var rowHeight = task.get('height') + _this7.options.padding;
-
-          svg('rect', {
-            x: 0,
-            y: y,
-            width: rowWidth,
-            height: rowHeight,
-            "class": 'grid-row',
-            append_to: rowsLayer
-          });
-          svg('line', {
-            x1: 0,
-            y1: y + rowHeight,
-            x2: rowWidth,
-            y2: y + rowHeight,
-            "class": 'row-line',
-            append_to: linesLayer
-          });
-          y += rowHeight;
-        });
-      }
-    }, {
-      key: "drawHeader",
-      value: function drawHeader(layer, offset) {
-        svg('rect', {
           x: offset.x,
           y: 0,
-          width: this.getWidth(),
+          width: this.get('width'),
           height: this.options.headerHeight + 10,
           "class": 'grid-header',
           append_to: layer
         });
       }
     }, {
-      key: "drawTicks",
-      value: function drawTicks(layer, offset) {
-        var x = offset.x;
-        var y = this.options.headerHeight + this.options.padding / 2,
-            height = this.getTasksHeight();
+      key: "drawDates",
+      value: function drawDates(layer, offset, dates) {
+        var lastDate = null;
+        var i = 0;
 
-        var _iterator = _createForOfIteratorHelper(this.dates),
+        var _iterator = _createForOfIteratorHelper(dates),
             _step;
 
         try {
           for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var date = _step.value;
-            var clazz = 'tick';
-
-            if (VIEW_MODE.DAY == this.options.viewMode && date.date() == 1 || VIEW_MODE.WEEK == this.options.viewMode && date.date() >= 1 && date.date() < 8 || VIEW_MODE.MONTH == this.options.viewMode && (date.month() + 1) % 3 === 0) {
-              clazz += ' thick';
-            }
-
-            svg('path', {
-              d: "M ".concat(x, " ").concat(y, " v ").concat(height),
-              "class": clazz,
-              append_to: layer
-            });
-
-            if (VIEW_MODE.MONTH == this.options.viewMode) {
-              x += date.daysInMonth() * this.options.columnWidth / 30;
-            } else {
-              x += this.options.columnWidth;
-            }
-          }
-        } catch (err) {
-          _iterator.e(err);
-        } finally {
-          _iterator.f();
-        }
-      }
-    }, {
-      key: "highlightCurrentDay",
-      value: function highlightCurrentDay(layer, offset) {
-        if (VIEW_MODE.DAY == this.options.viewMode) {
-          var x = dayjs_min().diff(this.start, 'hour') / this.options.step * this.options.columnWidth;
-          svg('rect', {
-            x: x + offset.x,
-            y: 0,
-            width: this.options.columnWidth,
-            height: this.getHeight(),
-            "class": 'today-highlight',
-            append_to: layer
-          });
-        }
-      }
-    }, {
-      key: "drawDates",
-      value: function drawDates(layer, offset) {
-        var lastDate = null;
-        var i = 0;
-
-        var _iterator2 = _createForOfIteratorHelper(this.dates),
-            _step2;
-
-        try {
-          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-            var d = _step2.value;
+            var d = _step.value;
             var date = this.getDateInfo(d, lastDate, i++);
             lastDate = d;
             var lowerText = svg('text', {
@@ -1868,9 +1703,9 @@ var Timeline = (function (exports) {
             }
           }
         } catch (err) {
-          _iterator2.e(err);
+          _iterator.e(err);
         } finally {
-          _iterator2.f();
+          _iterator.f();
         }
       }
     }, {
@@ -1923,26 +1758,215 @@ var Timeline = (function (exports) {
           lower_y: base_pos.lower_y
         };
       }
-    }, {
-      key: "start",
-      get: function get() {
-        return this._start;
-      },
-      set: function set(start) {
-        this._start = start;
+    }]);
+
+    return Header;
+  }(Prop);
+
+  var Grid = /*#__PURE__*/function (_Prop) {
+    _inherits(Grid, _Prop);
+
+    var _super = _createSuper(Grid);
+
+    function Grid(options, taskOptions) {
+      var _this;
+
+      _classCallCheck(this, Grid);
+
+      _this = _super.call(this, {
+        background: new Background(options),
+        header: new Header(options),
+        tasks: taskOptions.map(function (o) {
+          return new Task(options, o);
+        })
+      });
+
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
+
+      _this.options = options;
+
+      _this.set('columns', options.columns.map(function (c) {
+        return new Column(_this.options, c, _this.get('tasks'));
+      }));
+
+      _this.setupDates();
+
+      return _this;
+    }
+
+    _createClass(Grid, [{
+      key: "setupDates",
+      value: function setupDates() {
+        var _this2 = this;
+
+        this.setBoundingDates();
+        this.convertDates();
+        this.fillDates();
+        ['header', 'background'].forEach(function (k) {
+          return _this2.get(k).set('width', _this2.getWidth()).set('height', _this2.getHeight());
+        });
       }
     }, {
-      key: "end",
-      get: function get() {
-        return this._end;
-      },
-      set: function set(end) {
-        this._end = end;
+      key: "fillDates",
+      value: function fillDates() {
+        var dates = [];
+        var d = null;
+
+        do {
+          if (!d) {
+            d = dayjs_min(this.get('start'));
+          } else if (VIEW_MODE.YEAR == this.options.viewMode) {
+            d = d.add(1, 'year');
+          } else if (VIEW_MODE.MONTH == this.options.viewMode) {
+            d = d.add(1, 'month');
+          } else {
+            d = d.add(this.options.step, 'hour');
+          }
+
+          dates.push(d);
+        } while (d.isBefore(this.get('end')));
+
+        this.set('dates', dates);
+      }
+    }, {
+      key: "convertDates",
+      value: function convertDates() {
+        var _this3 = this;
+
+        this.set('start', this.get('start').startOf('day'));
+        this.set('end', this.get('end').startOf('day'));
+
+        if ([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY].some(function (k) {
+          return k == _this3.options.viewMode;
+        })) {
+          this.set('start', this.get('start').subtract(7, 'day'));
+          this.set('end', this.get('end').add(7, 'day'));
+        } else if (VIEW_MODE.MONTH == this.options.viewMode) {
+          this.set('start', this.get('start').subtract(1, 'year'));
+          this.set('end', this.get('end').add(1, 'year'));
+        } else if (VIEW_MODE.YEAR == this.options.viewMode) {
+          this.set('start', this.get('start').subtract(2, 'year'));
+          this.set('end', this.get('end').add(2, 'year'));
+        } else {
+          this.set('start', this.get('start').subtract(1, 'month'));
+          this.set('end', this.get('end').add(1, 'month'));
+        }
+      }
+    }, {
+      key: "setBoundingDates",
+      value: function setBoundingDates() {
+        var _this4 = this;
+
+        this.get('tasks').forEach(function (task) {
+          if (!_this4.get('start') || task.get('start').isBefore(_this4.get('start'))) {
+            _this4.set('start', task.get('start').clone());
+          }
+
+          if (!_this4.get('end') || task.get('end').isAfter(_this4.get('end'))) {
+            _this4.set('end', task.get('end').clone());
+          }
+        });
+      }
+    }, {
+      key: "getWidth",
+      value: function getWidth() {
+        return this.get('dates').length * this.options.columnWidth + this.options.padding;
+      }
+    }, {
+      key: "getHeight",
+      value: function getHeight() {
+        var _this5 = this;
+
+        return this.options.headerHeight + this.get('tasks').map(function (t) {
+          return t.get('height');
+        }).reduce(function (a, b) {
+          return a + b + _this5.options.padding;
+        }) + this.options.padding;
+      }
+    }, {
+      key: "render",
+      value: function render(parent) {
+        var _this6 = this;
+
+        parent.setAttribute('width', "".concat(this.getWidth()));
+        parent.setAttribute('height', "".concat(this.getHeight()));
+        var columnLayer = svg('g', {
+          "class": 'columns'
+        });
+        this.drawColumns(columnLayer).then(function () {
+          return _this6.renderStage2(parent, columnLayer.getBBox().width + _this6.options.padding * _this6.get('columns').length);
+        });
+        parent.appendChild(columnLayer);
+      }
+    }, {
+      key: "renderStage2",
+      value: function renderStage2(parent, width) {
+        var _this7 = this;
+
+        var taskLayer = svg('g', {
+          "class": 'bar',
+          prepend_to: parent
+        });
+        var dateLayer = svg('g', {
+          "class": 'date',
+          prepend_to: parent
+        });
+        var gridLayer = svg('g', {
+          "class": 'grid',
+          prepend_to: parent
+        });
+        var offset = {
+          x: width,
+          y: 0
+        };
+        this.get('background').render(gridLayer, offset, this.get('dates'), this.get('tasks'));
+        this.get('header').render(dateLayer, offset, this.get('dates'));
+        offset.y = this.options.headerHeight + this.options.padding;
+        this.get('tasks').forEach(function (t) {
+          t.render(taskLayer, _this7.get('start'), offset);
+          offset.y += t.get('height') + _this7.options.padding;
+        });
+      }
+    }, {
+      key: "drawColumns",
+      value: function drawColumns(layer) {
+        var columnsLayer = svg('g', {
+          append_to: layer
+        });
+        var offset = {
+          x: this.options.padding,
+          y: 0
+        };
+        var idx = 0,
+            len = this.get('columns').length,
+            padding = this.options.padding;
+        var renderers = this.get('columns').map(function (col) {
+          return function (resolve, reject) {
+            col.render(columnsLayer, offset);
+            window.requestAnimationFrame(function () {
+              offset.x += col.getWidth() + padding;
+              resolve();
+            });
+          };
+        });
+        return new Promise(function (resolve, reject) {
+
+          (function recurse(idx) {
+            if (idx >= len) {
+              resolve();
+              return;
+            }
+
+            new Promise(renderers[idx]).then(function () {
+              return recurse(++idx);
+            });
+          })(idx);
+        });
       }
     }]);
 
     return Grid;
-  }();
+  }(Prop);
 
   var VIEW_MODE;
 
@@ -1987,6 +2011,9 @@ var Timeline = (function (exports) {
 
       _this.options = _objectSpread2(_objectSpread2({}, _this.options), options);
       _this.options.dispatch = _this.dispatch.bind(_assertThisInitialized(_this));
+
+      _this.updateScale();
+
       var parent = document.querySelector(selector);
 
       var container = _this.get('container');
@@ -2032,6 +2059,31 @@ var Timeline = (function (exports) {
           case EVENT.HIDE_POPUP:
             this.get('popup').hide();
             break;
+        }
+      }
+    }, {
+      key: "updateScale",
+      value: function updateScale() {
+        var mode = this.options.viewMode;
+
+        if (mode === VIEW_MODE.DAY) {
+          this.options.step = 24;
+          this.options.columnWidth = 38;
+        } else if (mode === VIEW_MODE.HALF_DAY) {
+          this.options.step = 24 / 2;
+          this.options.columnWidth = 38;
+        } else if (mode === VIEW_MODE.QUARTER_DAY) {
+          this.options.step = 24 / 4;
+          this.options.columnWidth = 38;
+        } else if (mode === VIEW_MODE.WEEK) {
+          this.options.step = 24 * 7;
+          this.options.columnWidth = 140;
+        } else if (mode === VIEW_MODE.MONTH) {
+          this.options.step = 24 * 30;
+          this.options.columnWidth = 120;
+        } else if (mode === VIEW_MODE.YEAR) {
+          this.options.step = 24 * 365;
+          this.options.columnWidth = 120;
         }
       }
     }]);

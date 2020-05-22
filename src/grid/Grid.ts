@@ -3,28 +3,30 @@
 import { Offset, SVGElementX } from '../types'
 import Task, { TaskOptions } from '../task/Task'
 import { VIEW_MODE, ViewOptions } from '../view'
-import { svg, toTextFragment } from '../util'
 
+import Background from './Background'
 import Column from './Column'
+import Header from './Header'
+import Prop from '../prop'
 import dayjs from 'dayjs'
+import { svg } from '../util'
 
-export default class Grid {
+export default class Grid extends Prop {
   private options: ViewOptions
 
-  private _start: dayjs.Dayjs
-  private _end: dayjs.Dayjs
-
-  private dates: dayjs.Dayjs[]
-  private tasks: Task[]
-
-  private columns: Column[] = []
-
   constructor(options: ViewOptions, taskOptions: TaskOptions[]) {
-    this.options = options
-    this.updateViewScale()
+    super({
+      background: new Background(options),
+      header: new Header(options),
+      tasks: taskOptions.map((o) => new Task(options, o))
+    })
 
-    this.tasks = taskOptions.map((o) => new Task(options, o))
-    this.columns = options.columns.map((c) => new Column(this.options, c, this.tasks))
+    this.options = options
+
+    this.set(
+      'columns',
+      options.columns.map((c) => new Column(this.options, c, this.get('tasks')))
+    )
 
     this.setupDates()
   }
@@ -33,15 +35,18 @@ export default class Grid {
     this.setBoundingDates()
     this.convertDates()
     this.fillDates()
+    ;(<string[]>['header', 'background']).forEach((k: string) =>
+      this.get(k).set('width', this.getWidth()).set('height', this.getHeight())
+    )
   }
 
   private fillDates() {
-    this.dates = []
+    const dates: dayjs.Dayjs[] = []
 
     let d: dayjs.Dayjs = null
     do {
       if (!d) {
-        d = dayjs(this.start)
+        d = dayjs(this.get('start'))
       } else if (VIEW_MODE.YEAR == this.options.viewMode) {
         d = d.add(1, 'year')
       } else if (VIEW_MODE.MONTH == this.options.viewMode) {
@@ -49,90 +54,55 @@ export default class Grid {
       } else {
         d = d.add(this.options.step, 'hour')
       }
-      this.dates.push(d)
-    } while (d.isBefore(this._end))
-  }
+      dates.push(d)
+    } while (d.isBefore(this.get('end')))
 
-  private updateViewScale() {
-    const mode = this.options.viewMode
-    if (mode === VIEW_MODE.DAY) {
-      this.options.step = 24
-      this.options.columnWidth = 38
-    } else if (mode === VIEW_MODE.HALF_DAY) {
-      this.options.step = 24 / 2
-      this.options.columnWidth = 38
-    } else if (mode === VIEW_MODE.QUARTER_DAY) {
-      this.options.step = 24 / 4
-      this.options.columnWidth = 38
-    } else if (mode === VIEW_MODE.WEEK) {
-      this.options.step = 24 * 7
-      this.options.columnWidth = 140
-    } else if (mode === VIEW_MODE.MONTH) {
-      this.options.step = 24 * 30
-      this.options.columnWidth = 120
-    } else if (mode === VIEW_MODE.YEAR) {
-      this.options.step = 24 * 365
-      this.options.columnWidth = 120
-    }
+    this.set('dates', dates)
   }
 
   private convertDates() {
-    this._start = this._start.startOf('day')
-    this._end = this._end.startOf('day')
+    this.set('start', this.get('start').startOf('day'))
+    this.set('end', this.get('end').startOf('day'))
 
     if ([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY].some((k) => k == this.options.viewMode)) {
-      this._start = this._start.subtract(7, 'day')
-      this._end = this._end.add(7, 'day')
+      this.set('start', this.get('start').subtract(7, 'day'))
+      this.set('end', this.get('end').add(7, 'day'))
     } else if (VIEW_MODE.MONTH == this.options.viewMode) {
-      this._start = this._start.subtract(1, 'year')
-      this._end = this._end.add(1, 'year')
+      this.set('start', this.get('start').subtract(1, 'year'))
+      this.set('end', this.get('end').add(1, 'year'))
     } else if (VIEW_MODE.YEAR == this.options.viewMode) {
-      this._start = this._start.subtract(2, 'year')
-      this._end = this._end.add(2, 'year')
+      this.set('start', this.get('start').subtract(2, 'year'))
+      this.set('end', this.get('end').add(2, 'year'))
     } else {
-      this._start = this._start.subtract(1, 'month')
-      this._end = this._end.add(1, 'month')
+      this.set('start', this.get('start').subtract(1, 'month'))
+      this.set('end', this.get('end').add(1, 'month'))
     }
   }
 
   private setBoundingDates() {
-    this.tasks.forEach((task) => {
-      if (!this._start || task.get('start').isBefore(this._start)) {
-        this._start = task.get('start').clone()
+    this.get('tasks').forEach((task: Task) => {
+      if (!this.get('start') || task.get('start').isBefore(this.get('start'))) {
+        this.set('start', task.get('start').clone())
       }
 
-      if (!this._end || task.get('end').isAfter(this._end)) {
-        this._end = task.get('end').clone()
+      if (!this.get('end') || task.get('end').isAfter(this.get('end'))) {
+        this.set('end', task.get('end').clone())
       }
     })
   }
 
   private getWidth(): number {
-    return this.dates.length * this.options.columnWidth + this.options.padding
+    return this.get('dates').length * this.options.columnWidth + this.options.padding
   }
 
   private getHeight(): number {
-    return this.options.headerHeight + this.getTasksHeight() + this.options.padding
-  }
-
-  private getTasksHeight(): number {
-    return this.tasks.map((t) => t.get('height')).reduce((a, b) => a + b + this.options.padding)
-  }
-
-  public get start(): dayjs.Dayjs {
-    return this._start
-  }
-
-  public set start(start: dayjs.Dayjs) {
-    this._start = start
-  }
-
-  public get end(): dayjs.Dayjs {
-    return this._end
-  }
-
-  public set end(end: dayjs.Dayjs) {
-    this._end = end
+    return (
+      this.options.headerHeight +
+      this.get('tasks')
+        .map((t: Task) => t.get('height'))
+        .reduce((a: number, b: number) => a + b + this.options.padding) +
+      this.options.padding
+    )
   }
 
   public render(parent: SVGElementX) {
@@ -146,7 +116,7 @@ export default class Grid {
     this.drawColumns(columnLayer).then(() =>
       this.renderStage2(
         parent,
-        columnLayer.getBBox().width + this.options.padding * this.columns.length
+        columnLayer.getBBox().width + this.options.padding * this.get('columns').length
       )
     )
     parent.appendChild(columnLayer)
@@ -173,16 +143,12 @@ export default class Grid {
       y: 0
     }
 
-    this.drawBackground(gridLayer, offset)
-    this.drawRows(gridLayer, offset)
-    this.drawHeader(gridLayer, offset)
-    this.drawTicks(gridLayer, offset)
-    this.highlightCurrentDay(gridLayer, offset)
-    this.drawDates(dateLayer, offset)
+    this.get('background').render(gridLayer, offset, this.get('dates'), this.get('tasks'))
+    this.get('header').render(dateLayer, offset, this.get('dates'))
 
     offset.y = this.options.headerHeight + this.options.padding
-    this.tasks.forEach((t) => {
-      t.render(taskLayer, this._start, offset)
+    this.get('tasks').forEach((t: Task) => {
+      t.render(taskLayer, this.get('start'), offset)
       offset.y += t.get('height') + this.options.padding
     })
   }
@@ -193,10 +159,10 @@ export default class Grid {
     const offset: Offset = { x: this.options.padding, y: 0 }
 
     let idx = 0,
-      len = this.columns.length,
+      len = this.get('columns').length,
       padding = this.options.padding
 
-    const renderers = this.columns.map((col) => {
+    const renderers = this.get('columns').map((col: Column) => {
       return function (resolve: CallableFunction, reject: CallableFunction) {
         col.render(columnsLayer, offset)
         window.requestAnimationFrame(() => {
@@ -216,205 +182,5 @@ export default class Grid {
         new Promise(renderers[idx]).then(() => recurse(++idx))
       })(idx)
     })
-  }
-
-  private drawBackground(layer: SVGElementX, offset: Offset) {
-    svg('rect', {
-      x: 0,
-      y: 0,
-      width: this.getWidth() + offset.x,
-      height: this.getHeight(),
-      class: 'grid-background',
-      append_to: layer
-    })
-  }
-
-  private drawRows(layer: SVGElementX, offset: Offset) {
-    const rowsLayer = svg('g', { append_to: layer })
-    const linesLayer = svg('g', { append_to: layer })
-
-    const rowWidth = this.getWidth() + offset.x
-    let y = this.options.headerHeight + this.options.padding / 2
-
-    this.tasks.forEach((task) => {
-      const rowHeight = task.get('height') + this.options.padding
-
-      svg('rect', {
-        x: 0,
-        y: y,
-        width: rowWidth,
-        height: rowHeight,
-        class: 'grid-row',
-        append_to: rowsLayer
-      })
-
-      svg('line', {
-        x1: 0,
-        y1: y + rowHeight,
-        x2: rowWidth,
-        y2: y + rowHeight,
-        class: 'row-line',
-        append_to: linesLayer
-      })
-
-      y += rowHeight
-    })
-  }
-
-  private drawHeader(layer: SVGElementX, offset: Offset) {
-    svg('rect', {
-      x: offset.x,
-      y: 0,
-      width: this.getWidth(),
-      height: this.options.headerHeight + 10,
-      class: 'grid-header',
-      append_to: layer
-    })
-  }
-
-  private drawTicks(layer: SVGElementX, offset: Offset) {
-    let x = offset.x
-    const y = this.options.headerHeight + this.options.padding / 2,
-      height = this.getTasksHeight()
-
-    for (const date of this.dates) {
-      let clazz = 'tick'
-
-      if (
-        (VIEW_MODE.DAY == this.options.viewMode && date.date() == 1) ||
-        (VIEW_MODE.WEEK == this.options.viewMode && date.date() >= 1 && date.date() < 8) ||
-        (VIEW_MODE.MONTH == this.options.viewMode && (date.month() + 1) % 3 === 0)
-      ) {
-        clazz += ' thick'
-      }
-
-      svg('path', {
-        d: `M ${x} ${y} v ${height}`,
-        class: clazz,
-        append_to: layer
-      })
-
-      if (VIEW_MODE.MONTH == this.options.viewMode) {
-        x += (date.daysInMonth() * this.options.columnWidth) / 30
-      } else {
-        x += this.options.columnWidth
-      }
-    }
-  }
-
-  private highlightCurrentDay(layer: SVGElementX, offset: Offset) {
-    if (VIEW_MODE.DAY == this.options.viewMode) {
-      const x = (dayjs().diff(this.start, 'hour') / this.options.step) * this.options.columnWidth
-
-      svg('rect', {
-        x: x + offset.x,
-        y: 0,
-        width: this.options.columnWidth,
-        height: this.getHeight(),
-        class: 'today-highlight',
-        append_to: layer
-      })
-    }
-  }
-
-  private drawDates(layer: SVGElementX, offset: Offset) {
-    let lastDate = null
-    let i: number = 0
-    for (const d of this.dates) {
-      const date = this.getDateInfo(d, lastDate, i++)
-      lastDate = d
-
-      const lowerText = svg('text', {
-        x: date.lower_x + offset.x,
-        y: date.lower_y,
-        class: 'lower-text',
-        append_to: layer
-      })
-
-      lowerText.appendChild(toTextFragment(date.lower_text))
-
-      if (date.upper_text) {
-        const upperText = svg('text', {
-          x: date.upper_x + offset.x,
-          y: date.upper_y,
-          class: 'upper-text',
-          append_to: layer
-        })
-
-        upperText.appendChild(toTextFragment(date.upper_text))
-        // remove out-of-bound dates
-        // if ($upper_text.getBBox().x2 > this.getLayer('grid').getBBox().width) {
-        //   $upper_text.remove()
-        // }
-      }
-    }
-  }
-
-  private getDateInfo(
-    date: dayjs.Dayjs,
-    last_date: dayjs.Dayjs,
-    i: number
-  ): {
-    upper_text: string
-    lower_text: string
-    upper_x: number
-    upper_y: number
-    lower_x: number
-    lower_y: number
-  } {
-    if (!last_date) {
-      last_date = date.add(1, 'year').add(1, 'day')
-    }
-
-    const date_text: { [key: string]: string } = {
-      'Quarter Day_lower': date.format('HH'),
-      'Half Day_lower': date.format('HH'),
-      Day_lower: date.date() !== last_date.date() ? date.format('D') : '',
-      Week_lower: date.month() !== last_date.month() ? date.format('D MMM') : date.format('D'),
-      Month_lower: date.format('MMMM'),
-      Year_lower: date.format('YYYY'),
-      'Quarter Day_upper': date.date() !== last_date.date() ? date.format('D MMM') : '',
-      'Half Day_upper':
-        // eslint-disable-next-line no-nested-ternary
-        date.date() !== last_date.date()
-          ? date.month() !== last_date.month()
-            ? date.format('D MMM')
-            : date.format('D')
-          : '',
-      Day_upper: date.month() !== last_date.month() ? date.format('MMMM') : '',
-      Week_upper: date.month() !== last_date.month() ? date.format('MMMM') : '',
-      Month_upper: date.year() !== last_date.year() ? date.format('YYYY') : '',
-      Year_upper: date.year() !== last_date.year() ? date.format('YYYY') : ''
-    }
-
-    const base_pos: { [key: string]: number } = {
-      x: i * this.options.columnWidth,
-      lower_y: this.options.headerHeight,
-      upper_y: this.options.headerHeight - 25
-    }
-
-    const x_pos: { [key: string]: number } = {
-      'Quarter Day_lower': (this.options.columnWidth * 4) / 2,
-      'Quarter Day_upper': 0,
-      'Half Day_lower': (this.options.columnWidth * 2) / 2,
-      'Half Day_upper': 0,
-      Day_lower: this.options.columnWidth / 2,
-      Day_upper: (this.options.columnWidth * 30) / 2,
-      Week_lower: 0,
-      Week_upper: (this.options.columnWidth * 4) / 2,
-      Month_lower: this.options.columnWidth / 2,
-      Month_upper: (this.options.columnWidth * 12) / 2,
-      Year_lower: this.options.columnWidth / 2,
-      Year_upper: (this.options.columnWidth * 30) / 2
-    }
-
-    return {
-      upper_text: date_text[`${this.options.viewMode}_upper`],
-      lower_text: date_text[`${this.options.viewMode}_lower`],
-      upper_x: base_pos.x + x_pos[`${this.options.viewMode}_upper`],
-      upper_y: base_pos.upper_y,
-      lower_x: base_pos.x + x_pos[`${this.options.viewMode}_lower`],
-      lower_y: base_pos.lower_y
-    }
   }
 }

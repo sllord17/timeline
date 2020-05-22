@@ -56,6 +56,7 @@ export default class View extends Prop {
 
     this.options = { ...this.options, ...options }
     this.options.dispatch = this.dispatch.bind(this)
+    this.updateScale()
 
     const parent = document.querySelector(selector)
     const container = this.get('container')
@@ -93,6 +94,29 @@ export default class View extends Prop {
       case EVENT.HIDE_POPUP:
         this.get('popup').hide()
         break
+    }
+  }
+
+  private updateScale() {
+    const mode = this.options.viewMode
+    if (mode === VIEW_MODE.DAY) {
+      this.options.step = 24
+      this.options.columnWidth = 38
+    } else if (mode === VIEW_MODE.HALF_DAY) {
+      this.options.step = 24 / 2
+      this.options.columnWidth = 38
+    } else if (mode === VIEW_MODE.QUARTER_DAY) {
+      this.options.step = 24 / 4
+      this.options.columnWidth = 38
+    } else if (mode === VIEW_MODE.WEEK) {
+      this.options.step = 24 * 7
+      this.options.columnWidth = 140
+    } else if (mode === VIEW_MODE.MONTH) {
+      this.options.step = 24 * 30
+      this.options.columnWidth = 120
+    } else if (mode === VIEW_MODE.YEAR) {
+      this.options.step = 24 * 365
+      this.options.columnWidth = 120
     }
   }
 }

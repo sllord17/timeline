@@ -65,8 +65,6 @@ export default class Task extends Prop {
         return arr
       })
 
-      console.log(rowOffsets)
-
       this._milestones = (<MilestoneOptions[][]>config.milestones).map((m, idx) =>
         m.map((m2) => {
           if (idx > 0 && rowOffsets[idx - 1]) m2.y = rowOffsets[idx - 1]
