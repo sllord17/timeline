@@ -805,6 +805,46 @@ var Timeline = (function (exports) {
     };
   }
 
+  var Prop = /*#__PURE__*/function () {
+    function Prop() {
+      var o = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      _classCallCheck(this, Prop);
+
+      _defineProperty(this, "_properties", {});
+
+      this.properties = o;
+    }
+
+    _createClass(Prop, [{
+      key: "set",
+      value: function set(key, value) {
+        this._properties[key] = value;
+        return value;
+      }
+    }, {
+      key: "get",
+      value: function get(key) {
+        return this._properties[key];
+      }
+    }, {
+      key: "unset",
+      value: function unset(key) {
+        delete this._properties[key];
+      }
+    }, {
+      key: "properties",
+      get: function get() {
+        return _objectSpread2({}, this._properties);
+      },
+      set: function set(o) {
+        this._properties = _objectSpread2(_objectSpread2({}, this._properties), o);
+      }
+    }]);
+
+    return Prop;
+  }();
+
   var svg = function svg(tag, attrs) {
     var elem = document.createElementNS('http://www.w3.org/2000/svg', tag);
 
@@ -854,74 +894,77 @@ var Timeline = (function (exports) {
     });
   };
 
-  var Popup = /*#__PURE__*/function () {
+  var Popup = /*#__PURE__*/function (_Prop) {
+    _inherits(Popup, _Prop);
+
+    var _super = _createSuper(Popup);
+
     function Popup(options, parent) {
+      var _this;
+
       _classCallCheck(this, Popup);
 
-      _defineProperty(this, "options", void 0);
+      _this = _super.call(this, {
+        parent: parent,
+        title: toDom('<div class="title"></div>'),
+        subtitle: toDom('<div class="subtitle"></div>'),
+        pointer: toDom('<div class="pointer"></div>')
+      });
 
-      _defineProperty(this, "parent", void 0);
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
 
-      _defineProperty(this, "title", void 0);
-
-      _defineProperty(this, "subtitle", void 0);
-
-      _defineProperty(this, "pointer", void 0);
-
-      this.options = options;
-      this.parent = parent;
-      this.title = toDom('<div class="title"></div>');
-      this.subtitle = toDom('<div class="subtitle"></div>');
-      this.pointer = toDom('<div class="pointer"></div>');
-      parent.appendChild(this.title);
-      parent.appendChild(this.subtitle);
-      parent.appendChild(this.pointer);
+      _this.options = options;
+      parent.appendChild(_this.get('title'));
+      parent.appendChild(_this.get('subtitle'));
+      parent.appendChild(_this.get('pointer'));
+      return _this;
     }
 
     _createClass(Popup, [{
       key: "show",
       value: function show(config) {
         if (!config.positionTarget) throw new Error('target is required to show popup');
-        this.parent.style.display = 'block';
+        var parent = this.get('parent');
+        parent.style.display = 'block';
 
         if (!config.position) {
           config.position = 'left';
         }
 
         if (this.options.popupProducer) {
-          this.parent.innerHTML = this.options.popupProducer(config.eventTarget);
-          this.pointer = toDom('<div class="pointer"></div>');
-          this.parent.appendChild(this.pointer);
+          parent.innerHTML = this.options.popupProducer(config.eventTarget);
+          this.set('pointer', toDom('<div class="pointer"></div>'));
+          parent.appendChild(this.get('poiner'));
         } else {
-          this.title.innerHTML = config.title;
-          this.subtitle.innerHTML = config.subtitle;
-          this.parent.style.width = this.parent.clientWidth + 'px';
+          this.get('title').innerHTML = config.title;
+          this.get('subtitle').innerHTML = config.subtitle;
+          parent.style.width = parent.clientWidth + 'px';
         }
 
         var pos = config.positionTarget.getBBox();
 
         if (config.position == 'left') {
-          this.parent.style.left = pos.x + (pos.width + 10) + 'px';
-          this.parent.style.top = pos.y + 'px';
-          this.pointer.style.transform = 'rotateZ(90deg)';
-          this.pointer.style.left = '-7px';
-          this.pointer.style.top = '2px';
+          parent.style.left = pos.x + (pos.width + 10) + 'px';
+          parent.style.top = pos.y + 'px';
+          parent.style.transform = 'rotateZ(90deg)';
+          parent.style.left = '-7px';
+          parent.style.top = '2px';
         }
       }
     }, {
       key: "hide",
       value: function hide() {
-        this.parent.style.display = 'none';
+        this.get('parent').style.display = 'none';
       }
     }, {
       key: "isVisible",
       value: function isVisible() {
-        return this.parent.style.display == 'none';
+        return this.get('parent').style.display == 'none';
       }
     }]);
 
     return Popup;
-  }();
+  }(Prop);
 
   var EVENT;
 
@@ -930,46 +973,6 @@ var Timeline = (function (exports) {
     EVENT[EVENT["HIDE_POPUP"] = 1] = "HIDE_POPUP";
     EVENT[EVENT["TOGGLE_POPUP"] = 2] = "TOGGLE_POPUP";
   })(EVENT || (EVENT = {}));
-
-  var Prop = /*#__PURE__*/function () {
-    function Prop() {
-      var o = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-      _classCallCheck(this, Prop);
-
-      _defineProperty(this, "_properties", {});
-
-      this.properties = o;
-    }
-
-    _createClass(Prop, [{
-      key: "set",
-      value: function set(key, value) {
-        this._properties[key] = value;
-        return value;
-      }
-    }, {
-      key: "get",
-      value: function get(key) {
-        return this._properties[key];
-      }
-    }, {
-      key: "unset",
-      value: function unset(key) {
-        delete this._properties[key];
-      }
-    }, {
-      key: "properties",
-      get: function get() {
-        return _objectSpread2({}, this._properties);
-      },
-      set: function set(o) {
-        this._properties = _objectSpread2(_objectSpread2({}, this._properties), o);
-      }
-    }]);
-
-    return Prop;
-  }();
 
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 

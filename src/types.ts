@@ -27,7 +27,9 @@ export class SVGElementX extends SVGElement {
     return null
   }
 
-  public applyStyle(obj: any) {}
+  public applyStyle(obj: any) {
+    return obj
+  }
 }
 
 export interface ImageOptions {
