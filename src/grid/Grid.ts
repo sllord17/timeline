@@ -5,7 +5,7 @@ import { VIEW_MODE, ViewOptions } from '../view'
 import { svg, toTextFragment } from '../util'
 
 import Column from './Column'
-import { TaskOptions } from '../task'
+import { TaskOptions } from '../task/Task'
 import Tasks from '../tasks'
 import dayjs from 'dayjs'
 

@@ -1,7 +1,7 @@
 import { Offset, SVGElementX } from '../types'
 import { svg, toTextFragment } from '../util'
 
-import Task from '../task'
+import Task from '../task/Task'
 import Tasks from '../tasks'
 import { ViewOptions } from '../view'
 

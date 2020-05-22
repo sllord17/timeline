@@ -1,4 +1,4 @@
-import Task, { TaskOptions } from './task'
+import Task, { TaskOptions } from './task/Task'
 
 import { ViewOptions } from './view'
 

@@ -3,7 +3,7 @@ import { svg, toTextFragment } from './util'
 
 import { EVENT } from './events'
 import Prop from './prop'
-import Task from './task'
+import Task from './task/Task'
 import { VIEW_MODE } from './view'
 import { ViewOptions } from './view'
 import dayjs from 'dayjs'

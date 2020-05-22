@@ -4,7 +4,7 @@ import './gantt.scss'
 import './prototypes.js'
 import 'promise-polyfill/src/polyfill'
 
-import { HtmlProducer, TaskOptions } from './task'
+import { HtmlProducer, TaskOptions } from './task/Task'
 import Popup, { PopupOptions } from './popup'
 import { delegate, svg } from './util'
 

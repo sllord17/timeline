@@ -1,11 +1,11 @@
-import Milestone, { MilestoneOptions } from './milestone'
+import Milestone, { MilestoneOptions } from '../milestone'
 
-import { SVGElementX, Offset } from './types'
-import { ViewOptions } from './view'
+import { SVGElementX, Offset } from '../types'
+import { ViewOptions } from '../view'
 import dayjs from 'dayjs'
-import { svg } from './util'
-import Prop from './prop'
-import Plan, { PlanOptions } from './plan'
+import { svg } from '../util'
+import Prop from '../prop'
+import Plan, { PlanOptions } from '../plan'
 
 export interface HtmlProducer {
   (target: Task | Plan | Milestone): string
