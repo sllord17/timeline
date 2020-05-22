@@ -1,12 +1,11 @@
 /** @module timeline/grid */
 
 import { Offset, SVGElementX } from '../types'
+import Task, { TaskOptions } from '../task/Task'
 import { VIEW_MODE, ViewOptions } from '../view'
 import { svg, toTextFragment } from '../util'
 
 import Column from './Column'
-import { TaskOptions } from '../task/Task'
-import Tasks from '../tasks'
 import dayjs from 'dayjs'
 
 export default class Grid {
@@ -16,7 +15,7 @@ export default class Grid {
   private _end: dayjs.Dayjs
 
   private dates: dayjs.Dayjs[]
-  private tasks: Tasks
+  private tasks: Task[]
 
   private columns: Column[] = []
 
@@ -24,7 +23,7 @@ export default class Grid {
     this.options = options
     this.updateViewScale()
 
-    this.tasks = new Tasks(this.options, taskOptions)
+    this.tasks = taskOptions.map((o) => new Task(options, o))
     this.columns = options.columns.map((c) => new Column(this.options, c, this.tasks))
 
     this.setupDates()
@@ -113,7 +112,11 @@ export default class Grid {
   }
 
   private getHeight(): number {
-    return this.options.headerHeight + this.tasks.getHeight() + this.options.padding
+    return this.options.headerHeight + this.getTasksHeight() + this.options.padding
+  }
+
+  private getTasksHeight(): number {
+    return this.tasks.map((t) => t.get('height')).reduce((a, b) => a + b + this.options.padding)
   }
 
   public get start(): dayjs.Dayjs {
@@ -272,7 +275,7 @@ export default class Grid {
   private drawTicks(layer: SVGElementX, offset: Offset) {
     let x = offset.x
     const y = this.options.headerHeight + this.options.padding / 2,
-      height = this.tasks.getHeight()
+      height = this.getTasksHeight()
 
     for (const date of this.dates) {
       let clazz = 'tick'

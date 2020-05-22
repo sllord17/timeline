@@ -15,10 +15,10 @@ export interface ColumnOptions {
 export default class Column {
   private options: ViewOptions
   private config: ColumnOptions
-  private tasks: Tasks
+  private tasks: Task[]
   private container: SVGElementX
 
-  constructor(options: ViewOptions, config: ColumnOptions, tasks: Tasks) {
+  constructor(options: ViewOptions, config: ColumnOptions, tasks: Task[]) {
     this.options = options
     this.config = config
     this.tasks = tasks

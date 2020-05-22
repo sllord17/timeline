@@ -931,110 +931,6 @@ var Timeline = (function (exports) {
     EVENT[EVENT["TOGGLE_POPUP"] = 2] = "TOGGLE_POPUP";
   })(EVENT || (EVENT = {}));
 
-  var Column = /*#__PURE__*/function () {
-    function Column(options, config, tasks) {
-      _classCallCheck(this, Column);
-
-      _defineProperty(this, "options", void 0);
-
-      _defineProperty(this, "config", void 0);
-
-      _defineProperty(this, "tasks", void 0);
-
-      _defineProperty(this, "container", void 0);
-
-      this.options = options;
-      this.config = config;
-      this.tasks = tasks;
-    }
-
-    _createClass(Column, [{
-      key: "render",
-      value: function render(layer, offset) {
-        var _this = this;
-
-        offset.y = this.options.headerHeight;
-        this.container = svg('g', {
-          append_to: layer,
-          "class": 'column-wrapper',
-          transform: "translate(".concat(offset.x, ", ").concat(offset.y, ")")
-        });
-        var title = svg('text', {
-          append_to: this.container,
-          "class": 'column-header'
-        });
-        var text = toTextFragment(this.config.text);
-        title.appendChild(text);
-        offset.y = this.options.padding + 6;
-        this.tasks.forEach(function (t) {
-          var column = svg('text', {
-            append_to: _this.container,
-            "class": 'column-' + _this.config.field,
-            height: t.get('height'),
-            transform: "translate(0, ".concat(offset.y, ")")
-          });
-
-          _this.renderRow(column, t);
-
-          offset.y += t.get('height') + _this.options.padding;
-        });
-      }
-    }, {
-      key: "getWidth",
-      value: function getWidth() {
-        return this.container.getBBox().width;
-      }
-    }, {
-      key: "renderRow",
-      value: function renderRow(layer, task) {
-        var _this2 = this;
-
-        var value = task.get(this.config.field);
-        if (!value) return;
-
-        if (typeof value == 'string' || typeof value == 'number') {
-          return this.renderTspan(layer, task, {
-            label: value
-          });
-        }
-
-        console.assert(Array.isArray(value), "Column value isn't a string or array");
-        var offset = {
-          x: 0,
-          y: 0
-        };
-        value.forEach(function (v, idx) {
-          _this2.renderTspan(layer, task, v, offset);
-
-          offset.y += task.getRowHeight(idx);
-        });
-      }
-    }, {
-      key: "renderTspan",
-      value: function renderTspan(layer, task, obj) {
-        var offset = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {
-          x: 0,
-          y: 0
-        };
-        var label = svg('tspan', {
-          append_to: layer,
-          "class": 'column-text',
-          dy: offset.y,
-          x: 0
-        });
-
-        if (obj.labelStyle) {
-          label.applyStyle(obj.labelStyle);
-        }
-
-        var text = toTextFragment(obj.label);
-        label.appendChild(text);
-      }
-    }]);
-
-    return Column;
-  }();
-
   var Prop = /*#__PURE__*/function () {
     function Prop() {
       var o = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -1498,39 +1394,108 @@ var Timeline = (function (exports) {
     return Task;
   }(Prop);
 
-  var Tasks = /*#__PURE__*/function () {
-    function Tasks(options, config) {
-      _classCallCheck(this, Tasks);
+  var Column = /*#__PURE__*/function () {
+    function Column(options, config, tasks) {
+      _classCallCheck(this, Column);
 
       _defineProperty(this, "options", void 0);
 
-      _defineProperty(this, "_tasks", void 0);
+      _defineProperty(this, "config", void 0);
+
+      _defineProperty(this, "tasks", void 0);
+
+      _defineProperty(this, "container", void 0);
 
       this.options = options;
-      this._tasks = config.map(function (c) {
-        return new Task(options, c);
-      });
+      this.config = config;
+      this.tasks = tasks;
     }
 
-    _createClass(Tasks, [{
-      key: "forEach",
-      value: function forEach(callable) {
-        this._tasks.forEach(callable);
-      }
-    }, {
-      key: "getHeight",
-      value: function getHeight() {
+    _createClass(Column, [{
+      key: "render",
+      value: function render(layer, offset) {
         var _this = this;
 
-        return this._tasks.map(function (t) {
-          return t.get('height');
-        }).reduce(function (a, b) {
-          return a + b + _this.options.padding;
+        offset.y = this.options.headerHeight;
+        this.container = svg('g', {
+          append_to: layer,
+          "class": 'column-wrapper',
+          transform: "translate(".concat(offset.x, ", ").concat(offset.y, ")")
         });
+        var title = svg('text', {
+          append_to: this.container,
+          "class": 'column-header'
+        });
+        var text = toTextFragment(this.config.text);
+        title.appendChild(text);
+        offset.y = this.options.padding + 6;
+        this.tasks.forEach(function (t) {
+          var column = svg('text', {
+            append_to: _this.container,
+            "class": 'column-' + _this.config.field,
+            height: t.get('height'),
+            transform: "translate(0, ".concat(offset.y, ")")
+          });
+
+          _this.renderRow(column, t);
+
+          offset.y += t.get('height') + _this.options.padding;
+        });
+      }
+    }, {
+      key: "getWidth",
+      value: function getWidth() {
+        return this.container.getBBox().width;
+      }
+    }, {
+      key: "renderRow",
+      value: function renderRow(layer, task) {
+        var _this2 = this;
+
+        var value = task.get(this.config.field);
+        if (!value) return;
+
+        if (typeof value == 'string' || typeof value == 'number') {
+          return this.renderTspan(layer, task, {
+            label: value
+          });
+        }
+
+        console.assert(Array.isArray(value), "Column value isn't a string or array");
+        var offset = {
+          x: 0,
+          y: 0
+        };
+        value.forEach(function (v, idx) {
+          _this2.renderTspan(layer, task, v, offset);
+
+          offset.y += task.getRowHeight(idx);
+        });
+      }
+    }, {
+      key: "renderTspan",
+      value: function renderTspan(layer, task, obj) {
+        var offset = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {
+          x: 0,
+          y: 0
+        };
+        var label = svg('tspan', {
+          append_to: layer,
+          "class": 'column-text',
+          dy: offset.y,
+          x: 0
+        });
+
+        if (obj.labelStyle) {
+          label.applyStyle(obj.labelStyle);
+        }
+
+        var text = toTextFragment(obj.label);
+        label.appendChild(text);
       }
     }]);
 
-    return Tasks;
+    return Column;
   }();
 
   var Grid = /*#__PURE__*/function () {
@@ -1553,7 +1518,9 @@ var Timeline = (function (exports) {
 
       this.options = options;
       this.updateViewScale();
-      this.tasks = new Tasks(this.options, taskOptions);
+      this.tasks = taskOptions.map(function (o) {
+        return new Task(options, o);
+      });
       this.columns = options.columns.map(function (c) {
         return new Column(_this.options, c, _this.tasks);
       });
@@ -1659,12 +1626,23 @@ var Timeline = (function (exports) {
     }, {
       key: "getHeight",
       value: function getHeight() {
-        return this.options.headerHeight + this.tasks.getHeight() + this.options.padding;
+        return this.options.headerHeight + this.getTasksHeight() + this.options.padding;
+      }
+    }, {
+      key: "getTasksHeight",
+      value: function getTasksHeight() {
+        var _this4 = this;
+
+        return this.tasks.map(function (t) {
+          return t.get('height');
+        }).reduce(function (a, b) {
+          return a + b + _this4.options.padding;
+        });
       }
     }, {
       key: "render",
       value: function render(parent) {
-        var _this4 = this;
+        var _this5 = this;
 
         parent.setAttribute('width', "".concat(this.getWidth()));
         parent.setAttribute('height', "".concat(this.getHeight()));
@@ -1672,14 +1650,14 @@ var Timeline = (function (exports) {
           "class": 'columns'
         });
         this.drawColumns(columnLayer).then(function () {
-          return _this4.renderStage2(parent, columnLayer.getBBox().width + _this4.options.padding * _this4.columns.length);
+          return _this5.renderStage2(parent, columnLayer.getBBox().width + _this5.options.padding * _this5.columns.length);
         });
         parent.appendChild(columnLayer);
       }
     }, {
       key: "renderStage2",
       value: function renderStage2(parent, width) {
-        var _this5 = this;
+        var _this6 = this;
 
         var taskLayer = svg('g', {
           "class": 'bar',
@@ -1705,8 +1683,8 @@ var Timeline = (function (exports) {
         this.drawDates(dateLayer, offset);
         offset.y = this.options.headerHeight + this.options.padding;
         this.tasks.forEach(function (t) {
-          t.render(taskLayer, _this5._start, offset);
-          offset.y += t.get('height') + _this5.options.padding;
+          t.render(taskLayer, _this6._start, offset);
+          offset.y += t.get('height') + _this6.options.padding;
         });
       }
     }, {
@@ -1760,7 +1738,7 @@ var Timeline = (function (exports) {
     }, {
       key: "drawRows",
       value: function drawRows(layer, offset) {
-        var _this6 = this;
+        var _this7 = this;
 
         var rowsLayer = svg('g', {
           append_to: layer
@@ -1771,7 +1749,7 @@ var Timeline = (function (exports) {
         var rowWidth = this.getWidth() + offset.x;
         var y = this.options.headerHeight + this.options.padding / 2;
         this.tasks.forEach(function (task) {
-          var rowHeight = task.get('height') + _this6.options.padding;
+          var rowHeight = task.get('height') + _this7.options.padding;
 
           svg('rect', {
             x: 0,
@@ -1809,7 +1787,7 @@ var Timeline = (function (exports) {
       value: function drawTicks(layer, offset) {
         var x = offset.x;
         var y = this.options.headerHeight + this.options.padding / 2,
-            height = this.tasks.getHeight();
+            height = this.getTasksHeight();
 
         var _iterator = _createForOfIteratorHelper(this.dates),
             _step;
