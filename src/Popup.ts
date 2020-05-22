@@ -52,9 +52,7 @@ export default class Popup extends Prop {
       parent.style.width = parent.clientWidth + 'px'
     }
 
-    const pos = config.positionTarget.getBBox()
-
-    console.log(pos)
+    const pos = config.positionTarget.getBoundingClientRect()
     if (config.position == 'left') {
       parent.style.left = pos.x + (pos.width + 10) + 'px'
       parent.style.top = pos.y + 'px'

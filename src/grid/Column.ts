@@ -37,7 +37,8 @@ export default class Column extends Prop {
 
     const title = svg('text', {
       append_to: this.get('dom'),
-      class: 'column-header'
+      class: 'column-header',
+      y: -6
     })
 
     const text = toTextFragment(this.get('text'))

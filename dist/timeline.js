@@ -656,8 +656,7 @@ var Timeline = (function (exports) {
           parent.style.width = parent.clientWidth + 'px';
         }
 
-        var pos = config.positionTarget.getBBox();
-        console.log(pos);
+        var pos = config.positionTarget.getBoundingClientRect();
 
         if (config.position == 'left') {
           parent.style.left = pos.x + (pos.width + 10) + 'px';
@@ -1268,7 +1267,8 @@ var Timeline = (function (exports) {
         }));
         var title = svg('text', {
           append_to: this.get('dom'),
-          "class": 'column-header'
+          "class": 'column-header',
+          y: -6
         });
         var text = toTextFragment(this.get('text'));
         title.appendChild(text);
@@ -1525,11 +1525,18 @@ var Timeline = (function (exports) {
             y: 0
           };
           this.get('columns').forEach(function (c, idx) {
-            c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", ").concat(_this2.options.headerHeight, ")"));
+            c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", ").concat(_this2.options.headerHeight + 6, ")"));
             offset.x += c.getWidth() + _this2.options.padding;
           });
           this.get('header').get('dom').setAttribute('transform', "translate(".concat(offset.x, ", 0)"));
           this.get('background').get('dom').setAttribute('transform', "translate(".concat(offset.x, ", ").concat(this.options.headerHeight + 2, ")"));
+          this.get('background').get('dom').querySelectorAll('.grid-row').forEach(function (d) {
+            d.setAttribute('x', -offset.x + '');
+            d.setAttribute('width', d.getWidth() + offset.x + '');
+          });
+          this.get('background').get('dom').querySelectorAll('.row-line').forEach(function (d) {
+            d.setAttribute('x1', -offset.x + '');
+          });
           this.get('dom').setAttribute('transform', "translate(".concat(offset.x, ", ").concat(this.options.headerHeight + this.options.padding, ")"));
         }
       }
@@ -1620,19 +1627,15 @@ var Timeline = (function (exports) {
           return t.get('height');
         }).reduce(function (a, b) {
           return a + b + _this6.options.padding;
-        }) + this.options.padding;
+        }) + this.options.padding + 6;
       }
     }, {
       key: "render",
       value: function render(parent) {
         parent.setAttribute('width', "".concat(this.getWidth()));
         parent.setAttribute('height', "".concat(this.getHeight()));
-        var columnLayer = svg('g', {
-          "class": 'columns'
-        });
-        this.drawColumns(columnLayer);
         this.renderStage2(parent, this.options.padding * this.get('columns').length);
-        parent.appendChild(columnLayer);
+        this.drawColumns(parent);
       }
     }, {
       key: "renderStage2",
@@ -1657,7 +1660,11 @@ var Timeline = (function (exports) {
       }
     }, {
       key: "drawColumns",
-      value: function drawColumns(layer) {
+      value: function drawColumns(parent) {
+        var layer = svg('g', {
+          "class": 'columns',
+          append_to: parent
+        });
         var columnsLayer = svg('g', {
           append_to: layer
         });

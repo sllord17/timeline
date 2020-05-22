@@ -39,7 +39,7 @@ export default class Grid extends Prop implements Consumer {
       this.get('columns').forEach((c: Column, idx: number) => {
         c.get('dom').setAttribute(
           'transform',
-          `translate(${offset.x + this.options.padding / 2}, ${this.options.headerHeight})`
+          `translate(${offset.x + this.options.padding / 2}, ${this.options.headerHeight + 6})`
         )
         offset.x += c.getWidth() + this.options.padding
       })
@@ -48,6 +48,21 @@ export default class Grid extends Prop implements Consumer {
       this.get('background')
         .get('dom')
         .setAttribute('transform', `translate(${offset.x}, ${this.options.headerHeight + 2})`)
+
+      this.get('background')
+        .get('dom')
+        .querySelectorAll('.grid-row')
+        .forEach((d: SVGElementX) => {
+          d.setAttribute('x', -offset.x + '')
+          d.setAttribute('width', d.getWidth() + offset.x + '')
+        })
+
+      this.get('background')
+        .get('dom')
+        .querySelectorAll('.row-line')
+        .forEach((d: SVGElementX) => {
+          d.setAttribute('x1', -offset.x + '')
+        })
 
       this.get('dom').setAttribute(
         'transform',
@@ -126,7 +141,8 @@ export default class Grid extends Prop implements Consumer {
       this.get('tasks')
         .map((t: Task) => t.get('height'))
         .reduce((a: number, b: number) => a + b + this.options.padding) +
-      this.options.padding
+      this.options.padding +
+      6
     )
   }
 
@@ -134,14 +150,8 @@ export default class Grid extends Prop implements Consumer {
     parent.setAttribute('width', `${this.getWidth()}`)
     parent.setAttribute('height', `${this.getHeight()}`)
 
-    const columnLayer = svg('g', {
-      class: 'columns'
-    })
-
-    this.drawColumns(columnLayer)
-
     this.renderStage2(parent, this.options.padding * this.get('columns').length)
-    parent.appendChild(columnLayer)
+    this.drawColumns(parent)
   }
 
   private renderStage2(parent: SVGElementX, width: number) {
@@ -168,7 +178,12 @@ export default class Grid extends Prop implements Consumer {
     })
   }
 
-  private drawColumns(layer: SVGElementX) {
+  private drawColumns(parent: SVGElementX) {
+    const layer = svg('g', {
+      class: 'columns',
+      append_to: parent
+    })
+
     const columnsLayer = svg('g', { append_to: layer })
 
     const offset: Offset = { x: this.options.padding, y: 0 }
