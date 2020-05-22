@@ -10,8 +10,9 @@ import Header from './Header'
 import Prop from '../prop'
 import dayjs from 'dayjs'
 import { svg } from '../util'
+import { Consumer, EVENT } from '../events'
 
-export default class Grid extends Prop {
+export default class Grid extends Prop implements Consumer {
   private options: ViewOptions
 
   constructor(options: ViewOptions, taskOptions: TaskOptions[]) {
@@ -22,6 +23,7 @@ export default class Grid extends Prop {
     })
 
     this.options = options
+    this.options.subscribe(EVENT.AFTER_RENDER, this)
 
     this.set(
       'columns',
@@ -29,6 +31,10 @@ export default class Grid extends Prop {
     )
 
     this.setupDates()
+  }
+
+  eventHandler(event: EVENT): void {
+    throw new Error('Method not implemented.')
   }
 
   private setupDates() {

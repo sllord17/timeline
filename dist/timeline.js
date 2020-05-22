@@ -805,6 +805,15 @@ var Timeline = (function (exports) {
     };
   }
 
+  var EVENT;
+
+  (function (EVENT) {
+    EVENT["SHOW_POPUP"] = "SHOW_POPUP";
+    EVENT["HIDE_POPUP"] = "HIDE_POPUP";
+    EVENT["TOGGLE_POPUP"] = "TOGGLE_POPUP";
+    EVENT["AFTER_RENDER"] = "AFTER_RENDER";
+  })(EVENT || (EVENT = {}));
+
   var Prop = /*#__PURE__*/function () {
     function Prop() {
       var o = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -966,14 +975,6 @@ var Timeline = (function (exports) {
 
     return Popup;
   }(Prop);
-
-  var EVENT;
-
-  (function (EVENT) {
-    EVENT[EVENT["SHOW_POPUP"] = 0] = "SHOW_POPUP";
-    EVENT[EVENT["HIDE_POPUP"] = 1] = "HIDE_POPUP";
-    EVENT[EVENT["TOGGLE_POPUP"] = 2] = "TOGGLE_POPUP";
-  })(EVENT || (EVENT = {}));
 
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -1785,6 +1786,8 @@ var Timeline = (function (exports) {
 
       _this.options = options;
 
+      _this.options.subscribe(EVENT.AFTER_RENDER, _assertThisInitialized(_this));
+
       _this.set('columns', options.columns.map(function (c) {
         return new Column(_this.options, c, _this.get('tasks'));
       }));
@@ -1795,6 +1798,11 @@ var Timeline = (function (exports) {
     }
 
     _createClass(Grid, [{
+      key: "eventHandler",
+      value: function eventHandler(event) {
+        throw new Error('Method not implemented.');
+      }
+    }, {
       key: "setupDates",
       value: function setupDates() {
         var _this2 = this;
@@ -2009,8 +2017,12 @@ var Timeline = (function (exports) {
         columns: []
       });
 
+      _defineProperty(_assertThisInitialized(_this), "consumers", {});
+
       _this.options = _objectSpread2(_objectSpread2({}, _this.options), options);
       _this.options.dispatch = _this.dispatch.bind(_assertThisInitialized(_this));
+      _this.options.subscribe = _this.subscribe.bind(_assertThisInitialized(_this));
+      _this.options.unsubscribe = _this.unsubscribe.bind(_assertThisInitialized(_this));
 
       _this.updateScale();
 
@@ -2047,6 +2059,25 @@ var Timeline = (function (exports) {
       key: "render",
       value: function render() {
         this.get('grid').render(this.get('dom'));
+        this.dispatch(EVENT.AFTER_RENDER);
+      }
+    }, {
+      key: "subscribe",
+      value: function subscribe(key, clazz) {
+        if (!this.consumers[key]) {
+          this.consumers[key] = [];
+        }
+
+        this.consumers[key].push(clazz);
+      }
+    }, {
+      key: "unsubscribe",
+      value: function unsubscribe(key, clazz) {
+        var idx = this.consumers[key].indexOf(clazz);
+
+        if (idx > -1) {
+          this.consumers[key].splice(idx, 1);
+        }
       }
     }, {
       key: "dispatch",
@@ -2054,12 +2085,22 @@ var Timeline = (function (exports) {
         switch (key) {
           case EVENT.SHOW_POPUP:
             this.get('popup').show(payload);
-            break;
+            return;
 
           case EVENT.HIDE_POPUP:
             this.get('popup').hide();
-            break;
+            return;
         }
+
+        var events = this.consumers[key];
+
+        if (!events || events.length == 0) {
+          return;
+        }
+
+        events.forEach(function (c) {
+          return c.eventHandler(key);
+        });
       }
     }, {
       key: "updateScale",

@@ -1,9 +1,9 @@
+import { Consumer, EVENT } from './events'
 import { HtmlProducer, SVGElementX } from './types'
 import Popup, { PopupOptions } from './Popup'
 import { delegate, svg } from './util'
 
 import { ColumnOptions } from './grid/Column'
-import { EVENT } from './events'
 import Grid from './grid/Grid'
 import Prop from './prop'
 import { TaskOptions } from './task/Task'
@@ -29,6 +29,8 @@ export interface ViewOptions {
   popup?: true
   popupProducer?: HtmlProducer
   dispatch?: { (key: EVENT, paylod?: PopupOptions): void }
+  subscribe?: { (key: EVENT, clazz: Consumer): void }
+  unsubscribe?: { (key: EVENT, clazz: Consumer): void }
   columns: ColumnOptions[]
 }
 
@@ -46,6 +48,8 @@ export default class View extends Prop {
     columns: []
   }
 
+  private consumers: { [key: string]: Consumer[] } = {}
+
   constructor(selector: string, tasks: TaskOptions[], options: ViewOptions) {
     super({
       dom: svg('svg', {
@@ -56,6 +60,8 @@ export default class View extends Prop {
 
     this.options = { ...this.options, ...options }
     this.options.dispatch = this.dispatch.bind(this)
+    this.options.subscribe = this.subscribe.bind(this)
+    this.options.unsubscribe = this.unsubscribe.bind(this)
     this.updateScale()
 
     const parent = document.querySelector(selector)
@@ -84,17 +90,39 @@ export default class View extends Prop {
 
   public render() {
     this.get('grid').render(this.get('dom'))
+    this.dispatch(EVENT.AFTER_RENDER)
+  }
+
+  private subscribe(key: EVENT, clazz: Consumer) {
+    if (!this.consumers[key]) {
+      this.consumers[key] = []
+    }
+    this.consumers[key].push(clazz)
+  }
+
+  private unsubscribe(key: EVENT, clazz: Consumer) {
+    const idx = this.consumers[key].indexOf(clazz)
+    if (idx > -1) {
+      this.consumers[key].splice(idx, 1)
+    }
   }
 
   private dispatch(key: EVENT, payload?: PopupOptions): void {
     switch (key) {
       case EVENT.SHOW_POPUP:
         this.get('popup').show(payload)
-        break
+        return
       case EVENT.HIDE_POPUP:
         this.get('popup').hide()
-        break
+        return
     }
+
+    const events = this.consumers[key]
+    if (!events || events.length == 0) {
+      return
+    }
+
+    events.forEach((c) => c.eventHandler(key))
   }
 
   private updateScale() {
