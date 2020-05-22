@@ -171,7 +171,7 @@ export default class Grid extends Prop implements Consumer {
     this.get('background').render(parent, offset, this.get('dates'), this.get('tasks'))
     this.get('header').render(parent, offset, this.get('dates'))
 
-    offset.y = 2
+    offset.y = 0
     this.get('tasks').forEach((t: Task) => {
       t.render(this.get('dom'), this.get('start'), offset)
       offset.y += t.get('height') + this.options.padding

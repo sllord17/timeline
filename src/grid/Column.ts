@@ -4,6 +4,7 @@ import { svg, toTextFragment } from '../util'
 import Task from '../task/Task'
 import { ViewOptions } from '../view'
 import Prop from '../prop'
+import { Consumer, EVENT } from '../events'
 
 export interface ColumnOptions {
   id: string
@@ -12,7 +13,7 @@ export interface ColumnOptions {
   customClass?: string
 }
 
-export default class Column extends Prop {
+export default class Column extends Prop implements Consumer {
   private options: ViewOptions
 
   constructor(options: ViewOptions, config: ColumnOptions, tasks: Task[]) {
@@ -21,6 +22,17 @@ export default class Column extends Prop {
       tasks: tasks
     })
     this.options = options
+    options.subscribe(EVENT.AFTER_RENDER, this)
+  }
+
+  eventHandler(event: EVENT): void {
+    if (event == EVENT.AFTER_RENDER) {
+      this.get('dom')
+        .querySelectorAll('.column-background')
+        .forEach((r: SVGElementX) => {
+          r.setAttribute('width', r.columnRow.getBoundingClientRect().width + '')
+        })
+    }
   }
 
   render(layer: SVGElementX, offset: Offset) {
@@ -37,14 +49,13 @@ export default class Column extends Prop {
 
     const title = svg('text', {
       append_to: this.get('dom'),
-      class: 'column-header',
-      y: -6
+      class: 'column-header'
     })
 
     const text = toTextFragment(this.get('text'))
     title.appendChild(text)
 
-    offset.y = this.options.padding + 6
+    offset.y = this.options.padding
 
     this.get('tasks').forEach((t: Task) => {
       const column = svg('text', {
@@ -54,7 +65,14 @@ export default class Column extends Prop {
         transform: `translate(0, ${offset.y})`
       })
 
-      this.renderRow(column, t)
+      const bg = svg('g', {
+        prepend_to: this.get('dom'),
+        class: 'column-background-' + this.get('field'),
+        height: t.get('height'),
+        transform: `translate(0, ${offset.y})`
+      })
+
+      this.renderRow(column, bg, t)
       offset.y += t.get('height') + this.options.padding
     })
   }
@@ -63,12 +81,12 @@ export default class Column extends Prop {
     return this.get('dom').getBBox().width
   }
 
-  private renderRow(layer: SVGElementX, task: Task) {
+  private renderRow(layer: SVGElementX, backgroundLayer: SVGElementX, task: Task) {
     const value = task.get(this.get('field'))
     if (!value) return
 
     if (typeof value == 'string' || typeof value == 'number') {
-      return this.renderTspan(layer, task, { label: value })
+      return this.renderTspan(layer, null, task, { label: value })
     }
 
     console.assert(Array.isArray(value), "Column value isn't a string or array")
@@ -76,16 +94,24 @@ export default class Column extends Prop {
     const offset: Offset = { x: 0, y: 0 }
 
     ;(<{ [key: string]: any }[]>value).forEach((v, idx) => {
-      this.renderTspan(layer, task, v, offset)
+      this.renderTspan(layer, backgroundLayer, task, v, offset, idx)
       offset.y += task.getRowHeight(idx)
     })
   }
 
-  private renderTspan(layer: SVGElementX, task: Task, obj: any, offset: Offset = { x: 0, y: 0 }) {
+  private renderTspan(
+    textLayer: SVGElementX,
+    backgroundLayer: SVGElementX,
+    task: Task,
+    obj: any,
+    offset: Offset = { x: 0, y: 0 },
+    idx: number = 0
+  ) {
     const label = svg('tspan', {
-      append_to: layer,
+      append_to: textLayer,
       class: 'column-text',
       dy: offset.y,
+      'dominant-baseline': 'hanging',
       x: 0
     })
 
@@ -95,5 +121,18 @@ export default class Column extends Prop {
 
     const text = toTextFragment(obj.label)
     label.appendChild(text)
+
+    if (obj.backgroundStyle) {
+      const rect = svg('rect', {
+        x: 0,
+        dy: offset.y,
+        height: task.getRowHeight(idx),
+        prepend_to: backgroundLayer,
+        class: 'column-background',
+        id: obj.label
+      })
+      rect.columnRow = label
+      rect.applyStyle(obj.backgroundStyle)
+    }
   }
 }

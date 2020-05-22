@@ -1251,10 +1251,20 @@ var Timeline = (function (exports) {
       _defineProperty(_assertThisInitialized(_this), "options", void 0);
 
       _this.options = options;
+      options.subscribe(EVENT.AFTER_RENDER, _assertThisInitialized(_this));
       return _this;
     }
 
     _createClass(Column, [{
+      key: "eventHandler",
+      value: function eventHandler(event) {
+        if (event == EVENT.AFTER_RENDER) {
+          this.get('dom').querySelectorAll('.column-background').forEach(function (r) {
+            r.setAttribute('width', r.columnRow.getBoundingClientRect().width + '');
+          });
+        }
+      }
+    }, {
       key: "render",
       value: function render(layer, offset) {
         var _this2 = this;
@@ -1267,12 +1277,11 @@ var Timeline = (function (exports) {
         }));
         var title = svg('text', {
           append_to: this.get('dom'),
-          "class": 'column-header',
-          y: -6
+          "class": 'column-header'
         });
         var text = toTextFragment(this.get('text'));
         title.appendChild(text);
-        offset.y = this.options.padding + 6;
+        offset.y = this.options.padding;
         this.get('tasks').forEach(function (t) {
           var column = svg('text', {
             append_to: _this2.get('dom'),
@@ -1280,8 +1289,14 @@ var Timeline = (function (exports) {
             height: t.get('height'),
             transform: "translate(0, ".concat(offset.y, ")")
           });
+          var bg = svg('g', {
+            prepend_to: _this2.get('dom'),
+            "class": 'column-background-' + _this2.get('field'),
+            height: t.get('height'),
+            transform: "translate(0, ".concat(offset.y, ")")
+          });
 
-          _this2.renderRow(column, t);
+          _this2.renderRow(column, bg, t);
 
           offset.y += t.get('height') + _this2.options.padding;
         });
@@ -1293,14 +1308,14 @@ var Timeline = (function (exports) {
       }
     }, {
       key: "renderRow",
-      value: function renderRow(layer, task) {
+      value: function renderRow(layer, backgroundLayer, task) {
         var _this3 = this;
 
         var value = task.get(this.get('field'));
         if (!value) return;
 
         if (typeof value == 'string' || typeof value == 'number') {
-          return this.renderTspan(layer, task, {
+          return this.renderTspan(layer, null, task, {
             label: value
           });
         }
@@ -1311,22 +1326,24 @@ var Timeline = (function (exports) {
           y: 0
         };
         value.forEach(function (v, idx) {
-          _this3.renderTspan(layer, task, v, offset);
+          _this3.renderTspan(layer, backgroundLayer, task, v, offset, idx);
 
           offset.y += task.getRowHeight(idx);
         });
       }
     }, {
       key: "renderTspan",
-      value: function renderTspan(layer, task, obj) {
-        var offset = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {
+      value: function renderTspan(textLayer, backgroundLayer, task, obj) {
+        var offset = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {
           x: 0,
           y: 0
         };
+        var idx = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
         var label = svg('tspan', {
-          append_to: layer,
+          append_to: textLayer,
           "class": 'column-text',
           dy: offset.y,
+          'dominant-baseline': 'hanging',
           x: 0
         });
 
@@ -1336,6 +1353,19 @@ var Timeline = (function (exports) {
 
         var text = toTextFragment(obj.label);
         label.appendChild(text);
+
+        if (obj.backgroundStyle) {
+          var rect = svg('rect', {
+            x: 0,
+            dy: offset.y,
+            height: task.getRowHeight(idx),
+            prepend_to: backgroundLayer,
+            "class": 'column-background',
+            id: obj.label
+          });
+          rect.columnRow = label;
+          rect.applyStyle(obj.backgroundStyle);
+        }
       }
     }]);
 
@@ -1652,7 +1682,7 @@ var Timeline = (function (exports) {
         };
         this.get('background').render(parent, offset, this.get('dates'), this.get('tasks'));
         this.get('header').render(parent, offset, this.get('dates'));
-        offset.y = 2;
+        offset.y = 0;
         this.get('tasks').forEach(function (t) {
           t.render(_this7.get('dom'), _this7.get('start'), offset);
           offset.y += t.get('height') + _this7.options.padding;

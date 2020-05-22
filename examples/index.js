@@ -126,6 +126,9 @@ var tasks = [
           fontWeight: 'bold',
           fontFamily: 'Arial',
           fontSize: '2em'
+        },
+        backgroundStyle: {
+          fill: 'blue'
         }
       },
       {

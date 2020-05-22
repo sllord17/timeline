@@ -3,6 +3,7 @@ import Plan from './task/Plan'
 import Task from './task/Task'
 
 export class SVGElementX extends SVGElement {
+  columnRow: SVGElementX
   public getX(): number {
     return +this.getAttribute('x')
   }
