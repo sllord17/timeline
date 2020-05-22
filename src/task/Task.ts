@@ -1,4 +1,4 @@
-import Milestone, { MilestoneOptions } from '../milestone'
+import Milestone, { MilestoneOptions } from './Milestone'
 
 import { SVGElementX, Offset } from '../types'
 import { ViewOptions } from '../view'

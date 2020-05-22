@@ -1,12 +1,12 @@
-import { ImageOptions, Offset, SVGElementX } from './types'
+import { ImageOptions, Offset, SVGElementX } from '../types'
 
-import { EVENT } from './events'
-import Prop from './prop'
-import Task from './task/Task'
-import { VIEW_MODE } from './view'
-import { ViewOptions } from './view'
+import { EVENT } from '../events'
+import Prop from '../prop'
+import Task from './Task'
+import { VIEW_MODE } from '../view'
+import { ViewOptions } from '../view'
 import dayjs from 'dayjs'
-import { svg } from './util'
+import { svg } from '../util'
 
 interface MilestoneBaseOptions {
   date: string

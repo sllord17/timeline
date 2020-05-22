@@ -1,4 +1,4 @@
-import Milestone from './milestone'
+import Milestone from './task/Milestone'
 import Plan from './task/Plan'
 import { SVGElementX } from './types'
 import Task from './task/Task'
