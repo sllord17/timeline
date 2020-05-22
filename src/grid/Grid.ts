@@ -47,7 +47,12 @@ export default class Grid extends Prop implements Consumer {
       this.get('header').get('dom').setAttribute('transform', `translate(${offset.x}, 0)`)
       this.get('background')
         .get('dom')
-        .setAttribute('transform', `translate(${offset.x}, ${this.options.headerHeight})`)
+        .setAttribute('transform', `translate(${offset.x}, ${this.options.headerHeight + 2})`)
+
+      this.get('dom').setAttribute(
+        'transform',
+        `translate(${offset.x}, ${this.options.headerHeight + this.options.padding})`
+      )
     }
   }
 
@@ -156,7 +161,7 @@ export default class Grid extends Prop implements Consumer {
     this.get('background').render(parent, offset, this.get('dates'), this.get('tasks'))
     this.get('header').render(parent, offset, this.get('dates'))
 
-    offset.y = this.options.headerHeight + this.options.padding
+    offset.y = 2
     this.get('tasks').forEach((t: Task) => {
       t.render(this.get('dom'), this.get('start'), offset)
       offset.y += t.get('height') + this.options.padding

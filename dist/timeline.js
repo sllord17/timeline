@@ -1155,7 +1155,7 @@ var Timeline = (function (exports) {
           append_to: this.get('dom')
         });
         var rowWidth = this.get('width') + offset.x;
-        var y = this.options.padding;
+        var y = this.options.padding / 2;
         tasks.forEach(function (task) {
           var rowHeight = task.get('height') + _this2.options.padding;
 
@@ -1529,7 +1529,8 @@ var Timeline = (function (exports) {
             offset.x += c.getWidth() + _this2.options.padding;
           });
           this.get('header').get('dom').setAttribute('transform', "translate(".concat(offset.x, ", 0)"));
-          this.get('background').get('dom').setAttribute('transform', "translate(".concat(offset.x, ", ").concat(this.options.headerHeight, ")"));
+          this.get('background').get('dom').setAttribute('transform', "translate(".concat(offset.x, ", ").concat(this.options.headerHeight + 2, ")"));
+          this.get('dom').setAttribute('transform', "translate(".concat(offset.x, ", ").concat(this.options.headerHeight + this.options.padding, ")"));
         }
       }
     }, {
@@ -1648,7 +1649,7 @@ var Timeline = (function (exports) {
         };
         this.get('background').render(parent, offset, this.get('dates'), this.get('tasks'));
         this.get('header').render(parent, offset, this.get('dates'));
-        offset.y = this.options.headerHeight + this.options.padding;
+        offset.y = 2;
         this.get('tasks').forEach(function (t) {
           t.render(_this7.get('dom'), _this7.get('start'), offset);
           offset.y += t.get('height') + _this7.options.padding;
