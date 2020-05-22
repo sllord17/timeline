@@ -1,5 +1,5 @@
 import { HtmlProducer, SVGElementX } from './types'
-import Popup, { PopupOptions } from './Popup1'
+import Popup, { PopupOptions } from './Popup'
 import { delegate, svg } from './util'
 
 import { ColumnOptions } from './grid/Column'
