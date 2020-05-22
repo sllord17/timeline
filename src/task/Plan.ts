@@ -1,11 +1,11 @@
-import { Offset, SVGElementX } from './types'
-import { svg, toTextFragment } from './util'
+import { Offset, SVGElementX } from '../types'
+import { svg, toTextFragment } from '../util'
 
-import { EVENT } from './events'
-import Prop from './prop'
-import Task from './task/Task'
-import { VIEW_MODE } from './view'
-import { ViewOptions } from './view'
+import { EVENT } from '../events'
+import Prop from '../prop'
+import Task from './Task'
+import { VIEW_MODE } from '../view'
+import { ViewOptions } from '../view'
 import dayjs from 'dayjs'
 
 interface BasePlanOptions {

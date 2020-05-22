@@ -1,5 +1,5 @@
 import Milestone from './milestone'
-import Plan from './plan'
+import Plan from './task/Plan'
 import { SVGElementX } from './types'
 import Task from './task/Task'
 import { ViewOptions } from './view'

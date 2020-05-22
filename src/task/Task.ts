@@ -5,7 +5,7 @@ import { ViewOptions } from '../view'
 import dayjs from 'dayjs'
 import { svg } from '../util'
 import Prop from '../prop'
-import Plan, { PlanOptions } from '../plan'
+import Plan, { PlanOptions } from './Plan'
 
 export interface HtmlProducer {
   (target: Task | Plan | Milestone): string
