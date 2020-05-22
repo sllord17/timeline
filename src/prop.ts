@@ -15,8 +15,9 @@ export default class Prop {
     this._properties = { ...this._properties, ...o }
   }
 
-  set(key: string, value: any) {
+  set(key: string, value: any): any {
     this._properties[key] = value
+    return value
   }
 
   get(key: string): any {

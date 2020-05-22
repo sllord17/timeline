@@ -5,6 +5,7 @@ import { delegate, svg } from './util'
 import { ColumnOptions } from './grid/Column'
 import { EVENT } from './events'
 import Grid from './grid/Grid'
+import Prop from './prop'
 import { TaskOptions } from './task/Task'
 
 export enum VIEW_MODE {
@@ -31,7 +32,7 @@ export interface ViewOptions {
   columns: ColumnOptions[]
 }
 
-class View {
+export default class View extends Prop {
   private options: ViewOptions = {
     headerHeight: 50,
     columnWidth: 30,
@@ -45,60 +46,53 @@ class View {
     columns: []
   }
 
-  private svg: SVGElementX
-  private container: HTMLDivElement
-
-  private grid: Grid
-  private popup: Popup
-
   constructor(selector: string, tasks: TaskOptions[], options: ViewOptions) {
-    console.log(this)
-    this.options = { ...this.options, ...options }
+    super({
+      dom: svg('svg', {
+        class: 'gantt'
+      }),
+      container: document.createElement('div')
+    })
 
+    this.options = { ...this.options, ...options }
     this.options.dispatch = this.dispatch.bind(this)
 
     const parent = document.querySelector(selector)
-    this.container = document.createElement('div')
-    this.container.style.overflow = 'auto'
-    this.container.style.position = 'relative'
-    this.container.style.paddingBottom = '100px'
+    const container = this.get('container')
+    container.style.overflow = 'auto'
+    container.style.position = 'relative'
+    container.style.paddingBottom = '100px'
 
-    this.svg = svg('svg', {
-      class: 'gantt'
-    })
+    parent.appendChild(container)
+    container.appendChild(this.get('dom'))
 
-    parent.appendChild(this.container)
-    this.container.appendChild(this.svg)
-
-    this.grid = new Grid(this.options, tasks)
+    this.set('grid', new Grid(this.options, tasks))
 
     this.render()
 
     const popupContainer = document.createElement('div')
     popupContainer.classList.add('popup-wrapper')
-    this.container.appendChild(popupContainer)
+    container.appendChild(popupContainer)
 
-    this.popup = new Popup(this.options, popupContainer)
-    delegate(this.svg, 'click', '.grid-row, .grid-header', () => {
-      this.popup.hide()
+    this.set('popup', new Popup(this.options, popupContainer))
+    delegate(this.get('dom'), 'click', '.grid-row, .grid-header', () => {
+      this.get('popup').hide()
     })
-    this.popup.hide()
+    this.get('popup').hide()
   }
 
   public render() {
-    this.grid.render(this.svg)
+    this.get('grid').render(this.get('dom'))
   }
 
   private dispatch(key: EVENT, payload?: PopupOptions): void {
     switch (key) {
       case EVENT.SHOW_POPUP:
-        this.popup.show(payload)
+        this.get('popup').show(payload)
         break
       case EVENT.HIDE_POPUP:
-        this.popup.hide()
+        this.get('popup').hide()
         break
     }
   }
 }
-
-export default View
