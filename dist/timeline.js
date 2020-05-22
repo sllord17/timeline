@@ -656,11 +656,13 @@ var Timeline = (function (exports) {
           parent.style.width = parent.clientWidth + 'px';
         }
 
-        var pos = config.positionTarget.getBoundingClientRect();
+        var ctm = config.positionTarget.getCTM();
+        var pos = config.positionTarget.getBBox();
+        console.log(config.positionTarget);
 
         if (config.position == 'left') {
-          parent.style.left = pos.x + (pos.width + 10) + 'px';
-          parent.style.top = pos.y + 'px';
+          parent.style.left = ctm.e + pos.x + (pos.width + 10) + 'px';
+          parent.style.top = ctm.f + pos.y + 'px';
           this.get('pointer').style.transform = 'rotateZ(90deg)';
           this.get('pointer').style.left = '-7px';
           this.get('pointer').style.top = '2px';

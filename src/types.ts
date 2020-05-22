@@ -28,6 +28,10 @@ export class SVGElementX extends SVGElement {
     return null
   }
 
+  public getCTM(): DOMMatrix {
+    return null
+  }
+
   public applyStyle(obj: any) {
     return obj
   }
