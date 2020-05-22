@@ -90,7 +90,7 @@ export default class View extends Prop {
 
   public render() {
     this.get('grid').render(this.get('dom'))
-    this.dispatch(EVENT.AFTER_RENDER)
+    requestAnimationFrame(() => this.dispatch(EVENT.AFTER_RENDER))
   }
 
   private subscribe(key: EVENT, clazz: Consumer) {

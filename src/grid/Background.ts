@@ -17,28 +17,36 @@ export default class Background extends Prop {
   }
 
   public render(layer: SVGElementX, offset: Offset, dates: dayjs.Dayjs[], tasks: Task[]) {
-    this.drawBackground(layer, offset)
-    this.drawRows(layer, offset, tasks)
-    this.drawTicks(layer, offset, dates)
+    this.set(
+      'dom',
+      svg('g', {
+        class: 'grid',
+        prepend_to: layer
+      })
+    )
+
+    this.drawBackground(offset)
+    this.drawRows(offset, tasks)
+    this.drawTicks(offset, dates)
   }
 
-  private drawBackground(layer: SVGElementX, offset: Offset) {
+  private drawBackground(offset: Offset) {
     svg('rect', {
       x: 0,
       y: 0,
       width: this.get('width') + offset.x,
       height: this.get('height'),
       class: 'grid-background',
-      append_to: layer
+      append_to: this.get('dom')
     })
   }
 
-  private drawRows(layer: SVGElementX, offset: Offset, tasks: Task[]) {
-    const rowsLayer = svg('g', { append_to: layer })
-    const linesLayer = svg('g', { append_to: layer })
+  private drawRows(offset: Offset, tasks: Task[]) {
+    const rowsLayer = svg('g', { append_to: this.get('dom') })
+    const linesLayer = svg('g', { append_to: this.get('dom') })
 
     const rowWidth = this.get('width') + offset.x
-    let y = this.options.headerHeight + this.options.padding / 2
+    let y = this.options.padding
 
     tasks.forEach((task) => {
       const rowHeight = task.get('height') + this.options.padding
@@ -65,10 +73,10 @@ export default class Background extends Prop {
     })
   }
 
-  private drawTicks(layer: SVGElementX, offset: Offset, dates: dayjs.Dayjs[]) {
+  private drawTicks(offset: Offset, dates: dayjs.Dayjs[]) {
     let x = offset.x
-    const y = this.options.headerHeight + this.options.padding / 2,
-      height = this.get('height') - this.options.headerHeight
+    const y = this.options.padding / 2,
+      height = this.get('height')
 
     for (const date of dates) {
       let clazz = 'tick'
@@ -84,7 +92,7 @@ export default class Background extends Prop {
       svg('path', {
         d: `M ${x} ${y} v ${height}`,
         class: clazz,
-        append_to: layer
+        append_to: this.get('dom')
       })
 
       if (VIEW_MODE.MONTH == this.options.viewMode) {

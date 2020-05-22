@@ -273,300 +273,6 @@ var Timeline = (function (exports) {
     })();
   }
 
-  /**
-   * @this {Promise}
-   */
-  function finallyConstructor(callback) {
-    var constructor = this.constructor;
-    return this.then(
-      function(value) {
-        // @ts-ignore
-        return constructor.resolve(callback()).then(function() {
-          return value;
-        });
-      },
-      function(reason) {
-        // @ts-ignore
-        return constructor.resolve(callback()).then(function() {
-          // @ts-ignore
-          return constructor.reject(reason);
-        });
-      }
-    );
-  }
-
-  // Store setTimeout reference so promise-polyfill will be unaffected by
-  // other code modifying setTimeout (like sinon.useFakeTimers())
-  var setTimeoutFunc = setTimeout;
-
-  function isArray(x) {
-    return Boolean(x && typeof x.length !== 'undefined');
-  }
-
-  function noop() {}
-
-  // Polyfill for Function.prototype.bind
-  function bind(fn, thisArg) {
-    return function() {
-      fn.apply(thisArg, arguments);
-    };
-  }
-
-  /**
-   * @constructor
-   * @param {Function} fn
-   */
-  function Promise$1(fn) {
-    if (!(this instanceof Promise$1))
-      throw new TypeError('Promises must be constructed via new');
-    if (typeof fn !== 'function') throw new TypeError('not a function');
-    /** @type {!number} */
-    this._state = 0;
-    /** @type {!boolean} */
-    this._handled = false;
-    /** @type {Promise|undefined} */
-    this._value = undefined;
-    /** @type {!Array<!Function>} */
-    this._deferreds = [];
-
-    doResolve(fn, this);
-  }
-
-  function handle(self, deferred) {
-    while (self._state === 3) {
-      self = self._value;
-    }
-    if (self._state === 0) {
-      self._deferreds.push(deferred);
-      return;
-    }
-    self._handled = true;
-    Promise$1._immediateFn(function() {
-      var cb = self._state === 1 ? deferred.onFulfilled : deferred.onRejected;
-      if (cb === null) {
-        (self._state === 1 ? resolve : reject)(deferred.promise, self._value);
-        return;
-      }
-      var ret;
-      try {
-        ret = cb(self._value);
-      } catch (e) {
-        reject(deferred.promise, e);
-        return;
-      }
-      resolve(deferred.promise, ret);
-    });
-  }
-
-  function resolve(self, newValue) {
-    try {
-      // Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
-      if (newValue === self)
-        throw new TypeError('A promise cannot be resolved with itself.');
-      if (
-        newValue &&
-        (typeof newValue === 'object' || typeof newValue === 'function')
-      ) {
-        var then = newValue.then;
-        if (newValue instanceof Promise$1) {
-          self._state = 3;
-          self._value = newValue;
-          finale(self);
-          return;
-        } else if (typeof then === 'function') {
-          doResolve(bind(then, newValue), self);
-          return;
-        }
-      }
-      self._state = 1;
-      self._value = newValue;
-      finale(self);
-    } catch (e) {
-      reject(self, e);
-    }
-  }
-
-  function reject(self, newValue) {
-    self._state = 2;
-    self._value = newValue;
-    finale(self);
-  }
-
-  function finale(self) {
-    if (self._state === 2 && self._deferreds.length === 0) {
-      Promise$1._immediateFn(function() {
-        if (!self._handled) {
-          Promise$1._unhandledRejectionFn(self._value);
-        }
-      });
-    }
-
-    for (var i = 0, len = self._deferreds.length; i < len; i++) {
-      handle(self, self._deferreds[i]);
-    }
-    self._deferreds = null;
-  }
-
-  /**
-   * @constructor
-   */
-  function Handler(onFulfilled, onRejected, promise) {
-    this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
-    this.onRejected = typeof onRejected === 'function' ? onRejected : null;
-    this.promise = promise;
-  }
-
-  /**
-   * Take a potentially misbehaving resolver function and make sure
-   * onFulfilled and onRejected are only called once.
-   *
-   * Makes no guarantees about asynchrony.
-   */
-  function doResolve(fn, self) {
-    var done = false;
-    try {
-      fn(
-        function(value) {
-          if (done) return;
-          done = true;
-          resolve(self, value);
-        },
-        function(reason) {
-          if (done) return;
-          done = true;
-          reject(self, reason);
-        }
-      );
-    } catch (ex) {
-      if (done) return;
-      done = true;
-      reject(self, ex);
-    }
-  }
-
-  Promise$1.prototype['catch'] = function(onRejected) {
-    return this.then(null, onRejected);
-  };
-
-  Promise$1.prototype.then = function(onFulfilled, onRejected) {
-    // @ts-ignore
-    var prom = new this.constructor(noop);
-
-    handle(this, new Handler(onFulfilled, onRejected, prom));
-    return prom;
-  };
-
-  Promise$1.prototype['finally'] = finallyConstructor;
-
-  Promise$1.all = function(arr) {
-    return new Promise$1(function(resolve, reject) {
-      if (!isArray(arr)) {
-        return reject(new TypeError('Promise.all accepts an array'));
-      }
-
-      var args = Array.prototype.slice.call(arr);
-      if (args.length === 0) return resolve([]);
-      var remaining = args.length;
-
-      function res(i, val) {
-        try {
-          if (val && (typeof val === 'object' || typeof val === 'function')) {
-            var then = val.then;
-            if (typeof then === 'function') {
-              then.call(
-                val,
-                function(val) {
-                  res(i, val);
-                },
-                reject
-              );
-              return;
-            }
-          }
-          args[i] = val;
-          if (--remaining === 0) {
-            resolve(args);
-          }
-        } catch (ex) {
-          reject(ex);
-        }
-      }
-
-      for (var i = 0; i < args.length; i++) {
-        res(i, args[i]);
-      }
-    });
-  };
-
-  Promise$1.resolve = function(value) {
-    if (value && typeof value === 'object' && value.constructor === Promise$1) {
-      return value;
-    }
-
-    return new Promise$1(function(resolve) {
-      resolve(value);
-    });
-  };
-
-  Promise$1.reject = function(value) {
-    return new Promise$1(function(resolve, reject) {
-      reject(value);
-    });
-  };
-
-  Promise$1.race = function(arr) {
-    return new Promise$1(function(resolve, reject) {
-      if (!isArray(arr)) {
-        return reject(new TypeError('Promise.race accepts an array'));
-      }
-
-      for (var i = 0, len = arr.length; i < len; i++) {
-        Promise$1.resolve(arr[i]).then(resolve, reject);
-      }
-    });
-  };
-
-  // Use polyfill for setImmediate for performance gains
-  Promise$1._immediateFn =
-    // @ts-ignore
-    (typeof setImmediate === 'function' &&
-      function(fn) {
-        // @ts-ignore
-        setImmediate(fn);
-      }) ||
-    function(fn) {
-      setTimeoutFunc(fn, 0);
-    };
-
-  Promise$1._unhandledRejectionFn = function _unhandledRejectionFn(err) {
-    if (typeof console !== 'undefined' && console) {
-      console.warn('Possible Unhandled Promise Rejection:', err); // eslint-disable-line no-console
-    }
-  };
-
-  /** @suppress {undefinedVars} */
-  var globalNS = (function() {
-    // the only reliable means to get the global object is
-    // `Function('return this')()`
-    // However, this causes CSP violations in Chrome apps.
-    if (typeof self !== 'undefined') {
-      return self;
-    }
-    if (typeof window !== 'undefined') {
-      return window;
-    }
-    if (typeof global !== 'undefined') {
-      return global;
-    }
-    throw new Error('unable to locate global object');
-  })();
-
-  if (!('Promise' in globalNS)) {
-    globalNS['Promise'] = Promise$1;
-  } else if (!globalNS.Promise.prototype['finally']) {
-    globalNS.Promise.prototype['finally'] = finallyConstructor;
-  }
-
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -1417,35 +1123,39 @@ var Timeline = (function (exports) {
     _createClass(Background, [{
       key: "render",
       value: function render(layer, offset, dates, tasks) {
-        this.drawBackground(layer, offset);
-        this.drawRows(layer, offset, tasks);
-        this.drawTicks(layer, offset, dates);
+        this.set('dom', svg('g', {
+          "class": 'grid',
+          prepend_to: layer
+        }));
+        this.drawBackground(offset);
+        this.drawRows(offset, tasks);
+        this.drawTicks(offset, dates);
       }
     }, {
       key: "drawBackground",
-      value: function drawBackground(layer, offset) {
+      value: function drawBackground(offset) {
         svg('rect', {
           x: 0,
           y: 0,
           width: this.get('width') + offset.x,
           height: this.get('height'),
           "class": 'grid-background',
-          append_to: layer
+          append_to: this.get('dom')
         });
       }
     }, {
       key: "drawRows",
-      value: function drawRows(layer, offset, tasks) {
+      value: function drawRows(offset, tasks) {
         var _this2 = this;
 
         var rowsLayer = svg('g', {
-          append_to: layer
+          append_to: this.get('dom')
         });
         var linesLayer = svg('g', {
-          append_to: layer
+          append_to: this.get('dom')
         });
         var rowWidth = this.get('width') + offset.x;
-        var y = this.options.headerHeight + this.options.padding / 2;
+        var y = this.options.padding;
         tasks.forEach(function (task) {
           var rowHeight = task.get('height') + _this2.options.padding;
 
@@ -1470,10 +1180,10 @@ var Timeline = (function (exports) {
       }
     }, {
       key: "drawTicks",
-      value: function drawTicks(layer, offset, dates) {
+      value: function drawTicks(offset, dates) {
         var x = offset.x;
-        var y = this.options.headerHeight + this.options.padding / 2,
-            height = this.get('height') - this.options.headerHeight;
+        var y = this.options.padding / 2,
+            height = this.get('height');
 
         var _iterator = _createForOfIteratorHelper(dates),
             _step;
@@ -1490,7 +1200,7 @@ var Timeline = (function (exports) {
             svg('path', {
               d: "M ".concat(x, " ").concat(y, " v ").concat(height),
               "class": clazz,
-              append_to: layer
+              append_to: this.get('dom')
             });
 
             if (VIEW_MODE.MONTH == this.options.viewMode) {
@@ -1525,65 +1235,68 @@ var Timeline = (function (exports) {
     return Background;
   }(Prop);
 
-  var Column = /*#__PURE__*/function () {
+  var Column = /*#__PURE__*/function (_Prop) {
+    _inherits(Column, _Prop);
+
+    var _super = _createSuper(Column);
+
     function Column(options, config, tasks) {
+      var _this;
+
       _classCallCheck(this, Column);
 
-      _defineProperty(this, "options", void 0);
+      _this = _super.call(this, _objectSpread2(_objectSpread2({}, config), {}, {
+        tasks: tasks
+      }));
 
-      _defineProperty(this, "config", void 0);
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
 
-      _defineProperty(this, "tasks", void 0);
-
-      _defineProperty(this, "container", void 0);
-
-      this.options = options;
-      this.config = config;
-      this.tasks = tasks;
+      _this.options = options;
+      return _this;
     }
 
     _createClass(Column, [{
       key: "render",
       value: function render(layer, offset) {
-        var _this = this;
+        var _this2 = this;
 
         offset.y = this.options.headerHeight;
-        this.container = svg('g', {
+        this.set('dom', svg('g', {
           append_to: layer,
           "class": 'column-wrapper',
           transform: "translate(".concat(offset.x, ", ").concat(offset.y, ")")
-        });
+        }));
         var title = svg('text', {
-          append_to: this.container,
+          append_to: this.get('dom'),
           "class": 'column-header'
         });
-        var text = toTextFragment(this.config.text);
+        var text = toTextFragment(this.get('text'));
         title.appendChild(text);
         offset.y = this.options.padding + 6;
-        this.tasks.forEach(function (t) {
+        this.get('tasks').forEach(function (t) {
           var column = svg('text', {
-            append_to: _this.container,
-            "class": 'column-' + _this.config.field,
+            append_to: _this2.get('dom'),
+            "class": 'column-' + _this2.get('field'),
             height: t.get('height'),
             transform: "translate(0, ".concat(offset.y, ")")
           });
 
-          _this.renderRow(column, t);
+          _this2.renderRow(column, t);
 
-          offset.y += t.get('height') + _this.options.padding;
+          offset.y += t.get('height') + _this2.options.padding;
         });
       }
     }, {
       key: "getWidth",
       value: function getWidth() {
-        return this.container.getBBox().width;
+        return this.get('dom').getBBox().width;
       }
     }, {
       key: "renderRow",
       value: function renderRow(layer, task) {
-        var _this2 = this;
+        var _this3 = this;
 
-        var value = task.get(this.config.field);
+        var value = task.get(this.get('field'));
         if (!value) return;
 
         if (typeof value == 'string' || typeof value == 'number') {
@@ -1598,7 +1311,7 @@ var Timeline = (function (exports) {
           y: 0
         };
         value.forEach(function (v, idx) {
-          _this2.renderTspan(layer, task, v, offset);
+          _this3.renderTspan(layer, task, v, offset);
 
           offset.y += task.getRowHeight(idx);
         });
@@ -1627,7 +1340,7 @@ var Timeline = (function (exports) {
     }]);
 
     return Column;
-  }();
+  }(Prop);
 
   var Header = /*#__PURE__*/function (_Prop) {
     _inherits(Header, _Prop);
@@ -1653,24 +1366,28 @@ var Timeline = (function (exports) {
     _createClass(Header, [{
       key: "render",
       value: function render(layer, offset, dates) {
-        this.drawBackground(layer, offset);
-        this.drawDates(layer, offset, dates);
+        this.set('dom', svg('g', {
+          "class": 'date',
+          prepend_to: layer
+        }));
+        this.drawBackground(offset);
+        this.drawDates(offset, dates);
       }
     }, {
       key: "drawBackground",
-      value: function drawBackground(layer, offset) {
+      value: function drawBackground(offset) {
         svg('rect', {
           x: offset.x,
           y: 0,
           width: this.get('width'),
           height: this.options.headerHeight + 10,
           "class": 'grid-header',
-          append_to: layer
+          append_to: this.get('dom')
         });
       }
     }, {
       key: "drawDates",
-      value: function drawDates(layer, offset, dates) {
+      value: function drawDates(offset, dates) {
         var lastDate = null;
         var i = 0;
 
@@ -1686,7 +1403,7 @@ var Timeline = (function (exports) {
               x: date.lower_x + offset.x,
               y: date.lower_y,
               "class": 'lower-text',
-              append_to: layer
+              append_to: this.get('dom')
             });
             lowerText.appendChild(toTextFragment(date.lower_text));
 
@@ -1695,7 +1412,7 @@ var Timeline = (function (exports) {
                 x: date.upper_x + offset.x,
                 y: date.upper_y,
                 "class": 'upper-text',
-                append_to: layer
+                append_to: this.get('dom')
               });
               upperText.appendChild(toTextFragment(date.upper_text)); // remove out-of-bound dates
               // if ($upper_text.getBBox().x2 > this.getLayer('grid').getBBox().width) {
@@ -1800,18 +1517,31 @@ var Timeline = (function (exports) {
     _createClass(Grid, [{
       key: "eventHandler",
       value: function eventHandler(event) {
-        throw new Error('Method not implemented.');
+        var _this2 = this;
+
+        if (event == EVENT.AFTER_RENDER) {
+          var offset = {
+            x: 0,
+            y: 0
+          };
+          this.get('columns').forEach(function (c, idx) {
+            c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", ").concat(_this2.options.headerHeight, ")"));
+            offset.x += c.getWidth() + _this2.options.padding;
+          });
+          this.get('header').get('dom').setAttribute('transform', "translate(".concat(offset.x, ", 0)"));
+          this.get('background').get('dom').setAttribute('transform', "translate(".concat(offset.x, ", ").concat(this.options.headerHeight, ")"));
+        }
       }
     }, {
       key: "setupDates",
       value: function setupDates() {
-        var _this2 = this;
+        var _this3 = this;
 
         this.setBoundingDates();
         this.convertDates();
         this.fillDates();
         ['header', 'background'].forEach(function (k) {
-          return _this2.get(k).set('width', _this2.getWidth()).set('height', _this2.getHeight());
+          return _this3.get(k).set('width', _this3.getWidth()).set('height', _this3.getHeight());
         });
       }
     }, {
@@ -1839,13 +1569,13 @@ var Timeline = (function (exports) {
     }, {
       key: "convertDates",
       value: function convertDates() {
-        var _this3 = this;
+        var _this4 = this;
 
         this.set('start', this.get('start').startOf('day'));
         this.set('end', this.get('end').startOf('day'));
 
         if ([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY].some(function (k) {
-          return k == _this3.options.viewMode;
+          return k == _this4.options.viewMode;
         })) {
           this.set('start', this.get('start').subtract(7, 'day'));
           this.set('end', this.get('end').add(7, 'day'));
@@ -1863,15 +1593,15 @@ var Timeline = (function (exports) {
     }, {
       key: "setBoundingDates",
       value: function setBoundingDates() {
-        var _this4 = this;
+        var _this5 = this;
 
         this.get('tasks').forEach(function (task) {
-          if (!_this4.get('start') || task.get('start').isBefore(_this4.get('start'))) {
-            _this4.set('start', task.get('start').clone());
+          if (!_this5.get('start') || task.get('start').isBefore(_this5.get('start'))) {
+            _this5.set('start', task.get('start').clone());
           }
 
-          if (!_this4.get('end') || task.get('end').isAfter(_this4.get('end'))) {
-            _this4.set('end', task.get('end').clone());
+          if (!_this5.get('end') || task.get('end').isAfter(_this5.get('end'))) {
+            _this5.set('end', task.get('end').clone());
           }
         });
       }
@@ -1883,27 +1613,24 @@ var Timeline = (function (exports) {
     }, {
       key: "getHeight",
       value: function getHeight() {
-        var _this5 = this;
+        var _this6 = this;
 
         return this.options.headerHeight + this.get('tasks').map(function (t) {
           return t.get('height');
         }).reduce(function (a, b) {
-          return a + b + _this5.options.padding;
+          return a + b + _this6.options.padding;
         }) + this.options.padding;
       }
     }, {
       key: "render",
       value: function render(parent) {
-        var _this6 = this;
-
         parent.setAttribute('width', "".concat(this.getWidth()));
         parent.setAttribute('height', "".concat(this.getHeight()));
         var columnLayer = svg('g', {
           "class": 'columns'
         });
-        this.drawColumns(columnLayer).then(function () {
-          return _this6.renderStage2(parent, columnLayer.getBBox().width + _this6.options.padding * _this6.get('columns').length);
-        });
+        this.drawColumns(columnLayer);
+        this.renderStage2(parent, this.options.padding * this.get('columns').length);
         parent.appendChild(columnLayer);
       }
     }, {
@@ -1911,27 +1638,19 @@ var Timeline = (function (exports) {
       value: function renderStage2(parent, width) {
         var _this7 = this;
 
-        var taskLayer = svg('g', {
+        this.set('dom', svg('g', {
           "class": 'bar',
           prepend_to: parent
-        });
-        var dateLayer = svg('g', {
-          "class": 'date',
-          prepend_to: parent
-        });
-        var gridLayer = svg('g', {
-          "class": 'grid',
-          prepend_to: parent
-        });
+        }));
         var offset = {
           x: width,
           y: 0
         };
-        this.get('background').render(gridLayer, offset, this.get('dates'), this.get('tasks'));
-        this.get('header').render(dateLayer, offset, this.get('dates'));
+        this.get('background').render(parent, offset, this.get('dates'), this.get('tasks'));
+        this.get('header').render(parent, offset, this.get('dates'));
         offset.y = this.options.headerHeight + this.options.padding;
         this.get('tasks').forEach(function (t) {
-          t.render(taskLayer, _this7.get('start'), offset);
+          t.render(_this7.get('dom'), _this7.get('start'), offset);
           offset.y += t.get('height') + _this7.options.padding;
         });
       }
@@ -1945,30 +1664,8 @@ var Timeline = (function (exports) {
           x: this.options.padding,
           y: 0
         };
-        var idx = 0,
-            len = this.get('columns').length,
-            padding = this.options.padding;
-        var renderers = this.get('columns').map(function (col) {
-          return function (resolve, reject) {
-            col.render(columnsLayer, offset);
-            window.requestAnimationFrame(function () {
-              offset.x += col.getWidth() + padding;
-              resolve();
-            });
-          };
-        });
-        return new Promise(function (resolve, reject) {
-
-          (function recurse(idx) {
-            if (idx >= len) {
-              resolve();
-              return;
-            }
-
-            new Promise(renderers[idx]).then(function () {
-              return recurse(++idx);
-            });
-          })(idx);
+        this.get('columns').forEach(function (col) {
+          col.render(columnsLayer, offset);
         });
       }
     }]);
@@ -2058,8 +1755,12 @@ var Timeline = (function (exports) {
     _createClass(View, [{
       key: "render",
       value: function render() {
+        var _this2 = this;
+
         this.get('grid').render(this.get('dom'));
-        this.dispatch(EVENT.AFTER_RENDER);
+        requestAnimationFrame(function () {
+          return _this2.dispatch(EVENT.AFTER_RENDER);
+        });
       }
     }, {
       key: "subscribe",

@@ -3,6 +3,7 @@ import { svg, toTextFragment } from '../util'
 
 import Task from '../task/Task'
 import { ViewOptions } from '../view'
+import Prop from '../prop'
 
 export interface ColumnOptions {
   id: string
@@ -11,41 +12,43 @@ export interface ColumnOptions {
   customClass?: string
 }
 
-export default class Column {
+export default class Column extends Prop {
   private options: ViewOptions
-  private config: ColumnOptions
-  private tasks: Task[]
-  private container: SVGElementX
 
   constructor(options: ViewOptions, config: ColumnOptions, tasks: Task[]) {
+    super({
+      ...config,
+      tasks: tasks
+    })
     this.options = options
-    this.config = config
-    this.tasks = tasks
   }
 
   render(layer: SVGElementX, offset: Offset) {
     offset.y = this.options.headerHeight
 
-    this.container = svg('g', {
-      append_to: layer,
-      class: 'column-wrapper',
-      transform: `translate(${offset.x}, ${offset.y})`
-    })
+    this.set(
+      'dom',
+      svg('g', {
+        append_to: layer,
+        class: 'column-wrapper',
+        transform: `translate(${offset.x}, ${offset.y})`
+      })
+    )
 
     const title = svg('text', {
-      append_to: this.container,
+      append_to: this.get('dom'),
       class: 'column-header'
     })
 
-    const text = toTextFragment(this.config.text)
+    const text = toTextFragment(this.get('text'))
     title.appendChild(text)
 
     offset.y = this.options.padding + 6
 
-    this.tasks.forEach((t) => {
+    this.get('tasks').forEach((t: Task) => {
       const column = svg('text', {
-        append_to: this.container,
-        class: 'column-' + this.config.field,
+        append_to: this.get('dom'),
+        class: 'column-' + this.get('field'),
         height: t.get('height'),
         transform: `translate(0, ${offset.y})`
       })
@@ -56,11 +59,11 @@ export default class Column {
   }
 
   getWidth(): number {
-    return this.container.getBBox().width
+    return this.get('dom').getBBox().width
   }
 
   private renderRow(layer: SVGElementX, task: Task) {
-    const value = task.get(this.config.field)
+    const value = task.get(this.get('field'))
     if (!value) return
 
     if (typeof value == 'string' || typeof value == 'number') {

@@ -34,7 +34,21 @@ export default class Grid extends Prop implements Consumer {
   }
 
   eventHandler(event: EVENT): void {
-    throw new Error('Method not implemented.')
+    if (event == EVENT.AFTER_RENDER) {
+      const offset: Offset = { x: 0, y: 0 }
+      this.get('columns').forEach((c: Column, idx: number) => {
+        c.get('dom').setAttribute(
+          'transform',
+          `translate(${offset.x + this.options.padding / 2}, ${this.options.headerHeight})`
+        )
+        offset.x += c.getWidth() + this.options.padding
+      })
+
+      this.get('header').get('dom').setAttribute('transform', `translate(${offset.x}, 0)`)
+      this.get('background')
+        .get('dom')
+        .setAttribute('transform', `translate(${offset.x}, ${this.options.headerHeight})`)
+    }
   }
 
   private setupDates() {
@@ -119,74 +133,43 @@ export default class Grid extends Prop implements Consumer {
       class: 'columns'
     })
 
-    this.drawColumns(columnLayer).then(() =>
-      this.renderStage2(
-        parent,
-        columnLayer.getBBox().width + this.options.padding * this.get('columns').length
-      )
-    )
+    this.drawColumns(columnLayer)
+
+    this.renderStage2(parent, this.options.padding * this.get('columns').length)
     parent.appendChild(columnLayer)
   }
 
   private renderStage2(parent: SVGElementX, width: number) {
-    const taskLayer = svg('g', {
-      class: 'bar',
-      prepend_to: parent
-    })
-
-    const dateLayer = svg('g', {
-      class: 'date',
-      prepend_to: parent
-    })
-
-    const gridLayer = svg('g', {
-      class: 'grid',
-      prepend_to: parent
-    })
+    this.set(
+      'dom',
+      svg('g', {
+        class: 'bar',
+        prepend_to: parent
+      })
+    )
 
     const offset: Offset = {
       x: width,
       y: 0
     }
 
-    this.get('background').render(gridLayer, offset, this.get('dates'), this.get('tasks'))
-    this.get('header').render(dateLayer, offset, this.get('dates'))
+    this.get('background').render(parent, offset, this.get('dates'), this.get('tasks'))
+    this.get('header').render(parent, offset, this.get('dates'))
 
     offset.y = this.options.headerHeight + this.options.padding
     this.get('tasks').forEach((t: Task) => {
-      t.render(taskLayer, this.get('start'), offset)
+      t.render(this.get('dom'), this.get('start'), offset)
       offset.y += t.get('height') + this.options.padding
     })
   }
 
-  private drawColumns(layer: SVGElementX): Promise {
+  private drawColumns(layer: SVGElementX) {
     const columnsLayer = svg('g', { append_to: layer })
 
     const offset: Offset = { x: this.options.padding, y: 0 }
 
-    let idx = 0,
-      len = this.get('columns').length,
-      padding = this.options.padding
-
-    const renderers = this.get('columns').map((col: Column) => {
-      return function (resolve: CallableFunction, reject: CallableFunction) {
-        col.render(columnsLayer, offset)
-        window.requestAnimationFrame(() => {
-          offset.x += col.getWidth() + padding
-          resolve()
-        })
-      }
-    })
-
-    return new Promise(function (resolve, reject) {
-      ;(function recurse(idx) {
-        if (idx >= len) {
-          resolve()
-          return
-        }
-
-        new Promise(renderers[idx]).then(() => recurse(++idx))
-      })(idx)
+    this.get('columns').forEach((col: Column) => {
+      col.render(columnsLayer, offset)
     })
   }
 }

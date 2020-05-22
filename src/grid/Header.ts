@@ -16,22 +16,29 @@ export default class Header extends Prop {
   }
 
   public render(layer: SVGElementX, offset: Offset, dates: dayjs.Dayjs[]) {
-    this.drawBackground(layer, offset)
-    this.drawDates(layer, offset, dates)
+    this.set(
+      'dom',
+      svg('g', {
+        class: 'date',
+        prepend_to: layer
+      })
+    )
+    this.drawBackground(offset)
+    this.drawDates(offset, dates)
   }
 
-  private drawBackground(layer: SVGElementX, offset: Offset) {
+  private drawBackground(offset: Offset) {
     svg('rect', {
       x: offset.x,
       y: 0,
       width: this.get('width'),
       height: this.options.headerHeight + 10,
       class: 'grid-header',
-      append_to: layer
+      append_to: this.get('dom')
     })
   }
 
-  private drawDates(layer: SVGElementX, offset: Offset, dates: dayjs.Dayjs[]) {
+  private drawDates(offset: Offset, dates: dayjs.Dayjs[]) {
     let lastDate = null
     let i: number = 0
     for (const d of dates) {
@@ -42,7 +49,7 @@ export default class Header extends Prop {
         x: date.lower_x + offset.x,
         y: date.lower_y,
         class: 'lower-text',
-        append_to: layer
+        append_to: this.get('dom')
       })
 
       lowerText.appendChild(toTextFragment(date.lower_text))
@@ -52,7 +59,7 @@ export default class Header extends Prop {
           x: date.upper_x + offset.x,
           y: date.upper_y,
           class: 'upper-text',
-          append_to: layer
+          append_to: this.get('dom')
         })
 
         upperText.appendChild(toTextFragment(date.upper_text))

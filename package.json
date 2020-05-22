@@ -67,7 +67,6 @@
   ],
   "dependencies": {
     "classlist-polyfill": "^1.2.0",
-    "dayjs": "^1.8.27",
-    "promise-polyfill": "^8.1.3"
+    "dayjs": "^1.8.27"
   }
 }
