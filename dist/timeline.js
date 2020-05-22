@@ -2055,6 +2055,10 @@ var Timeline = (function (exports) {
   }();
 
   exports.View = View;
+  exports.delegate = delegate;
+  exports.svg = svg;
+  exports.toDom = toDom;
+  exports.toTextFragment = toTextFragment;
 
   return exports;
 
