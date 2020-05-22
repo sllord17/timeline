@@ -3,8 +3,8 @@ import { ImageOptions, Offset, SVGElementX } from './types'
 import { EVENT } from './events'
 import Prop from './prop'
 import Task from './task'
-import { TimelineOptions } from './view'
 import { VIEW_MODE } from './view'
+import { ViewOptions } from './view'
 import dayjs from 'dayjs'
 import { svg } from './util'
 
@@ -23,12 +23,12 @@ const defaultMilestoneOptions: MilestoneOptions = Object.freeze({
 })
 
 export default class Milestone extends Prop implements EventListenerObject {
-  private options: TimelineOptions
+  private options: ViewOptions
   private task: Task
 
   private dom: SVGElementX
 
-  constructor(options: TimelineOptions, config: MilestoneOptions, task: Task) {
+  constructor(options: ViewOptions, config: MilestoneOptions, task: Task) {
     super({ ...defaultMilestoneOptions, ...config })
 
     this.options = options

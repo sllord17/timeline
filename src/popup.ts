@@ -2,7 +2,7 @@ import Milestone from './milestone'
 import Plan from './plan'
 import { SVGElementX } from './types'
 import Task from './task'
-import { TimelineOptions } from './view'
+import { ViewOptions } from './view'
 import { toDom } from './util'
 
 export interface PopupOptions {
@@ -14,14 +14,14 @@ export interface PopupOptions {
 }
 
 export default class Popup {
-  private options: TimelineOptions
+  private options: ViewOptions
   private parent: HTMLDivElement
 
   private title: HTMLDivElement
   private subtitle: HTMLDivElement
   private pointer: HTMLDivElement
 
-  constructor(options: TimelineOptions, parent: HTMLDivElement) {
+  constructor(options: ViewOptions, parent: HTMLDivElement) {
     this.options = options
     this.parent = parent
 

@@ -3,7 +3,7 @@ import { svg, toTextFragment } from './util'
 
 import Task from './task'
 import Tasks from './tasks'
-import { TimelineOptions } from './view'
+import { ViewOptions } from './view'
 
 export interface ColumnOptions {
   id: string
@@ -13,12 +13,12 @@ export interface ColumnOptions {
 }
 
 export default class Column {
-  private options: TimelineOptions
+  private options: ViewOptions
   private config: ColumnOptions
   private tasks: Tasks
   private container: SVGElementX
 
-  constructor(options: TimelineOptions, config: ColumnOptions, tasks: Tasks) {
+  constructor(options: ViewOptions, config: ColumnOptions, tasks: Tasks) {
     this.options = options
     this.config = config
     this.tasks = tasks

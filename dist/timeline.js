@@ -1979,11 +1979,11 @@ var Timeline = (function (exports) {
     VIEW_MODE["YEAR"] = "Year";
   })(VIEW_MODE || (VIEW_MODE = {}));
 
-  var Timeline = /*#__PURE__*/function () {
-    function Timeline(selector, tasks, options) {
+  var View = /*#__PURE__*/function () {
+    function View(selector, tasks, options) {
       var _this = this;
 
-      _classCallCheck(this, Timeline);
+      _classCallCheck(this, View);
 
       _defineProperty(this, "options", {
         headerHeight: 50,
@@ -2031,7 +2031,7 @@ var Timeline = (function (exports) {
       this.popup.hide();
     }
 
-    _createClass(Timeline, [{
+    _createClass(View, [{
       key: "render",
       value: function render() {
         this.grid.render(this.svg);
@@ -2051,10 +2051,10 @@ var Timeline = (function (exports) {
       }
     }]);
 
-    return Timeline;
+    return View;
   }();
 
-  exports.View = Timeline;
+  exports.View = View;
 
   return exports;
 

@@ -4,8 +4,8 @@ import { svg, toTextFragment } from './util'
 import { EVENT } from './events'
 import Prop from './prop'
 import Task from './task'
-import { TimelineOptions } from './view'
 import { VIEW_MODE } from './view'
+import { ViewOptions } from './view'
 import dayjs from 'dayjs'
 
 interface BasePlanOptions {
@@ -32,10 +32,10 @@ const defaultPlanOptions: PlanOptions = {
 }
 
 export default class Plan extends Prop implements EventListenerObject {
-  private options: TimelineOptions
+  private options: ViewOptions
   private task: Task
 
-  constructor(options: TimelineOptions, config: PlanOptions, task: Task) {
+  constructor(options: ViewOptions, config: PlanOptions, task: Task) {
     super({ ...defaultPlanOptions, ...config })
 
     this.options = options

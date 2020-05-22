@@ -1,7 +1,7 @@
 import Milestone, { MilestoneOptions } from './milestone'
 
 import { SVGElementX, Offset } from './types'
-import { TimelineOptions } from './view'
+import { ViewOptions } from './view'
 import dayjs from 'dayjs'
 import { svg } from './util'
 import Prop from './prop'
@@ -36,12 +36,12 @@ function isSingle(options: TaskOptions): boolean {
 }
 
 export default class Task extends Prop {
-  private options: TimelineOptions
+  private options: ViewOptions
 
   private _plans: Plan[][] = []
   private _milestones: Milestone[][] = []
 
-  constructor(options: TimelineOptions, config: TaskOptions) {
+  constructor(options: ViewOptions, config: TaskOptions) {
     super()
 
     this.options = options

@@ -6,12 +6,12 @@ import { svg, toTextFragment } from './util'
 import Column from './column'
 import { TaskOptions } from './task'
 import Tasks from './tasks'
-import { TimelineOptions } from './view'
 import { VIEW_MODE } from './view'
+import { ViewOptions } from './view'
 import dayjs from 'dayjs'
 
 export default class Grid {
-  private options: TimelineOptions
+  private options: ViewOptions
 
   private _start: dayjs.Dayjs
   private _end: dayjs.Dayjs
@@ -21,7 +21,7 @@ export default class Grid {
 
   private columns: Column[] = []
 
-  constructor(options: TimelineOptions, taskOptions: TaskOptions[]) {
+  constructor(options: ViewOptions, taskOptions: TaskOptions[]) {
     this.options = options
     this.updateViewScale()
 

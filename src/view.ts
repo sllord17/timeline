@@ -26,7 +26,7 @@ interface events {
   [key: string]: { (event: Event): void }
 }
 
-export interface TimelineOptions {
+export interface ViewOptions {
   headerHeight?: number
   columnWidth?: number
   step?: number
@@ -42,8 +42,8 @@ export interface TimelineOptions {
   columns: ColumnOptions[]
 }
 
-class Timeline {
-  private options: TimelineOptions = {
+class View {
+  private options: ViewOptions = {
     headerHeight: 50,
     columnWidth: 30,
     step: 24,
@@ -63,7 +63,7 @@ class Timeline {
   private grid: Grid
   private popup: Popup
 
-  constructor(selector: string, tasks: TaskOptions[], options: TimelineOptions) {
+  constructor(selector: string, tasks: TaskOptions[], options: ViewOptions) {
     this.options = { ...this.options, ...options }
 
     this.options.dispatch = this.dispatch.bind(this)
@@ -112,4 +112,4 @@ class Timeline {
   }
 }
 
-export default Timeline
+export default View

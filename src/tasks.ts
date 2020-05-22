@@ -1,12 +1,12 @@
 import Task, { TaskOptions } from './task'
 
-import { TimelineOptions } from './view'
+import { ViewOptions } from './view'
 
 export default class Tasks {
-  private options: TimelineOptions
+  private options: ViewOptions
   private _tasks: Task[]
 
-  constructor(options: TimelineOptions, config: TaskOptions[]) {
+  constructor(options: ViewOptions, config: TaskOptions[]) {
     this.options = options
 
     this._tasks = config.map((c) => new Task(options, c))
