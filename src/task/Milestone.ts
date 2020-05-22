@@ -50,10 +50,6 @@ export default class Milestone extends Prop implements EventListenerObject {
 
       return
     }
-
-    if (!this.options.events || !this.options.events[key]) throw new Error('Event not implemented.')
-
-    this.options.events[key].call(this, evt)
   }
 
   private computeX(startDate: dayjs.Dayjs): number {

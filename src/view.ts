@@ -1,17 +1,11 @@
-/** @module timeline */
-
-import './gantt.scss'
-import './prototypes.js'
-import 'promise-polyfill/src/polyfill'
-
-import { HtmlProducer, TaskOptions } from './task/Task'
+import { HtmlProducer, SVGElementX } from './types'
 import Popup, { PopupOptions } from './popup'
 import { delegate, svg } from './util'
 
 import { ColumnOptions } from './grid/Column'
 import { EVENT } from './events'
 import Grid from './grid/Grid'
-import { SVGElementX } from './types'
+import { TaskOptions } from './task/Task'
 
 export enum VIEW_MODE {
   QUARTER_DAY = 'Quarter Day',
@@ -48,7 +42,6 @@ class View {
     dateFormat: 'YYYY-MM-DD',
     popup: true,
     popupProducer: null,
-    events: null,
     columns: []
   }
 

@@ -7,10 +7,6 @@ import { svg } from '../util'
 import Prop from '../prop'
 import Plan, { PlanOptions } from './Plan'
 
-export interface HtmlProducer {
-  (target: Task | Plan | Milestone): string
-}
-
 export interface SingleBarOptions extends TaskBaseOptions {
   plan: PlanOptions
   milestones?: MilestoneOptions[]

@@ -1,3 +1,7 @@
+import Milestone from './task/Milestone'
+import Plan from './task/Plan'
+import Task from './task/Task'
+
 export class SVGElementX extends SVGElement {
   public getX(): number {
     return +this.getAttribute('x')
@@ -35,4 +39,8 @@ export interface ImageOptions {
 export interface Offset {
   x?: number
   y?: number
+}
+
+export interface HtmlProducer {
+  (target: Task | Plan | Milestone): string
 }
