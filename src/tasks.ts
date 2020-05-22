@@ -1,6 +1,6 @@
 import Task, { TaskOptions } from './task'
 
-import { TimelineOptions } from './timeline'
+import { TimelineOptions } from './view'
 
 export default class Tasks {
   private options: TimelineOptions

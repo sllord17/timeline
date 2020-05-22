@@ -3,7 +3,7 @@ import { svg, toTextFragment } from './util'
 
 import Task from './task'
 import Tasks from './tasks'
-import { TimelineOptions } from './timeline'
+import { TimelineOptions } from './view'
 
 export interface ColumnOptions {
   id: string

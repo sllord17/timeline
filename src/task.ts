@@ -1,7 +1,7 @@
 import Milestone, { MilestoneOptions } from './milestone'
 
 import { SVGElementX, Offset } from './types'
-import { TimelineOptions } from './timeline'
+import { TimelineOptions } from './view'
 import dayjs from 'dayjs'
 import { svg } from './util'
 import Prop from './prop'

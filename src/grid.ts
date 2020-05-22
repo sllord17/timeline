@@ -6,7 +6,7 @@ import { svg, toTextFragment } from './util'
 import Column from './column'
 import { TaskOptions } from './task'
 import Tasks from './tasks'
-import { TimelineOptions } from './timeline'
+import { TimelineOptions } from './view'
 import { VIEW_MODE } from './view'
 import dayjs from 'dayjs'
 

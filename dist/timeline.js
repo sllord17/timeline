@@ -1,4 +1,4 @@
-var Timeline = (function () {
+var Timeline = (function (exports) {
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -1074,17 +1074,6 @@ var Timeline = (function () {
     return Prop;
   }();
 
-  var VIEW_MODE;
-
-  (function (VIEW_MODE) {
-    VIEW_MODE["QUARTER_DAY"] = "Quarter Day";
-    VIEW_MODE["HALF_DAY"] = "Half Day";
-    VIEW_MODE["DAY"] = "Day";
-    VIEW_MODE["WEEK"] = "Week";
-    VIEW_MODE["MONTH"] = "Month";
-    VIEW_MODE["YEAR"] = "Year";
-  })(VIEW_MODE || (VIEW_MODE = {}));
-
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
   function createCommonjsModule(fn, module) {
@@ -1979,6 +1968,17 @@ var Timeline = (function () {
     return Grid;
   }();
 
+  var VIEW_MODE;
+
+  (function (VIEW_MODE) {
+    VIEW_MODE["QUARTER_DAY"] = "Quarter Day";
+    VIEW_MODE["HALF_DAY"] = "Half Day";
+    VIEW_MODE["DAY"] = "Day";
+    VIEW_MODE["WEEK"] = "Week";
+    VIEW_MODE["MONTH"] = "Month";
+    VIEW_MODE["YEAR"] = "Year";
+  })(VIEW_MODE || (VIEW_MODE = {}));
+
   var Timeline = /*#__PURE__*/function () {
     function Timeline(selector, tasks, options) {
       var _this = this;
@@ -2054,6 +2054,8 @@ var Timeline = (function () {
     return Timeline;
   }();
 
-  return Timeline;
+  exports.View = Timeline;
 
-}());
+  return exports;
+
+}({}));

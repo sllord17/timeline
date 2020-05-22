@@ -2,7 +2,7 @@ import Milestone from './milestone'
 import Plan from './plan'
 import { SVGElementX } from './types'
 import Task from './task'
-import { TimelineOptions } from './timeline'
+import { TimelineOptions } from './view'
 import { toDom } from './util'
 
 export interface PopupOptions {

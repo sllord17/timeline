@@ -4,7 +4,7 @@ import { svg, toTextFragment } from './util'
 import { EVENT } from './events'
 import Prop from './prop'
 import Task from './task'
-import { TimelineOptions } from './timeline'
+import { TimelineOptions } from './view'
 import { VIEW_MODE } from './view'
 import dayjs from 'dayjs'
 
