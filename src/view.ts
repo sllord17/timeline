@@ -8,9 +8,9 @@ import { HtmlProducer, TaskOptions } from './task'
 import Popup, { PopupOptions } from './popup'
 import { delegate, svg } from './util'
 
-import { ColumnOptions } from './column'
+import { ColumnOptions } from './grid/Column'
 import { EVENT } from './events'
-import Grid from './grid'
+import Grid from './grid/Grid'
 import { SVGElementX } from './types'
 
 export enum VIEW_MODE {

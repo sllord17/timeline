@@ -1,9 +1,9 @@
-import { Offset, SVGElementX } from './types'
-import { svg, toTextFragment } from './util'
+import { Offset, SVGElementX } from '../types'
+import { svg, toTextFragment } from '../util'
 
-import Task from './task'
-import Tasks from './tasks'
-import { ViewOptions } from './view'
+import Task from '../task'
+import Tasks from '../tasks'
+import { ViewOptions } from '../view'
 
 export interface ColumnOptions {
   id: string

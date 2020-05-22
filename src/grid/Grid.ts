@@ -1,13 +1,12 @@
 /** @module timeline/grid */
 
-import { Offset, SVGElementX } from './types'
-import { svg, toTextFragment } from './util'
+import { Offset, SVGElementX } from '../types'
+import { VIEW_MODE, ViewOptions } from '../view'
+import { svg, toTextFragment } from '../util'
 
-import Column from './column'
-import { TaskOptions } from './task'
-import Tasks from './tasks'
-import { VIEW_MODE } from './view'
-import { ViewOptions } from './view'
+import Column from './Column'
+import { TaskOptions } from '../task'
+import Tasks from '../tasks'
 import dayjs from 'dayjs'
 
 export default class Grid {
