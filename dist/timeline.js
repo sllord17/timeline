@@ -1262,7 +1262,7 @@ var Timeline = (function (exports) {
       value: function eventHandler(event) {
         if (event == EVENT.AFTER_RENDER) {
           this.get('dom').querySelectorAll('.column-background').forEach(function (r) {
-            r.setAttribute('width', r.columnRow.getBoundingClientRect().width + '');
+            r.setAttribute('width', r.columnRow.getBBox().width + '');
           });
         }
       }

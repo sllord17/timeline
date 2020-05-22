@@ -30,7 +30,7 @@ export default class Column extends Prop implements Consumer {
       this.get('dom')
         .querySelectorAll('.column-background')
         .forEach((r: SVGElementX) => {
-          r.setAttribute('width', r.columnRow.getBoundingClientRect().width + '')
+          r.setAttribute('width', r.columnRow.getBBox().width + '')
         })
     }
   }
