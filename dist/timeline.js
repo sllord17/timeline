@@ -1985,6 +1985,7 @@ var Timeline = (function (exports) {
 
       _defineProperty(this, "popup", void 0);
 
+      console.log(this);
       this.options = _objectSpread2(_objectSpread2({}, this.options), options);
       this.options.dispatch = this.dispatch.bind(this);
       var parent = document.querySelector(selector);

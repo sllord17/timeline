@@ -22,10 +22,6 @@ export enum VIEW_MODE {
   YEAR = 'Year'
 }
 
-interface events {
-  [key: string]: { (event: Event): void }
-}
-
 export interface ViewOptions {
   headerHeight?: number
   columnWidth?: number
@@ -37,7 +33,6 @@ export interface ViewOptions {
   dateFormat?: string
   popup?: true
   popupProducer?: HtmlProducer
-  events?: events
   dispatch?: { (key: EVENT, paylod?: PopupOptions): void }
   columns: ColumnOptions[]
 }
@@ -64,6 +59,7 @@ class View {
   private popup: Popup
 
   constructor(selector: string, tasks: TaskOptions[], options: ViewOptions) {
+    console.log(this)
     this.options = { ...this.options, ...options }
 
     this.options.dispatch = this.dispatch.bind(this)
