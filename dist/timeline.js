@@ -783,7 +783,7 @@ var Timeline = (function (exports) {
           append_to: this.get('dom')
         });
         var rowWidth = this.get('width') + offset.x;
-        var y = this.options.padding / 2;
+        var y = 0;
         tasks.forEach(function (task) {
           var rowHeight = task.get('height') + _this2.options.padding;
 
@@ -1457,7 +1457,8 @@ var Timeline = (function (exports) {
         var title = svg('text', {
           append_to: header,
           "class": 'column-header',
-          transform: "translate(".concat(offset.x, ", ").concat(offset.y, ")")
+          x: offset.x,
+          y: offset.y
         });
         this.set('title', title);
         var text = toTextFragment(this.get('text'));
@@ -1465,9 +1466,9 @@ var Timeline = (function (exports) {
         this.set('dom', svg('g', {
           append_to: body,
           "class": 'column-wrapper',
-          transform: "translate(".concat(offset.x, ", ").concat(offset.y, ")")
+          transform: "translate(".concat(offset.x, ", 0)")
         }));
-        offset.y = this.options.padding;
+        offset.y = this.options.padding / 2;
         this.get('tasks').forEach(function (t) {
           var column = svg('text', {
             append_to: _this2.get('dom'),
@@ -1595,8 +1596,8 @@ var Timeline = (function (exports) {
             y: 0
           };
           this.get('columns').forEach(function (c, idx) {
-            c.get('title').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", ").concat(_this2.options.headerHeight + 6, ")"));
-            c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", 6)"));
+            c.get('title').setAttribute('x', offset.x + _this2.options.padding / 2);
+            c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", 0)"));
             offset.x += c.getWidth() + _this2.options.padding;
           });
         }

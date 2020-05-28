@@ -22,13 +22,10 @@ export default class Columns extends prop implements Consumer {
     if (event == EVENT.AFTER_RENDER) {
       const offset: Offset = { x: 0, y: 0 }
       this.get('columns').forEach((c: Column, idx: number) => {
-        c.get('title').setAttribute(
-          'transform',
-          `translate(${offset.x + this.options.padding / 2}, ${this.options.headerHeight + 6})`
-        )
+        c.get('title').setAttribute('x', offset.x + this.options.padding / 2)
         c.get('dom').setAttribute(
           'transform',
-          `translate(${offset.x + this.options.padding / 2}, 6)`
+          `translate(${offset.x + this.options.padding / 2}, 0)`
         )
         offset.x += c.getWidth() + this.options.padding
       })

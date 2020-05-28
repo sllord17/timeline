@@ -34,7 +34,8 @@ export default class Column extends Prop implements Consumer {
     const title = svg('text', {
       append_to: header,
       class: 'column-header',
-      transform: `translate(${offset.x}, ${offset.y})`
+      x: offset.x,
+      y: offset.y
     })
     this.set('title', title)
 
@@ -46,11 +47,11 @@ export default class Column extends Prop implements Consumer {
       svg('g', {
         append_to: body,
         class: 'column-wrapper',
-        transform: `translate(${offset.x}, ${offset.y})`
+        transform: `translate(${offset.x}, 0)`
       })
     )
 
-    offset.y = this.options.padding
+    offset.y = this.options.padding / 2
 
     this.get('tasks').forEach((t: Task) => {
       const column = svg('text', {

@@ -47,7 +47,7 @@ export default class Background extends Prop {
     const linesLayer = svg('g', { append_to: this.get('dom') })
 
     const rowWidth = this.get('width') + offset.x
-    let y = this.options.padding / 2
+    let y = 0
 
     tasks.forEach((task) => {
       const rowHeight = task.get('height') + this.options.padding
