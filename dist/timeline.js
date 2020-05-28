@@ -1567,6 +1567,18 @@ var Timeline = (function (exports) {
 
       _defineProperty(_assertThisInitialized(_this), "options", void 0);
 
+      _defineProperty(_assertThisInitialized(_this), "isPointerDown", false);
+
+      _defineProperty(_assertThisInitialized(_this), "pointerOrigin", {
+        x: 0,
+        y: 0
+      });
+
+      _defineProperty(_assertThisInitialized(_this), "viewBox", {
+        x: 0,
+        y: 0
+      });
+
       _this.options = options;
 
       _this.options.subscribe(EVENT.AFTER_RENDER, _assertThisInitialized(_this));
@@ -1712,10 +1724,32 @@ var Timeline = (function (exports) {
       }
     }, {
       key: "attachEvents",
-      value: function attachEvents(node) {
-        node.addEventListener('pointermove', function (event) {
-          console.log(event);
-        });
+      value: function attachEvents(dom) {
+        if (window.PointerEvent) {
+          dom.addEventListener('pointerdown', this.onPointerDown.bind(this)); // Pointer is pressed
+
+          dom.addEventListener('pointerup', this.onPointerUp.bind(this)); // Releasing the pointer
+
+          dom.addEventListener('pointerleave', this.onPointerUp.bind(this)); // Pointer gets out of the dom area
+
+          dom.addEventListener('pointermove', this.onPointerMove.bind(this)); // Pointer is moving
+        } else {
+          // Add all mouse events listeners fallback
+          dom.addEventListener('mousedown', this.onPointerDown.bind(this)); // Pressing the mouse
+
+          dom.addEventListener('mouseup', this.onPointerUp.bind(this)); // Releasing the mouse
+
+          dom.addEventListener('mouseleave', this.onPointerUp.bind(this)); // Mouse gets out of the dom area
+
+          dom.addEventListener('mousemove', this.onPointerMove.bind(this)); // Mouse is moving
+          // Add all touch events listeners fallback
+
+          dom.addEventListener('touchstart', this.onPointerDown.bind(this)); // Finger is touching the screen
+
+          dom.addEventListener('touchend', this.onPointerUp.bind(this)); // Finger is no longer touching the screen
+
+          dom.addEventListener('touchmove', this.onPointerMove.bind(this)); // Finger is moving
+        }
       }
     }, {
       key: "drawBody",
@@ -1729,6 +1763,7 @@ var Timeline = (function (exports) {
           append_to: parent
         }));
         var dom = this.get('dom');
+        this.attachEvents(dom);
         this.set('bars', svg('g', {
           "class": 'bar',
           prepend_to: dom
@@ -1762,6 +1797,63 @@ var Timeline = (function (exports) {
         this.get('columns').forEach(function (col) {
           col.render(columnsLayer, offset);
         });
+      }
+    }, {
+      key: "getPointFromEvent",
+      value: function getPointFromEvent(event) {
+        var point = {
+          x: 0,
+          y: 0
+        }; // If even is triggered by a touch event, we get the position of the first finger
+
+        if (event.targetTouches) {
+          point.x = event.targetTouches[0].clientX;
+          point.y = event.targetTouches[0].clientY;
+        } else {
+          point.x = event.clientX;
+          point.y = event.clientY;
+        }
+
+        return point;
+      }
+    }, {
+      key: "onPointerDown",
+      value: function onPointerDown(event) {
+        this.isPointerDown = true; // We set the pointer as down
+        // We get the pointer position on click/touchdown so we can get the value once the user starts to drag
+
+        var pointerPosition = this.getPointFromEvent(event);
+        this.pointerOrigin.x = pointerPosition.x;
+        this.pointerOrigin.y = pointerPosition.y;
+      } // We save the original values from the viewBox
+      // Function called by the event listeners when user start moving/dragging
+
+    }, {
+      key: "onPointerMove",
+      value: function onPointerMove(event) {
+        // Only run this function if the pointer is down
+        if (!this.isPointerDown) {
+          return;
+        } // This prevent user to do a selection on the page
+
+
+        event.preventDefault();
+        var dom = this.get('dom');
+        var viewBox = dom.viewBox.baseVal; // Get the pointer position as an dom Point
+
+        var pointerPosition = this.getPointFromEvent(event);
+        this.viewBox.x = viewBox.x - (pointerPosition.x - this.pointerOrigin.x);
+        this.viewBox.y = viewBox.y;
+        this.pointerOrigin = pointerPosition;
+        var viewBoxString = "".concat(this.viewBox.x, " ").concat(this.viewBox.y, " ").concat(viewBox.width, " ").concat(viewBox.height); // We apply the new viewBox values onto the SVG
+
+        dom.setAttribute('viewBox', viewBoxString);
+      }
+    }, {
+      key: "onPointerUp",
+      value: function onPointerUp() {
+        // The pointer is no longer considered as down
+        this.isPointerDown = false;
       }
     }]);
 

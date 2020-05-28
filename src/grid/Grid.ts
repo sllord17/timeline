@@ -14,6 +14,9 @@ import Task from '../task/Task'
 
 export default class Grid extends Prop implements Consumer {
   private options: ViewOptions
+  private isPointerDown: boolean = false
+  private pointerOrigin: any = { x: 0, y: 0 }
+  private viewBox: any = { x: 0, y: 0 }
 
   constructor(options: ViewOptions, taskOptions: TaskOptions[]) {
     super({
@@ -153,14 +156,27 @@ export default class Grid extends Prop implements Consumer {
     parent.setAttribute('height', `${this.getHeight()}`)
 
     this.drawBody(parent, this.options.padding * this.get('columns').length)
-
     this.drawColumns(parent)
   }
 
-  private attachEvents(node: SVGElementX) {
-    node.addEventListener('pointermove', function (event) {
-      console.log(event)
-    })
+  private attachEvents(dom: SVGElementX) {
+    if (window.PointerEvent) {
+      dom.addEventListener('pointerdown', this.onPointerDown.bind(this)) // Pointer is pressed
+      dom.addEventListener('pointerup', this.onPointerUp.bind(this)) // Releasing the pointer
+      dom.addEventListener('pointerleave', this.onPointerUp.bind(this)) // Pointer gets out of the dom area
+      dom.addEventListener('pointermove', this.onPointerMove.bind(this)) // Pointer is moving
+    } else {
+      // Add all mouse events listeners fallback
+      dom.addEventListener('mousedown', this.onPointerDown.bind(this)) // Pressing the mouse
+      dom.addEventListener('mouseup', this.onPointerUp.bind(this)) // Releasing the mouse
+      dom.addEventListener('mouseleave', this.onPointerUp.bind(this)) // Mouse gets out of the dom area
+      dom.addEventListener('mousemove', this.onPointerMove.bind(this)) // Mouse is moving
+
+      // Add all touch events listeners fallback
+      dom.addEventListener('touchstart', this.onPointerDown.bind(this)) // Finger is touching the screen
+      dom.addEventListener('touchend', this.onPointerUp.bind(this)) // Finger is no longer touching the screen
+      dom.addEventListener('touchmove', this.onPointerMove.bind(this)) // Finger is moving
+    }
   }
 
   private drawBody(parent: SVGElementX, width: number) {
@@ -175,6 +191,8 @@ export default class Grid extends Prop implements Consumer {
     )
 
     const dom = this.get('dom')
+    this.attachEvents(dom)
+
     this.set(
       'bars',
       svg('g', {
@@ -211,5 +229,58 @@ export default class Grid extends Prop implements Consumer {
     this.get('columns').forEach((col: Column) => {
       col.render(columnsLayer, offset)
     })
+  }
+
+  getPointFromEvent(event) {
+    var point = { x: 0, y: 0 }
+    // If even is triggered by a touch event, we get the position of the first finger
+    if (event.targetTouches) {
+      point.x = event.targetTouches[0].clientX
+      point.y = event.targetTouches[0].clientY
+    } else {
+      point.x = event.clientX
+      point.y = event.clientY
+    }
+
+    return point
+  }
+
+  private onPointerDown(event: Event) {
+    this.isPointerDown = true // We set the pointer as down
+    // We get the pointer position on click/touchdown so we can get the value once the user starts to drag
+    var pointerPosition = this.getPointFromEvent(event)
+    this.pointerOrigin.x = pointerPosition.x
+    this.pointerOrigin.y = pointerPosition.y
+  }
+
+  // We save the original values from the viewBox
+
+  // Function called by the event listeners when user start moving/dragging
+  private onPointerMove(event: Event) {
+    // Only run this function if the pointer is down
+    if (!this.isPointerDown) {
+      return
+    }
+    // This prevent user to do a selection on the page
+    event.preventDefault()
+
+    const dom = this.get('dom')
+    const viewBox = dom.viewBox.baseVal
+
+    // Get the pointer position as an dom Point
+    const pointerPosition = this.getPointFromEvent(event)
+    this.viewBox.x = viewBox.x - (pointerPosition.x - this.pointerOrigin.x)
+    this.viewBox.y = viewBox.y
+
+    this.pointerOrigin = pointerPosition
+
+    var viewBoxString = `${this.viewBox.x} ${this.viewBox.y} ${viewBox.width} ${viewBox.height}`
+    // We apply the new viewBox values onto the SVG
+    dom.setAttribute('viewBox', viewBoxString)
+  }
+
+  private onPointerUp() {
+    // The pointer is no longer considered as down
+    this.isPointerDown = false
   }
 }
