@@ -91,7 +91,7 @@ export default class Background extends Prop {
       }
 
       svg('path', {
-        d: `M ${x} ${y} v ${height}`,
+        d: `M ${x} 0 v ${height}`,
         class: clazz,
         append_to: this.get('dom')
       })

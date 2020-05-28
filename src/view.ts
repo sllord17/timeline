@@ -25,10 +25,7 @@ export default class View extends Prop {
 
   constructor(selector: string, tasks: TaskOptions[], options: ViewOptions) {
     super({
-      dom: svg('svg', {
-        class: 'gantt'
-      }),
-      container: document.createElement('div')
+      parent: document.querySelector(selector)
     })
 
     this.options = { ...this.options, ...options }
@@ -37,32 +34,24 @@ export default class View extends Prop {
     this.options.unsubscribe = this.unsubscribe.bind(this)
     this.updateScale()
 
-    const parent = document.querySelector(selector)
-    const container = this.get('container')
-    container.style.overflow = 'hidden'
-    container.style.position = 'relative'
-    container.style.paddingBottom = '100px'
-
-    parent.appendChild(container)
-    container.appendChild(this.get('dom'))
-
     this.set('grid', new Grid(this.options, tasks))
 
     this.render()
 
     const popupContainer = document.createElement('div')
     popupContainer.classList.add('popup-wrapper')
-    container.appendChild(popupContainer)
+    this.get('parent').appendChild(popupContainer)
+
+    this.get('parent').style.display = 'flex'
+    this.get('parent').style.flexDirection = 'row'
+    this.get('parent').style.flex = 1
 
     this.set('popup', new Popup(this.options, popupContainer))
-    delegate(this.get('dom'), 'click', '.grid-row, .grid-header', () => {
-      this.get('popup').hide()
-    })
     this.get('popup').hide()
   }
 
   public render() {
-    this.get('grid').render(this.get('dom'))
+    this.get('grid').render(this.get('parent'))
     requestAnimationFrame(() => this.dispatch(EVENT.AFTER_RENDER))
   }
 

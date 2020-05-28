@@ -826,7 +826,7 @@ var Timeline = (function (exports) {
             }
 
             svg('path', {
-              d: "M ".concat(x, " ").concat(y, " v ").concat(height),
+              d: "M ".concat(x, " 0 v ").concat(height),
               "class": clazz,
               append_to: this.get('dom')
             });
@@ -1025,12 +1025,21 @@ var Timeline = (function (exports) {
     _createClass(Header, [{
       key: "render",
       value: function render(layer, offset, dates) {
-        this.set('dom', svg('g', {
-          "class": 'date',
+        this.set('dom', svg('svg', {
+          "class": 'date gantt',
           prepend_to: layer
         }));
+        var dom = this.get('dom');
+        dom.setAttribute('width', this.get('width'));
+        dom.setAttribute('height', this.getHeight());
+        layer.setAttribute('height', this.getHeight() + '');
         this.drawBackground(offset);
         this.drawDates(offset, dates);
+      }
+    }, {
+      key: "getHeight",
+      value: function getHeight() {
+        return this.options.headerHeight + 10;
       }
     }, {
       key: "drawBackground",
@@ -1039,7 +1048,7 @@ var Timeline = (function (exports) {
           x: offset.x,
           y: 0,
           width: this.get('width'),
-          height: this.options.headerHeight + 10,
+          height: this.getHeight(),
           "class": 'grid-header',
           append_to: this.get('dom')
         });
@@ -1562,6 +1571,9 @@ var Timeline = (function (exports) {
         header: new Header(options),
         tasks: taskOptions.map(function (o) {
           return new Task(options, o);
+        }),
+        body: svg('svg', {
+          "class": 'gantt'
         })
       });
 
@@ -1605,9 +1617,11 @@ var Timeline = (function (exports) {
           this.get('columns').forEach(function (c, idx) {
             c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", ").concat(_this2.options.headerHeight + 6, ")"));
             offset.x += c.getWidth() + _this2.options.padding;
-          });
-          this.get('header').get('dom').setAttribute('transform', "translate(0, 0)");
-          this.get('background').get('dom').setAttribute('transform', "translate(0, ".concat(this.options.headerHeight + 2, ")")); // this.get('background')
+          }); // this.get('header').get('dom').setAttribute('transform', `translate(0, 0)`)
+          // this.get('background')
+          //   .get('dom')
+          //   .setAttribute('transform', `translate(0, ${this.options.headerHeight + 2})`)
+          // this.get('background')
           //   .get('dom')
           //   .querySelectorAll('.grid-row')
           //   .forEach((d: SVGElementX) => {
@@ -1621,8 +1635,10 @@ var Timeline = (function (exports) {
           //     d.setAttribute('x1', -offset.x + '')
           //   })
 
-          this.get('bars').setAttribute('transform', "translate(0, ".concat(this.options.headerHeight + this.options.padding, ")"));
-          this.get('dom').setAttribute('x', offset.x);
+          this.get('left').firstChild.setAttribute('width', offset.x); // this.get('bars').setAttribute(
+          //   'transform',
+          //   `translate(0, ${this.options.headerHeight + this.options.padding})`
+          // )
         }
       }
     }, {
@@ -1708,7 +1724,7 @@ var Timeline = (function (exports) {
       value: function getHeight() {
         var _this6 = this;
 
-        return this.options.headerHeight + this.get('tasks').map(function (t) {
+        return this.get('tasks').map(function (t) {
           return t.get('height');
         }).reduce(function (a, b) {
           return a + b + _this6.options.padding;
@@ -1717,10 +1733,15 @@ var Timeline = (function (exports) {
     }, {
       key: "render",
       value: function render(parent) {
-        parent.setAttribute('width', "".concat(this.getWidth()));
-        parent.setAttribute('height', "".concat(this.getHeight()));
-        this.drawBody(parent, this.options.padding * this.get('columns').length);
-        this.drawColumns(parent);
+        var left = toDom('<div style="flex-direction: column; display: flex; overflow: hidden"></div>');
+        var right = toDom('<div style="flex: 1; flex-direction: column; display: flex; overflow: hidden"></div>');
+        parent.append(left, right);
+        this.properties = {
+          left: left,
+          right: right
+        };
+        this.drawBody(right, this.options.padding * this.get('columns').length);
+        this.drawColumns(left);
       }
     }, {
       key: "attachEvents",
@@ -1756,14 +1777,20 @@ var Timeline = (function (exports) {
       value: function drawBody(parent, width) {
         var _this7 = this;
 
-        this.set('dom', svg('svg', {
+        var header = toDom('<div style="overflow: hidden"></div>');
+        parent.appendChild(header);
+        var body = toDom('<div style="flex: 1; overflow: hidden"></div>');
+        parent.appendChild(body);
+        var dom = svg('svg', {
           viewBox: "0 0 ".concat(this.getWidth(), " ").concat(this.getHeight()),
+          "class": 'gantt',
           y: 0,
           x: 0,
-          append_to: parent
-        }));
-        var dom = this.get('dom');
-        this.attachEvents(dom);
+          append_to: body,
+          width: this.getWidth(),
+          height: this.getHeight()
+        }); // this.attachEvents(dom)
+
         this.set('bars', svg('g', {
           "class": 'bar',
           prepend_to: dom
@@ -1772,9 +1799,9 @@ var Timeline = (function (exports) {
           x: width,
           y: 0
         };
+        this.get('header').render(header, offset, this.get('dates'));
         this.get('background').render(dom, offset, this.get('dates'), this.get('tasks'));
-        this.get('header').render(dom, offset, this.get('dates'));
-        offset.y = 0;
+        offset.y = this.options.padding / 2;
         this.get('tasks').forEach(function (t) {
           t.render(_this7.get('bars'), _this7.get('start'), offset);
           offset.y += t.get('height') + _this7.options.padding;
@@ -1783,9 +1810,10 @@ var Timeline = (function (exports) {
     }, {
       key: "drawColumns",
       value: function drawColumns(parent) {
-        var layer = svg('g', {
+        var layer = svg('svg', {
           "class": 'columns',
-          append_to: parent
+          append_to: parent,
+          height: this.getHeight()
         });
         var columnsLayer = svg('g', {
           append_to: layer
@@ -1797,6 +1825,7 @@ var Timeline = (function (exports) {
         this.get('columns').forEach(function (col) {
           col.render(columnsLayer, offset);
         });
+        parent.setAttribute('height', this.getHeight() + '');
       }
     }, {
       key: "getPointFromEvent",
@@ -1871,10 +1900,7 @@ var Timeline = (function (exports) {
       _classCallCheck(this, View);
 
       _this = _super.call(this, {
-        dom: svg('svg', {
-          "class": 'gantt'
-        }),
-        container: document.createElement('div')
+        parent: document.querySelector(selector)
       });
 
       _defineProperty(_assertThisInitialized(_this), "options", {
@@ -1899,29 +1925,20 @@ var Timeline = (function (exports) {
 
       _this.updateScale();
 
-      var parent = document.querySelector(selector);
-
-      var container = _this.get('container');
-
-      container.style.overflow = 'hidden';
-      container.style.position = 'relative';
-      container.style.paddingBottom = '100px';
-      parent.appendChild(container);
-      container.appendChild(_this.get('dom'));
-
       _this.set('grid', new Grid(_this.options, tasks));
 
       _this.render();
 
       var popupContainer = document.createElement('div');
       popupContainer.classList.add('popup-wrapper');
-      container.appendChild(popupContainer);
+
+      _this.get('parent').appendChild(popupContainer);
+
+      _this.get('parent').style.display = 'flex';
+      _this.get('parent').style.flexDirection = 'row';
+      _this.get('parent').style.flex = 1;
 
       _this.set('popup', new Popup(_this.options, popupContainer));
-
-      delegate(_this.get('dom'), 'click', '.grid-row, .grid-header', function () {
-        _this.get('popup').hide();
-      });
 
       _this.get('popup').hide();
 
@@ -1933,7 +1950,7 @@ var Timeline = (function (exports) {
       value: function render() {
         var _this2 = this;
 
-        this.get('grid').render(this.get('dom'));
+        this.get('grid').render(this.get('parent'));
         requestAnimationFrame(function () {
           return _this2.dispatch(EVENT.AFTER_RENDER);
         });

@@ -18,13 +18,22 @@ export default class Header extends Prop {
   public render(layer: SVGElementX, offset: Offset, dates: dayjs.Dayjs[]) {
     this.set(
       'dom',
-      svg('g', {
-        class: 'date',
+      svg('svg', {
+        class: 'date gantt',
         prepend_to: layer
       })
     )
+    const dom = this.get('dom')
+    dom.setAttribute('width', this.get('width'))
+    dom.setAttribute('height', this.getHeight())
+
+    layer.setAttribute('height', this.getHeight() + '')
     this.drawBackground(offset)
     this.drawDates(offset, dates)
+  }
+
+  public getHeight(): number {
+    return this.options.headerHeight + 10
   }
 
   private drawBackground(offset: Offset) {
@@ -32,7 +41,7 @@ export default class Header extends Prop {
       x: offset.x,
       y: 0,
       width: this.get('width'),
-      height: this.options.headerHeight + 10,
+      height: this.getHeight(),
       class: 'grid-header',
       append_to: this.get('dom')
     })

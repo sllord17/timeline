@@ -7,7 +7,7 @@ import Column from './Column'
 import Header from './Header'
 import Prop from '../prop'
 import dayjs from 'dayjs'
-import { svg } from '../util'
+import { svg, toDom } from '../util'
 import { Consumer, EVENT } from '../events'
 import { ViewOptions, TaskOptions } from '../options'
 import Task from '../task/Task'
@@ -22,7 +22,8 @@ export default class Grid extends Prop implements Consumer {
     super({
       background: new Background(options),
       header: new Header(options),
-      tasks: taskOptions.map((o) => new Task(options, o))
+      tasks: taskOptions.map((o) => new Task(options, o)),
+      body: svg('svg', { class: 'gantt' })
     })
 
     this.options = options
@@ -47,10 +48,10 @@ export default class Grid extends Prop implements Consumer {
         offset.x += c.getWidth() + this.options.padding
       })
 
-      this.get('header').get('dom').setAttribute('transform', `translate(0, 0)`)
-      this.get('background')
-        .get('dom')
-        .setAttribute('transform', `translate(0, ${this.options.headerHeight + 2})`)
+      // this.get('header').get('dom').setAttribute('transform', `translate(0, 0)`)
+      // this.get('background')
+      //   .get('dom')
+      //   .setAttribute('transform', `translate(0, ${this.options.headerHeight + 2})`)
 
       // this.get('background')
       //   .get('dom')
@@ -67,12 +68,12 @@ export default class Grid extends Prop implements Consumer {
       //     d.setAttribute('x1', -offset.x + '')
       //   })
 
-      this.get('bars').setAttribute(
-        'transform',
-        `translate(0, ${this.options.headerHeight + this.options.padding})`
-      )
+      this.get('left').firstChild.setAttribute('width', offset.x)
 
-      this.get('dom').setAttribute('x', offset.x)
+      // this.get('bars').setAttribute(
+      //   'transform',
+      //   `translate(0, ${this.options.headerHeight + this.options.padding})`
+      // )
     }
   }
 
@@ -142,7 +143,6 @@ export default class Grid extends Prop implements Consumer {
 
   private getHeight(): number {
     return (
-      this.options.headerHeight +
       this.get('tasks')
         .map((t: Task) => t.get('height'))
         .reduce((a: number, b: number) => a + b + this.options.padding) +
@@ -152,11 +152,19 @@ export default class Grid extends Prop implements Consumer {
   }
 
   public render(parent: SVGElementX) {
-    parent.setAttribute('width', `${this.getWidth()}`)
-    parent.setAttribute('height', `${this.getHeight()}`)
+    const left = toDom(
+      '<div style="flex-direction: column; display: flex; overflow: hidden"></div>'
+    ) as HTMLDivElement
+    const right = toDom(
+      '<div style="flex: 1; flex-direction: column; display: flex; overflow: hidden"></div>'
+    ) as HTMLDivElement
 
-    this.drawBody(parent, this.options.padding * this.get('columns').length)
-    this.drawColumns(parent)
+    parent.append(left, right)
+
+    this.properties = { left: left, right: right }
+
+    this.drawBody(right, this.options.padding * this.get('columns').length)
+    this.drawColumns(left)
   }
 
   private attachEvents(dom: SVGElementX) {
@@ -179,19 +187,24 @@ export default class Grid extends Prop implements Consumer {
     }
   }
 
-  private drawBody(parent: SVGElementX, width: number) {
-    this.set(
-      'dom',
-      svg('svg', {
-        viewBox: `0 0 ${this.getWidth()} ${this.getHeight()}`,
-        y: 0,
-        x: 0,
-        append_to: parent
-      })
-    )
+  private drawBody(parent: HTMLDivElement, width: number) {
+    const header = toDom('<div style="overflow: hidden"></div>')
+    parent.appendChild(header)
 
-    const dom = this.get('dom')
-    this.attachEvents(dom)
+    const body = toDom('<div style="flex: 1; overflow: hidden"></div>')
+    parent.appendChild(body)
+
+    const dom = svg('svg', {
+      viewBox: `0 0 ${this.getWidth()} ${this.getHeight()}`,
+      class: 'gantt',
+      y: 0,
+      x: 0,
+      append_to: body,
+      width: this.getWidth(),
+      height: this.getHeight()
+    })
+
+    // this.attachEvents(dom)
 
     this.set(
       'bars',
@@ -206,20 +219,21 @@ export default class Grid extends Prop implements Consumer {
       y: 0
     }
 
+    this.get('header').render(header, offset, this.get('dates'))
     this.get('background').render(dom, offset, this.get('dates'), this.get('tasks'))
-    this.get('header').render(dom, offset, this.get('dates'))
 
-    offset.y = 0
+    offset.y = this.options.padding / 2
     this.get('tasks').forEach((t: Task) => {
       t.render(this.get('bars'), this.get('start'), offset)
       offset.y += t.get('height') + this.options.padding
     })
   }
 
-  private drawColumns(parent: SVGElementX) {
-    const layer = svg('g', {
+  private drawColumns(parent: HTMLDivElement) {
+    const layer = svg('svg', {
       class: 'columns',
-      append_to: parent
+      append_to: parent,
+      height: this.getHeight()
     })
 
     const columnsLayer = svg('g', { append_to: layer })
@@ -229,6 +243,8 @@ export default class Grid extends Prop implements Consumer {
     this.get('columns').forEach((col: Column) => {
       col.render(columnsLayer, offset)
     })
+
+    parent.setAttribute('height', this.getHeight() + '')
   }
 
   getPointFromEvent(event) {

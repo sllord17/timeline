@@ -170,6 +170,174 @@ var tasks = [
         href: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png'
       }
     ]
+  },
+  {
+    plan: {
+      start: '2020-05-22T05:00:00.000Z',
+      end: '2020-05-25T05:00:00.000Z',
+      progress: 87,
+      height: 10,
+      progressStyle: {
+        fill: '#f2c329'
+      }
+    },
+    name: 'Apply new styles',
+    id: 'Task 2',
+    pieces: 44,
+    area: '232k',
+    milestones: [
+      {
+        date: '2020-05-23T05:00:00.000Z',
+        href: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png'
+      }
+    ]
+  },
+  {
+    plan: {
+      start: '2020-05-22T05:00:00.000Z',
+      end: '2020-05-25T05:00:00.000Z',
+      progress: 87,
+      height: 10,
+      progressStyle: {
+        fill: '#f2c329'
+      }
+    },
+    name: 'Apply new styles',
+    id: 'Task 2',
+    pieces: 44,
+    area: '232k',
+    milestones: [
+      {
+        date: '2020-05-23T05:00:00.000Z',
+        href: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png'
+      }
+    ]
+  },
+  {
+    plan: {
+      start: '2020-05-22T05:00:00.000Z',
+      end: '2020-05-25T05:00:00.000Z',
+      progress: 87,
+      height: 10,
+      progressStyle: {
+        fill: '#f2c329'
+      }
+    },
+    name: 'Apply new styles',
+    id: 'Task 2',
+    pieces: 44,
+    area: '232k',
+    milestones: [
+      {
+        date: '2020-05-23T05:00:00.000Z',
+        href: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png'
+      }
+    ]
+  },
+  {
+    plan: {
+      start: '2020-05-22T05:00:00.000Z',
+      end: '2020-05-25T05:00:00.000Z',
+      progress: 87,
+      height: 10,
+      progressStyle: {
+        fill: '#f2c329'
+      }
+    },
+    name: 'Apply new styles',
+    id: 'Task 2',
+    pieces: 44,
+    area: '232k',
+    milestones: [
+      {
+        date: '2020-05-23T05:00:00.000Z',
+        href: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png'
+      }
+    ]
+  },
+  {
+    plan: {
+      start: '2020-05-22T05:00:00.000Z',
+      end: '2020-05-25T05:00:00.000Z',
+      progress: 87,
+      height: 10,
+      progressStyle: {
+        fill: '#f2c329'
+      }
+    },
+    name: 'Apply new styles',
+    id: 'Task 2',
+    pieces: 44,
+    area: '232k',
+    milestones: [
+      {
+        date: '2020-05-23T05:00:00.000Z',
+        href: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png'
+      }
+    ]
+  },
+  {
+    plan: {
+      start: '2020-05-22T05:00:00.000Z',
+      end: '2020-05-25T05:00:00.000Z',
+      progress: 87,
+      height: 10,
+      progressStyle: {
+        fill: '#f2c329'
+      }
+    },
+    name: 'Apply new styles',
+    id: 'Task 2',
+    pieces: 44,
+    area: '232k',
+    milestones: [
+      {
+        date: '2020-05-23T05:00:00.000Z',
+        href: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png'
+      }
+    ]
+  },
+  {
+    plan: {
+      start: '2020-05-22T05:00:00.000Z',
+      end: '2020-05-25T05:00:00.000Z',
+      progress: 87,
+      height: 10,
+      progressStyle: {
+        fill: '#f2c329'
+      }
+    },
+    name: 'Apply new styles',
+    id: 'Task 2',
+    pieces: 44,
+    area: '232k',
+    milestones: [
+      {
+        date: '2020-05-23T05:00:00.000Z',
+        href: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png'
+      }
+    ]
+  },
+  {
+    plan: {
+      start: '2020-05-22T05:00:00.000Z',
+      end: '2020-05-25T05:00:00.000Z',
+      progress: 87,
+      height: 10,
+      progressStyle: {
+        fill: '#f2c329'
+      }
+    },
+    name: 'Apply new styles',
+    id: 'Task 2',
+    pieces: 44,
+    area: '232k',
+    milestones: [
+      {
+        date: '2020-05-23T05:00:00.000Z',
+        href: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png'
+      }
+    ]
   }
 ]
 
