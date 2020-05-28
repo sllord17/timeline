@@ -1,38 +1,11 @@
 import { Consumer, EVENT } from './events'
-import { HtmlProducer, SVGElementX } from './types'
 import Popup, { PopupOptions } from './Popup'
+import { TaskOptions, ViewOptions } from './options'
 import { delegate, svg } from './util'
 
-import { ColumnOptions } from './grid/Column'
 import Grid from './grid/Grid'
 import Prop from './prop'
-import { TaskOptions } from './task/Task'
-
-export enum VIEW_MODE {
-  QUARTER_DAY = 'Quarter Day',
-  HALF_DAY = 'Half Day',
-  DAY = 'Day',
-  WEEK = 'Week',
-  MONTH = 'Month',
-  YEAR = 'Year'
-}
-
-export interface ViewOptions {
-  headerHeight?: number
-  columnWidth?: number
-  step?: number
-  viewModes?: VIEW_MODE[]
-  barHeight?: number
-  padding?: number
-  viewMode?: VIEW_MODE
-  dateFormat?: string
-  popup?: true
-  popupProducer?: HtmlProducer
-  dispatch?: { (key: EVENT, paylod?: PopupOptions): void }
-  subscribe?: { (key: EVENT, clazz: Consumer): void }
-  unsubscribe?: { (key: EVENT, clazz: Consumer): void }
-  columns: ColumnOptions[]
-}
+import { VIEW_MODE } from './types'
 
 export default class View extends Prop {
   private options: ViewOptions = {
@@ -66,7 +39,7 @@ export default class View extends Prop {
 
     const parent = document.querySelector(selector)
     const container = this.get('container')
-    container.style.overflow = 'auto'
+    container.style.overflow = 'hidden'
     container.style.position = 'relative'
     container.style.paddingBottom = '100px'
 

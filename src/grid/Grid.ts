@@ -1,8 +1,6 @@
 /** @module timeline/grid */
 
-import { Offset, SVGElementX } from '../types'
-import Task, { TaskOptions } from '../task/Task'
-import { VIEW_MODE, ViewOptions } from '../view'
+import { Offset, SVGElementX, VIEW_MODE } from '../types'
 
 import Background from './Background'
 import Column from './Column'
@@ -11,6 +9,8 @@ import Prop from '../prop'
 import dayjs from 'dayjs'
 import { svg } from '../util'
 import { Consumer, EVENT } from '../events'
+import { ViewOptions, TaskOptions } from '../options'
+import Task from '../task/Task'
 
 export default class Grid extends Prop implements Consumer {
   private options: ViewOptions

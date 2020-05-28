@@ -1,8 +1,8 @@
 import { Offset, SVGElementX } from '../types'
-import { svg, toTextFragment } from '..'
+import { svg, toTextFragment } from '../util'
 
 import Prop from '../prop'
-import { ViewOptions } from '../view'
+import { ViewOptions } from '../options'
 import dayjs from 'dayjs'
 
 export default class Header extends Prop {

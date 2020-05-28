@@ -107,9 +107,13 @@
   display: none;
 }
 
+.date {
+  user-select: none;
+}
+
 .gantt-container {
   position: relative;
-  overflow: auto;
+  overflow: hidden;
   font-size: 12px;
 }
 .gantt-container .popup-wrapper {

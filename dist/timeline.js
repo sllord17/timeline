@@ -683,6 +683,17 @@ var Timeline = (function (exports) {
     return Popup;
   }(Prop);
 
+  var VIEW_MODE;
+
+  (function (VIEW_MODE) {
+    VIEW_MODE["QUARTER_DAY"] = "Quarter Day";
+    VIEW_MODE["HALF_DAY"] = "Half Day";
+    VIEW_MODE["DAY"] = "Day";
+    VIEW_MODE["WEEK"] = "Week";
+    VIEW_MODE["MONTH"] = "Month";
+    VIEW_MODE["YEAR"] = "Year";
+  })(VIEW_MODE || (VIEW_MODE = {}));
+
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
   function createCommonjsModule(fn, module) {
@@ -692,413 +703,6 @@ var Timeline = (function (exports) {
   var dayjs_min = createCommonjsModule(function (module, exports) {
   !function(t,e){module.exports=e();}(commonjsGlobal,function(){var t="millisecond",e="second",n="minute",r="hour",i="day",s="week",u="month",o="quarter",a="year",h=/^(\d{4})-?(\d{1,2})-?(\d{0,2})[^0-9]*(\d{1,2})?:?(\d{1,2})?:?(\d{1,2})?.?(\d{1,3})?$/,f=/\[([^\]]+)]|Y{2,4}|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|a|A|m{1,2}|s{1,2}|Z{1,2}|SSS/g,c=function(t,e,n){var r=String(t);return !r||r.length>=e?t:""+Array(e+1-r.length).join(n)+t},d={s:c,z:function(t){var e=-t.utcOffset(),n=Math.abs(e),r=Math.floor(n/60),i=n%60;return (e<=0?"+":"-")+c(r,2,"0")+":"+c(i,2,"0")},m:function(t,e){var n=12*(e.year()-t.year())+(e.month()-t.month()),r=t.clone().add(n,u),i=e-r<0,s=t.clone().add(n+(i?-1:1),u);return Number(-(n+(e-r)/(i?r-s:s-r))||0)},a:function(t){return t<0?Math.ceil(t)||0:Math.floor(t)},p:function(h){return {M:u,y:a,w:s,d:i,D:"date",h:r,m:n,s:e,ms:t,Q:o}[h]||String(h||"").toLowerCase().replace(/s$/,"")},u:function(t){return void 0===t}},$={name:"en",weekdays:"Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"),months:"January_February_March_April_May_June_July_August_September_October_November_December".split("_")},l="en",m={};m[l]=$;var y=function(t){return t instanceof v},M=function(t,e,n){var r;if(!t)return l;if("string"==typeof t)m[t]&&(r=t),e&&(m[t]=e,r=t);else {var i=t.name;m[i]=t,r=i;}return !n&&r&&(l=r),r||!n&&l},g=function(t,e){if(y(t))return t.clone();var n="object"==typeof e?e:{};return n.date=t,n.args=arguments,new v(n)},D=d;D.l=M,D.i=y,D.w=function(t,e){return g(t,{locale:e.$L,utc:e.$u,$offset:e.$offset})};var v=function(){function c(t){this.$L=this.$L||M(t.locale,null,!0),this.parse(t);}var d=c.prototype;return d.parse=function(t){this.$d=function(t){var e=t.date,n=t.utc;if(null===e)return new Date(NaN);if(D.u(e))return new Date;if(e instanceof Date)return new Date(e);if("string"==typeof e&&!/Z$/i.test(e)){var r=e.match(h);if(r)return n?new Date(Date.UTC(r[1],r[2]-1,r[3]||1,r[4]||0,r[5]||0,r[6]||0,r[7]||0)):new Date(r[1],r[2]-1,r[3]||1,r[4]||0,r[5]||0,r[6]||0,r[7]||0)}return new Date(e)}(t),this.init();},d.init=function(){var t=this.$d;this.$y=t.getFullYear(),this.$M=t.getMonth(),this.$D=t.getDate(),this.$W=t.getDay(),this.$H=t.getHours(),this.$m=t.getMinutes(),this.$s=t.getSeconds(),this.$ms=t.getMilliseconds();},d.$utils=function(){return D},d.isValid=function(){return !("Invalid Date"===this.$d.toString())},d.isSame=function(t,e){var n=g(t);return this.startOf(e)<=n&&n<=this.endOf(e)},d.isAfter=function(t,e){return g(t)<this.startOf(e)},d.isBefore=function(t,e){return this.endOf(e)<g(t)},d.$g=function(t,e,n){return D.u(t)?this[e]:this.set(n,t)},d.year=function(t){return this.$g(t,"$y",a)},d.month=function(t){return this.$g(t,"$M",u)},d.day=function(t){return this.$g(t,"$W",i)},d.date=function(t){return this.$g(t,"$D","date")},d.hour=function(t){return this.$g(t,"$H",r)},d.minute=function(t){return this.$g(t,"$m",n)},d.second=function(t){return this.$g(t,"$s",e)},d.millisecond=function(e){return this.$g(e,"$ms",t)},d.unix=function(){return Math.floor(this.valueOf()/1e3)},d.valueOf=function(){return this.$d.getTime()},d.startOf=function(t,o){var h=this,f=!!D.u(o)||o,c=D.p(t),d=function(t,e){var n=D.w(h.$u?Date.UTC(h.$y,e,t):new Date(h.$y,e,t),h);return f?n:n.endOf(i)},$=function(t,e){return D.w(h.toDate()[t].apply(h.toDate("s"),(f?[0,0,0,0]:[23,59,59,999]).slice(e)),h)},l=this.$W,m=this.$M,y=this.$D,M="set"+(this.$u?"UTC":"");switch(c){case a:return f?d(1,0):d(31,11);case u:return f?d(1,m):d(0,m+1);case s:var g=this.$locale().weekStart||0,v=(l<g?l+7:l)-g;return d(f?y-v:y+(6-v),m);case i:case"date":return $(M+"Hours",0);case r:return $(M+"Minutes",1);case n:return $(M+"Seconds",2);case e:return $(M+"Milliseconds",3);default:return this.clone()}},d.endOf=function(t){return this.startOf(t,!1)},d.$set=function(s,o){var h,f=D.p(s),c="set"+(this.$u?"UTC":""),d=(h={},h[i]=c+"Date",h.date=c+"Date",h[u]=c+"Month",h[a]=c+"FullYear",h[r]=c+"Hours",h[n]=c+"Minutes",h[e]=c+"Seconds",h[t]=c+"Milliseconds",h)[f],$=f===i?this.$D+(o-this.$W):o;if(f===u||f===a){var l=this.clone().set("date",1);l.$d[d]($),l.init(),this.$d=l.set("date",Math.min(this.$D,l.daysInMonth())).toDate();}else d&&this.$d[d]($);return this.init(),this},d.set=function(t,e){return this.clone().$set(t,e)},d.get=function(t){return this[D.p(t)]()},d.add=function(t,o){var h,f=this;t=Number(t);var c=D.p(o),d=function(e){var n=g(f);return D.w(n.date(n.date()+Math.round(e*t)),f)};if(c===u)return this.set(u,this.$M+t);if(c===a)return this.set(a,this.$y+t);if(c===i)return d(1);if(c===s)return d(7);var $=(h={},h[n]=6e4,h[r]=36e5,h[e]=1e3,h)[c]||1,l=this.$d.getTime()+t*$;return D.w(l,this)},d.subtract=function(t,e){return this.add(-1*t,e)},d.format=function(t){var e=this;if(!this.isValid())return "Invalid Date";var n=t||"YYYY-MM-DDTHH:mm:ssZ",r=D.z(this),i=this.$locale(),s=this.$H,u=this.$m,o=this.$M,a=i.weekdays,h=i.months,c=function(t,r,i,s){return t&&(t[r]||t(e,n))||i[r].substr(0,s)},d=function(t){return D.s(s%12||12,t,"0")},$=i.meridiem||function(t,e,n){var r=t<12?"AM":"PM";return n?r.toLowerCase():r},l={YY:String(this.$y).slice(-2),YYYY:this.$y,M:o+1,MM:D.s(o+1,2,"0"),MMM:c(i.monthsShort,o,h,3),MMMM:c(h,o),D:this.$D,DD:D.s(this.$D,2,"0"),d:String(this.$W),dd:c(i.weekdaysMin,this.$W,a,2),ddd:c(i.weekdaysShort,this.$W,a,3),dddd:a[this.$W],H:String(s),HH:D.s(s,2,"0"),h:d(1),hh:d(2),a:$(s,u,!0),A:$(s,u,!1),m:String(u),mm:D.s(u,2,"0"),s:String(this.$s),ss:D.s(this.$s,2,"0"),SSS:D.s(this.$ms,3,"0"),Z:r};return n.replace(f,function(t,e){return e||l[t]||r.replace(":","")})},d.utcOffset=function(){return 15*-Math.round(this.$d.getTimezoneOffset()/15)},d.diff=function(t,h,f){var c,d=D.p(h),$=g(t),l=6e4*($.utcOffset()-this.utcOffset()),m=this-$,y=D.m(this,$);return y=(c={},c[a]=y/12,c[u]=y,c[o]=y/3,c[s]=(m-l)/6048e5,c[i]=(m-l)/864e5,c[r]=m/36e5,c[n]=m/6e4,c[e]=m/1e3,c)[d]||m,f?y:D.a(y)},d.daysInMonth=function(){return this.endOf(u).$D},d.$locale=function(){return m[this.$L]},d.locale=function(t,e){if(!t)return this.$L;var n=this.clone(),r=M(t,e,!0);return r&&(n.$L=r),n},d.clone=function(){return D.w(this.$d,this)},d.toDate=function(){return new Date(this.valueOf())},d.toJSON=function(){return this.isValid()?this.toISOString():null},d.toISOString=function(){return this.$d.toISOString()},d.toString=function(){return this.$d.toUTCString()},c}();return g.prototype=v.prototype,g.extend=function(t,e){return t(e,v,g),g},g.locale=M,g.isDayjs=y,g.unix=function(t){return g(1e3*t)},g.en=m[l],g.Ls=m,g});
   });
-
-  var defaultMilestoneOptions = Object.freeze({
-    height: 16,
-    width: 16,
-    date: null,
-    href: '',
-    y: 0
-  });
-
-  var Milestone = /*#__PURE__*/function (_Prop) {
-    _inherits(Milestone, _Prop);
-
-    var _super = _createSuper(Milestone);
-
-    function Milestone(options, config, task) {
-      var _this;
-
-      _classCallCheck(this, Milestone);
-
-      _this = _super.call(this, _objectSpread2(_objectSpread2({}, defaultMilestoneOptions), config));
-
-      _defineProperty(_assertThisInitialized(_this), "options", void 0);
-
-      _defineProperty(_assertThisInitialized(_this), "task", void 0);
-
-      _defineProperty(_assertThisInitialized(_this), "dom", void 0);
-
-      _this.options = options;
-      _this.task = task;
-
-      _this.set('date', dayjs_min(config.date));
-
-      return _this;
-    } // TODO: Support events better
-
-
-    _createClass(Milestone, [{
-      key: "handleEvent",
-      value: function handleEvent(evt) {
-        var key = evt.type;
-
-        if (key == 'click' && this.options.popup) {
-          this.options.dispatch(EVENT.SHOW_POPUP, {
-            eventTarget: this,
-            positionTarget: this.dom,
-            title: this.task.get('name'),
-            subtitle: this.get('date').format('MMM DD')
-          });
-          return;
-        }
-      }
-    }, {
-      key: "computeX",
-      value: function computeX(startDate) {
-        if (VIEW_MODE.MONTH == this.options.viewMode) {
-          return this.get('date').diff(startDate, 'day') * this.options.columnWidth / 30;
-        }
-
-        return this.get('date').diff(startDate, 'hour') / this.options.step * this.options.columnWidth;
-      }
-    }, {
-      key: "render",
-      value: function render(layer, startDate, offset) {
-        this.dom = svg('image', {
-          x: this.computeX(startDate) + offset.x,
-          y: this.get('y') + offset.y,
-          width: this.get('width'),
-          height: this.get('height'),
-          href: this.get('href'),
-          append_to: layer
-        });
-
-        if (this.options.popup) {
-          this.dom.addEventListener('click', this, false);
-        }
-      }
-    }]);
-
-    return Milestone;
-  }(Prop);
-
-  var defaultPlanOptions = {
-    cornerRadius: 0,
-    progress: 100,
-    y: 0,
-    start: '1900-01-01',
-    end: '1900-01-01',
-    label: ''
-  };
-
-  var Plan = /*#__PURE__*/function (_Prop) {
-    _inherits(Plan, _Prop);
-
-    var _super = _createSuper(Plan);
-
-    function Plan(options, config, task) {
-      var _this;
-
-      _classCallCheck(this, Plan);
-
-      _this = _super.call(this, _objectSpread2(_objectSpread2({}, defaultPlanOptions), config));
-
-      _defineProperty(_assertThisInitialized(_this), "options", void 0);
-
-      _defineProperty(_assertThisInitialized(_this), "task", void 0);
-
-      _this.options = options;
-      _this.task = task;
-
-      _this.set('height', config.height || options.barHeight);
-
-      console.assert(!!config.start, 'Plan must have a start date');
-      console.assert(!!config.end, 'Plan must have an end date');
-
-      _this.set('start', dayjs_min(config.start));
-
-      _this.set('end', dayjs_min(config.end)); // if hours is not set, assume the last day is full day
-      // e.g: 2018-09-09 becomes 2018-09-09 23:59:59
-
-
-      if (_this.get('end').isSame(_this.get('end').startOf('day'))) {
-        _this.set('end', _this.get('end').add(24, 'hour'));
-      }
-
-      var duration = _this.get('end').diff(_this.get('start'), 'hour') / _this.options.step;
-
-      _this.set('width', duration * _this.options.columnWidth);
-
-      return _this;
-    }
-
-    _createClass(Plan, [{
-      key: "computeX",
-      value: function computeX(startDate) {
-        if (VIEW_MODE.MONTH == this.options.viewMode) {
-          return this.get('start').diff(startDate, 'day') * this.options.columnWidth / 30;
-        }
-
-        return this.get('start').diff(startDate, 'hour') / this.options.step * this.options.columnWidth;
-      }
-    }, {
-      key: "render",
-      value: function render(layer, startDate, offset) {
-        this.set('x', this.computeX(startDate) + offset.x);
-        this.set('y', this.get('y') + offset.y);
-        this.set('dom', svg('g', {
-          "class": 'bar-wrapper',
-          'data-id': this.task.get('id'),
-          append_to: layer
-        }));
-        var barGroup = svg('g', {
-          "class": 'bar-group',
-          append_to: this.get('dom')
-        });
-
-        if (this.options.popup) {
-          barGroup.addEventListener('click', this, false);
-        }
-
-        this.drawBar(barGroup);
-        this.drawProgressBar(barGroup);
-        this.drawLabel(barGroup);
-      }
-    }, {
-      key: "drawBar",
-      value: function drawBar(layer) {
-        this.set('bar', svg('rect', {
-          x: this.get('x'),
-          y: this.get('y'),
-          width: this.get('width'),
-          height: this.get('height'),
-          rx: this.get('cornerRadius'),
-          ry: this.get('cornerRadius'),
-          "class": 'bar',
-          append_to: layer
-        }));
-
-        if (this.get('backgroundStyle')) {
-          var style = this.get('backgroundStyle');
-          this.get('rect').applyStyle(style);
-        }
-      }
-    }, {
-      key: "drawProgressBar",
-      value: function drawProgressBar(layer) {
-        var rect = svg('rect', {
-          x: this.get('x'),
-          y: this.get('y'),
-          width: this.get('width') * (this.get('progress') / 100) || 0,
-          height: this.get('height'),
-          rx: this.get('cornerRadius'),
-          ry: this.get('cornerRadius'),
-          "class": 'bar-progress',
-          append_to: layer
-        });
-
-        if (this.get('progressStyle')) {
-          var style = this.get('progressStyle');
-          rect.applyStyle(style);
-        }
-      }
-    }, {
-      key: "drawLabel",
-      value: function drawLabel(layer) {
-        var _this2 = this;
-
-        if (!this.get('label')) return;
-        this.set('text', svg('text', {
-          x: this.get('x') + this.get('width') / 2,
-          y: this.get('y') + this.get('height') / 2,
-          "class": 'bar-label',
-          append_to: layer
-        }));
-
-        if (this.get('labelStyle')) {
-          var style = this.get('labelStyle');
-          this.get('text').applyStyle(style);
-        }
-
-        this.get('text').appendChild(toTextFragment(this.get('label')));
-        requestAnimationFrame(function () {
-          return _this2.updateLabelPosition();
-        });
-      }
-    }, {
-      key: "updateLabelPosition",
-      value: function updateLabelPosition() {
-        if (this.get('text').getBBox().width > this.get('bar').getWidth()) {
-          this.get('text').classList.add('big');
-          this.get('text').setAttribute('x', this.get('bar').getX() + this.get('bar').getWidth() + 5 + '');
-        } else {
-          this.get('text').classList.remove('big');
-          this.get('text').setAttribute('x', this.get('bar').getX() + this.get('bar').getWidth() / 2 + '');
-        }
-      } // TODO: Support events better
-
-    }, {
-      key: "handleEvent",
-      value: function handleEvent(evt) {
-        var key = evt.type;
-
-        if (key == 'click' && this.options.popup) {
-          this.options.dispatch(EVENT.SHOW_POPUP, {
-            eventTarget: this,
-            positionTarget: this.get('dom'),
-            title: this.task.get('name'),
-            subtitle: this.get('start').format('MMM DD') + ' - ' + this.get('end').format('MMM DD')
-          });
-          return;
-        }
-      }
-    }]);
-
-    return Plan;
-  }(Prop);
-
-  function generate_id(task) {
-    return 'task_' + Math.random().toString(36).slice(2, 12);
-  }
-
-  function isSingle(options) {
-    return 'plan' in options;
-  }
-
-  var Task = /*#__PURE__*/function (_Prop) {
-    _inherits(Task, _Prop);
-
-    var _super = _createSuper(Task);
-
-    function Task(options, config) {
-      var _this;
-
-      _classCallCheck(this, Task);
-
-      _this = _super.call(this);
-
-      _defineProperty(_assertThisInitialized(_this), "options", void 0);
-
-      _defineProperty(_assertThisInitialized(_this), "_plans", []);
-
-      _defineProperty(_assertThisInitialized(_this), "_milestones", []);
-
-      _this.options = options;
-      _this.properties = _objectSpread2(_objectSpread2({}, config), {}, {
-        height: 0,
-        id: generate_id(_assertThisInitialized(_this))
-      });
-
-      if (isSingle(config)) {
-        _this._plans = [[new Plan(options, config.plan, _assertThisInitialized(_this))]];
-        _this._milestones = [config.milestones.map(function (m) {
-          return new Milestone(options, m, _assertThisInitialized(_this));
-        })];
-      } else {
-        var rowOffsets = [];
-        _this._plans = config.plans.map(function (bo, idx) {
-          var arr = bo.map(function (b) {
-            if (idx > 0) b.y = rowOffsets[idx - 1];
-            return new Plan(options, b, _assertThisInitialized(_this));
-          });
-          var max = Math.max.apply(Math, _toConsumableArray(arr.map(function (b) {
-            return b.get('height');
-          })));
-          rowOffsets.push((idx > 0 ? rowOffsets[idx - 1] : 0) + max);
-          return arr;
-        });
-        _this._milestones = config.milestones.map(function (m, idx) {
-          return m.map(function (m2) {
-            if (idx > 0 && rowOffsets[idx - 1]) m2.y = rowOffsets[idx - 1];
-            return new Milestone(options, m2, _assertThisInitialized(_this));
-          });
-        });
-      }
-
-      _this.computeHeight();
-
-      _this.computeBoundingDates();
-
-      return _this;
-    }
-
-    _createClass(Task, [{
-      key: "computeHeight",
-      value: function computeHeight() {
-        var _this2 = this;
-
-        this.set('height', this._plans.map(function (a, idx) {
-          return _this2.getRowHeight(idx);
-        }).reduce(function (a, b) {
-          return a + b;
-        }, 0));
-      }
-    }, {
-      key: "computeBoundingDates",
-      value: function computeBoundingDates() {
-        var _this3 = this;
-
-        if (!this.get('start')) {
-          this.set('start', this._plans[0][0].get('start').clone());
-        }
-
-        if (!this.get('end')) {
-          this.set('end', this._plans[0][0].get('end').clone());
-        }
-
-        this._plans.forEach(function (a) {
-          return a.forEach(function (p) {
-            if (!_this3.get('start') || p.get('start').isBefore(_this3.get('start'))) {
-              _this3.set('start', p.get('start').clone());
-            }
-
-            if (!_this3.get('end') || p.get('end').isAfter(_this3.get('end'))) {
-              _this3.set('end', p.get('end').clone());
-            }
-          });
-        });
-
-        this._milestones.forEach(function (a) {
-          return a.forEach(function (p) {
-            if (!_this3.get('start') || p.get('date').isBefore(_this3.get('start'))) {
-              _this3.set('start', p.get('date').clone());
-            }
-
-            if (!_this3.get('end') || p.get('date').isAfter(_this3.get('end'))) {
-              _this3.set('end', p.get('date').clone());
-            }
-          });
-        });
-      }
-    }, {
-      key: "getRowHeight",
-      value: function getRowHeight(idx) {
-        console.assert(idx < this._plans.length, 'Row index outside of number of plan rows');
-        var row = this._plans[idx];
-        return Math.max.apply(Math, _toConsumableArray(row.map(function (p) {
-          return p.get('height');
-        })));
-      }
-    }, {
-      key: "render",
-      value: function render(layer, startDate, offset) {
-        var barGroup = svg('g', {
-          "class": 'bar',
-          append_to: layer
-        });
-        var milestoneGroup = svg('g', {
-          "class": "milestone-wrapper",
-          'data-id': this.get('id'),
-          append_to: layer
-        });
-
-        this._plans.forEach(function (row) {
-          return row.forEach(function (p) {
-            return p.render(barGroup, startDate, offset);
-          });
-        });
-
-        this._milestones.forEach(function (row) {
-          return row.forEach(function (m) {
-            return m.render(milestoneGroup, startDate, offset);
-          });
-        });
-      }
-    }]);
-
-    return Task;
-  }(Prop);
 
   var Background = /*#__PURE__*/function (_Prop) {
     _inherits(Background, _Prop);
@@ -1513,6 +1117,413 @@ var Timeline = (function (exports) {
     return Header;
   }(Prop);
 
+  var defaultPlanOptions = {
+    cornerRadius: 0,
+    progress: 100,
+    y: 0,
+    start: '1900-01-01',
+    end: '1900-01-01',
+    label: ''
+  };
+
+  var Plan = /*#__PURE__*/function (_Prop) {
+    _inherits(Plan, _Prop);
+
+    var _super = _createSuper(Plan);
+
+    function Plan(options, config, task) {
+      var _this;
+
+      _classCallCheck(this, Plan);
+
+      _this = _super.call(this, _objectSpread2(_objectSpread2({}, defaultPlanOptions), config));
+
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
+
+      _defineProperty(_assertThisInitialized(_this), "task", void 0);
+
+      _this.options = options;
+      _this.task = task;
+
+      _this.set('height', config.height || options.barHeight);
+
+      console.assert(!!config.start, 'Plan must have a start date');
+      console.assert(!!config.end, 'Plan must have an end date');
+
+      _this.set('start', dayjs_min(config.start));
+
+      _this.set('end', dayjs_min(config.end)); // if hours is not set, assume the last day is full day
+      // e.g: 2018-09-09 becomes 2018-09-09 23:59:59
+
+
+      if (_this.get('end').isSame(_this.get('end').startOf('day'))) {
+        _this.set('end', _this.get('end').add(24, 'hour'));
+      }
+
+      var duration = _this.get('end').diff(_this.get('start'), 'hour') / _this.options.step;
+
+      _this.set('width', duration * _this.options.columnWidth);
+
+      return _this;
+    }
+
+    _createClass(Plan, [{
+      key: "computeX",
+      value: function computeX(startDate) {
+        if (VIEW_MODE.MONTH == this.options.viewMode) {
+          return this.get('start').diff(startDate, 'day') * this.options.columnWidth / 30;
+        }
+
+        return this.get('start').diff(startDate, 'hour') / this.options.step * this.options.columnWidth;
+      }
+    }, {
+      key: "render",
+      value: function render(layer, startDate, offset) {
+        this.set('x', this.computeX(startDate) + offset.x);
+        this.set('y', this.get('y') + offset.y);
+        this.set('dom', svg('g', {
+          "class": 'bar-wrapper',
+          'data-id': this.task.get('id'),
+          append_to: layer
+        }));
+        var barGroup = svg('g', {
+          "class": 'bar-group',
+          append_to: this.get('dom')
+        });
+
+        if (this.options.popup) {
+          barGroup.addEventListener('click', this, false);
+        }
+
+        this.drawBar(barGroup);
+        this.drawProgressBar(barGroup);
+        this.drawLabel(barGroup);
+      }
+    }, {
+      key: "drawBar",
+      value: function drawBar(layer) {
+        this.set('bar', svg('rect', {
+          x: this.get('x'),
+          y: this.get('y'),
+          width: this.get('width'),
+          height: this.get('height'),
+          rx: this.get('cornerRadius'),
+          ry: this.get('cornerRadius'),
+          "class": 'bar',
+          append_to: layer
+        }));
+
+        if (this.get('backgroundStyle')) {
+          var style = this.get('backgroundStyle');
+          this.get('rect').applyStyle(style);
+        }
+      }
+    }, {
+      key: "drawProgressBar",
+      value: function drawProgressBar(layer) {
+        var rect = svg('rect', {
+          x: this.get('x'),
+          y: this.get('y'),
+          width: this.get('width') * (this.get('progress') / 100) || 0,
+          height: this.get('height'),
+          rx: this.get('cornerRadius'),
+          ry: this.get('cornerRadius'),
+          "class": 'bar-progress',
+          append_to: layer
+        });
+
+        if (this.get('progressStyle')) {
+          var style = this.get('progressStyle');
+          rect.applyStyle(style);
+        }
+      }
+    }, {
+      key: "drawLabel",
+      value: function drawLabel(layer) {
+        var _this2 = this;
+
+        if (!this.get('label')) return;
+        this.set('text', svg('text', {
+          x: this.get('x') + this.get('width') / 2,
+          y: this.get('y') + this.get('height') / 2,
+          "class": 'bar-label',
+          append_to: layer
+        }));
+
+        if (this.get('labelStyle')) {
+          var style = this.get('labelStyle');
+          this.get('text').applyStyle(style);
+        }
+
+        this.get('text').appendChild(toTextFragment(this.get('label')));
+        requestAnimationFrame(function () {
+          return _this2.updateLabelPosition();
+        });
+      }
+    }, {
+      key: "updateLabelPosition",
+      value: function updateLabelPosition() {
+        if (this.get('text').getBBox().width > this.get('bar').getWidth()) {
+          this.get('text').classList.add('big');
+          this.get('text').setAttribute('x', this.get('bar').getX() + this.get('bar').getWidth() + 5 + '');
+        } else {
+          this.get('text').classList.remove('big');
+          this.get('text').setAttribute('x', this.get('bar').getX() + this.get('bar').getWidth() / 2 + '');
+        }
+      } // TODO: Support events better
+
+    }, {
+      key: "handleEvent",
+      value: function handleEvent(evt) {
+        var key = evt.type;
+
+        if (key == 'click' && this.options.popup) {
+          this.options.dispatch(EVENT.SHOW_POPUP, {
+            eventTarget: this,
+            positionTarget: this.get('dom'),
+            title: this.task.get('name'),
+            subtitle: this.get('start').format('MMM DD') + ' - ' + this.get('end').format('MMM DD')
+          });
+          return;
+        }
+      }
+    }]);
+
+    return Plan;
+  }(Prop);
+
+  var defaultMilestoneOptions = Object.freeze({
+    height: 16,
+    width: 16,
+    date: null,
+    href: '',
+    y: 0
+  });
+
+  var Milestone = /*#__PURE__*/function (_Prop) {
+    _inherits(Milestone, _Prop);
+
+    var _super = _createSuper(Milestone);
+
+    function Milestone(options, config, task) {
+      var _this;
+
+      _classCallCheck(this, Milestone);
+
+      _this = _super.call(this, _objectSpread2(_objectSpread2({}, defaultMilestoneOptions), config));
+
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
+
+      _defineProperty(_assertThisInitialized(_this), "task", void 0);
+
+      _defineProperty(_assertThisInitialized(_this), "dom", void 0);
+
+      _this.options = options;
+      _this.task = task;
+
+      _this.set('date', dayjs_min(config.date));
+
+      return _this;
+    } // TODO: Support events better
+
+
+    _createClass(Milestone, [{
+      key: "handleEvent",
+      value: function handleEvent(evt) {
+        var key = evt.type;
+
+        if (key == 'click' && this.options.popup) {
+          this.options.dispatch(EVENT.SHOW_POPUP, {
+            eventTarget: this,
+            positionTarget: this.dom,
+            title: this.task.get('name'),
+            subtitle: this.get('date').format('MMM DD')
+          });
+          return;
+        }
+      }
+    }, {
+      key: "computeX",
+      value: function computeX(startDate) {
+        if (VIEW_MODE.MONTH == this.options.viewMode) {
+          return this.get('date').diff(startDate, 'day') * this.options.columnWidth / 30;
+        }
+
+        return this.get('date').diff(startDate, 'hour') / this.options.step * this.options.columnWidth;
+      }
+    }, {
+      key: "render",
+      value: function render(layer, startDate, offset) {
+        this.dom = svg('image', {
+          x: this.computeX(startDate) + offset.x,
+          y: this.get('y') + offset.y,
+          width: this.get('width'),
+          height: this.get('height'),
+          href: this.get('href'),
+          append_to: layer
+        });
+
+        if (this.options.popup) {
+          this.dom.addEventListener('click', this, false);
+        }
+      }
+    }]);
+
+    return Milestone;
+  }(Prop);
+
+  function generate_id(task) {
+    return 'task_' + Math.random().toString(36).slice(2, 12);
+  }
+
+  function isSingle(options) {
+    return 'plan' in options;
+  }
+
+  var Task = /*#__PURE__*/function (_Prop) {
+    _inherits(Task, _Prop);
+
+    var _super = _createSuper(Task);
+
+    function Task(options, config) {
+      var _this;
+
+      _classCallCheck(this, Task);
+
+      _this = _super.call(this);
+
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
+
+      _defineProperty(_assertThisInitialized(_this), "_plans", []);
+
+      _defineProperty(_assertThisInitialized(_this), "_milestones", []);
+
+      _this.options = options;
+      _this.properties = _objectSpread2(_objectSpread2({}, config), {}, {
+        height: 0,
+        id: generate_id(_assertThisInitialized(_this))
+      });
+
+      if (isSingle(config)) {
+        _this._plans = [[new Plan(options, config.plan, _assertThisInitialized(_this))]];
+        _this._milestones = [config.milestones.map(function (m) {
+          return new Milestone(options, m, _assertThisInitialized(_this));
+        })];
+      } else {
+        var rowOffsets = [];
+        _this._plans = config.plans.map(function (bo, idx) {
+          var arr = bo.map(function (b) {
+            if (idx > 0) b.y = rowOffsets[idx - 1];
+            return new Plan(options, b, _assertThisInitialized(_this));
+          });
+          var max = Math.max.apply(Math, _toConsumableArray(arr.map(function (b) {
+            return b.get('height');
+          })));
+          rowOffsets.push((idx > 0 ? rowOffsets[idx - 1] : 0) + max);
+          return arr;
+        });
+        _this._milestones = config.milestones.map(function (m, idx) {
+          return m.map(function (m2) {
+            if (idx > 0 && rowOffsets[idx - 1]) m2.y = rowOffsets[idx - 1];
+            return new Milestone(options, m2, _assertThisInitialized(_this));
+          });
+        });
+      }
+
+      _this.computeHeight();
+
+      _this.computeBoundingDates();
+
+      return _this;
+    }
+
+    _createClass(Task, [{
+      key: "computeHeight",
+      value: function computeHeight() {
+        var _this2 = this;
+
+        this.set('height', this._plans.map(function (a, idx) {
+          return _this2.getRowHeight(idx);
+        }).reduce(function (a, b) {
+          return a + b;
+        }, 0));
+      }
+    }, {
+      key: "computeBoundingDates",
+      value: function computeBoundingDates() {
+        var _this3 = this;
+
+        if (!this.get('start')) {
+          this.set('start', this._plans[0][0].get('start').clone());
+        }
+
+        if (!this.get('end')) {
+          this.set('end', this._plans[0][0].get('end').clone());
+        }
+
+        this._plans.forEach(function (a) {
+          return a.forEach(function (p) {
+            if (!_this3.get('start') || p.get('start').isBefore(_this3.get('start'))) {
+              _this3.set('start', p.get('start').clone());
+            }
+
+            if (!_this3.get('end') || p.get('end').isAfter(_this3.get('end'))) {
+              _this3.set('end', p.get('end').clone());
+            }
+          });
+        });
+
+        this._milestones.forEach(function (a) {
+          return a.forEach(function (p) {
+            if (!_this3.get('start') || p.get('date').isBefore(_this3.get('start'))) {
+              _this3.set('start', p.get('date').clone());
+            }
+
+            if (!_this3.get('end') || p.get('date').isAfter(_this3.get('end'))) {
+              _this3.set('end', p.get('date').clone());
+            }
+          });
+        });
+      }
+    }, {
+      key: "getRowHeight",
+      value: function getRowHeight(idx) {
+        console.assert(idx < this._plans.length, 'Row index outside of number of plan rows');
+        var row = this._plans[idx];
+        return Math.max.apply(Math, _toConsumableArray(row.map(function (p) {
+          return p.get('height');
+        })));
+      }
+    }, {
+      key: "render",
+      value: function render(layer, startDate, offset) {
+        var barGroup = svg('g', {
+          "class": 'bar',
+          append_to: layer
+        });
+        var milestoneGroup = svg('g', {
+          "class": "milestone-wrapper",
+          'data-id': this.get('id'),
+          append_to: layer
+        });
+
+        this._plans.forEach(function (row) {
+          return row.forEach(function (p) {
+            return p.render(barGroup, startDate, offset);
+          });
+        });
+
+        this._milestones.forEach(function (row) {
+          return row.forEach(function (m) {
+            return m.render(milestoneGroup, startDate, offset);
+          });
+        });
+      }
+    }]);
+
+    return Task;
+  }(Prop);
+
   var Grid = /*#__PURE__*/function (_Prop) {
     _inherits(Grid, _Prop);
 
@@ -1713,17 +1724,6 @@ var Timeline = (function (exports) {
     return Grid;
   }(Prop);
 
-  var VIEW_MODE;
-
-  (function (VIEW_MODE) {
-    VIEW_MODE["QUARTER_DAY"] = "Quarter Day";
-    VIEW_MODE["HALF_DAY"] = "Half Day";
-    VIEW_MODE["DAY"] = "Day";
-    VIEW_MODE["WEEK"] = "Week";
-    VIEW_MODE["MONTH"] = "Month";
-    VIEW_MODE["YEAR"] = "Year";
-  })(VIEW_MODE || (VIEW_MODE = {}));
-
   var View = /*#__PURE__*/function (_Prop) {
     _inherits(View, _Prop);
 
@@ -1767,7 +1767,7 @@ var Timeline = (function (exports) {
 
       var container = _this.get('container');
 
-      container.style.overflow = 'auto';
+      container.style.overflow = 'hidden';
       container.style.position = 'relative';
       container.style.paddingBottom = '100px';
       parent.appendChild(container);

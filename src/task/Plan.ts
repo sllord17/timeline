@@ -1,26 +1,11 @@
-import { Offset, SVGElementX } from '../types'
+import { Offset, SVGElementX, VIEW_MODE } from '../types'
+import { PlanOptions, ViewOptions } from '../options'
 import { svg, toTextFragment } from '../util'
 
 import { EVENT } from '../events'
 import Prop from '../prop'
 import Task from './Task'
-import { VIEW_MODE } from '../view'
-import { ViewOptions } from '../view'
 import dayjs from 'dayjs'
-
-interface BasePlanOptions {
-  progress?: number
-  height?: number
-  start: string
-  end: string
-  label: string
-  cornerRadius?: number
-  progressStyle?: ElementCSSInlineStyle
-  backgroundStyle?: ElementCSSInlineStyle
-  labelStyle?: ElementCSSInlineStyle
-}
-
-export type PlanOptions = BasePlanOptions & Offset
 
 const defaultPlanOptions: PlanOptions = {
   cornerRadius: 0,

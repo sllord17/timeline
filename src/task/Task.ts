@@ -1,27 +1,10 @@
-import Milestone, { MilestoneOptions } from './Milestone'
-
 import { SVGElementX, Offset } from '../types'
-import { ViewOptions } from '../view'
 import dayjs from 'dayjs'
 import { svg } from '../util'
 import Prop from '../prop'
-import Plan, { PlanOptions } from './Plan'
-
-export interface SingleBarOptions extends TaskBaseOptions {
-  plan: PlanOptions
-  milestones?: MilestoneOptions[]
-}
-
-export interface MultiBarOptions extends TaskBaseOptions {
-  plans: PlanOptions[][]
-  milestones?: MilestoneOptions[][]
-}
-
-interface TaskBaseOptions {
-  id: string
-}
-
-export type TaskOptions = SingleBarOptions & MultiBarOptions
+import { TaskOptions, ViewOptions, MilestoneOptions } from '../options'
+import Plan from './Plan'
+import Milestone from './Milestone'
 
 function generate_id(task: Task) {
   return 'task_' + Math.random().toString(36).slice(2, 12)

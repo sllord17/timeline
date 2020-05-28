@@ -1,13 +1,14 @@
-import { Offset, SVGElementX } from '../types'
-import { VIEW_MODE, ViewOptions } from '../view'
+import { Offset, SVGElementX, VIEW_MODE } from '../types'
 
 import Prop from '../prop'
 import Task from '../task/Task'
+import { ViewOptions } from '../options'
 import dayjs from 'dayjs'
-import { svg } from '..'
+import { svg } from '../util'
 
 export default class Background extends Prop {
   private options: ViewOptions
+
   constructor(options: ViewOptions) {
     super({
       width: 0,

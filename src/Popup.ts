@@ -3,7 +3,7 @@ import Plan from './task/Plan'
 import Prop from './prop'
 import { SVGElementX } from './types'
 import Task from './task/Task'
-import { ViewOptions } from './view'
+import { ViewOptions } from './options'
 import { toDom } from './util'
 
 export interface PopupOptions {

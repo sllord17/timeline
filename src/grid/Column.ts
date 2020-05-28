@@ -2,16 +2,9 @@ import { Offset, SVGElementX } from '../types'
 import { svg, toTextFragment } from '../util'
 
 import Task from '../task/Task'
-import { ViewOptions } from '../view'
 import Prop from '../prop'
 import { Consumer, EVENT } from '../events'
-
-export interface ColumnOptions {
-  id: string
-  text: string
-  field: string
-  customClass?: string
-}
+import { ViewOptions, ColumnOptions } from '../options'
 
 export default class Column extends Prop implements Consumer {
   private options: ViewOptions

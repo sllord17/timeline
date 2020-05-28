@@ -138,9 +138,13 @@ $handle-color: #ddd !default;
   }
 }
 
+.date {
+  user-select: none;
+}
+
 .gantt-container {
   position: relative;
-  overflow: auto;
+  overflow: hidden;
   font-size: 12px;
 
   .popup-wrapper {
