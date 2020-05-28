@@ -721,6 +721,18 @@ var Timeline = (function (exports) {
 
       _defineProperty(_assertThisInitialized(_this), "options", void 0);
 
+      _defineProperty(_assertThisInitialized(_this), "isPointerDown", false);
+
+      _defineProperty(_assertThisInitialized(_this), "pointerOrigin", {
+        x: 0,
+        y: 0
+      });
+
+      _defineProperty(_assertThisInitialized(_this), "newViewBox", {
+        x: 0,
+        y: 0
+      });
+
       _this.options = options;
       return _this;
     }
@@ -728,13 +740,99 @@ var Timeline = (function (exports) {
     _createClass(Background, [{
       key: "render",
       value: function render(layer, offset, dates, tasks) {
-        this.set('dom', svg('g', {
+        this.set('dom', svg('svg', {
           "class": 'grid',
           prepend_to: layer
         }));
+        var dom = this.get('dom'); // If browser supports pointer events
+
+        if (window.PointerEvent) {
+          dom.addEventListener('pointerdown', this.onPointerDown.bind(this)); // Pointer is pressed
+
+          dom.addEventListener('pointerup', this.onPointerUp.bind(this)); // Releasing the pointer
+
+          dom.addEventListener('pointerleave', this.onPointerUp.bind(this)); // Pointer gets out of the dom area
+
+          dom.addEventListener('pointermove', this.onPointerMove.bind(this)); // Pointer is moving
+        } else {
+          // Add all mouse events listeners fallback
+          dom.addEventListener('mousedown', this.onPointerDown.bind(this)); // Pressing the mouse
+
+          dom.addEventListener('mouseup', this.onPointerUp.bind(this)); // Releasing the mouse
+
+          dom.addEventListener('mouseleave', this.onPointerUp.bind(this)); // Mouse gets out of the dom area
+
+          dom.addEventListener('mousemove', this.onPointerMove.bind(this)); // Mouse is moving
+          // Add all touch events listeners fallback
+
+          dom.addEventListener('touchstart', this.onPointerDown.bind(this)); // Finger is touching the screen
+
+          dom.addEventListener('touchend', this.onPointerUp.bind(this)); // Finger is no longer touching the screen
+
+          dom.addEventListener('touchmove', this.onPointerMove.bind(this)); // Finger is moving
+        }
+
         this.drawBackground(offset);
         this.drawRows(offset, tasks);
         this.drawTicks(offset, dates);
+      }
+    }, {
+      key: "getPointFromEvent",
+      value: function getPointFromEvent(event) {
+        var point = {
+          x: 0,
+          y: 0
+        }; // If even is triggered by a touch event, we get the position of the first finger
+
+        if (event.targetTouches) {
+          point.x = event.targetTouches[0].clientX;
+          point.y = event.targetTouches[0].clientY;
+        } else {
+          point.x = event.clientX;
+          point.y = event.clientY;
+        }
+
+        return point;
+      }
+    }, {
+      key: "onPointerDown",
+      value: function onPointerDown(event) {
+        this.isPointerDown = true; // We set the pointer as down
+        // We get the pointer position on click/touchdown so we can get the value once the user starts to drag
+
+        var pointerPosition = this.getPointFromEvent(event);
+        this.pointerOrigin.x = pointerPosition.x;
+        this.pointerOrigin.y = pointerPosition.y;
+      } // We save the original values from the viewBox
+      // Function called by the event listeners when user start moving/dragging
+
+    }, {
+      key: "onPointerMove",
+      value: function onPointerMove(event) {
+        // Only run this function if the pointer is down
+        if (!this.isPointerDown) {
+          return;
+        } // This prevent user to do a selection on the page
+
+
+        event.preventDefault();
+        console.log(event);
+        var dom = this.get('dom');
+        var viewBox = dom.viewBox.baseVal; // Get the pointer position as an dom Point
+
+        var pointerPosition = this.getPointFromEvent(event);
+        this.newViewBox.x = viewBox.x - (pointerPosition.x - this.pointerOrigin.x);
+        this.newViewBox.y = viewBox.y - (pointerPosition.y - this.pointerOrigin.y);
+        this.pointerOrigin = pointerPosition;
+        var viewBoxString = "".concat(this.newViewBox.x, " ").concat(this.newViewBox.y, " ").concat(viewBox.width, " ").concat(viewBox.height); // We apply the new viewBox values onto the SVG
+
+        dom.setAttribute('viewBox', viewBoxString);
+      }
+    }, {
+      key: "onPointerUp",
+      value: function onPointerUp() {
+        // The pointer is no longer considered as down
+        this.isPointerDown = false;
       }
     }, {
       key: "drawBackground",
@@ -803,7 +901,7 @@ var Timeline = (function (exports) {
             }
 
             svg('path', {
-              d: "M ".concat(x, " ").concat(y, " v ").concat(height),
+              d: "M ".concat(x, " 0 v ").concat(height),
               "class": clazz,
               append_to: this.get('dom')
             });
@@ -1572,14 +1670,22 @@ var Timeline = (function (exports) {
             offset.x += c.getWidth() + _this2.options.padding;
           });
           this.get('header').get('dom').setAttribute('transform', "translate(".concat(offset.x, ", 0)"));
-          this.get('background').get('dom').setAttribute('transform', "translate(".concat(offset.x, ", ").concat(this.options.headerHeight + 2, ")"));
-          this.get('background').get('dom').querySelectorAll('.grid-row').forEach(function (d) {
-            d.setAttribute('x', -offset.x + '');
-            d.setAttribute('width', d.getWidth() + offset.x + '');
-          });
-          this.get('background').get('dom').querySelectorAll('.row-line').forEach(function (d) {
-            d.setAttribute('x1', -offset.x + '');
-          });
+          this.get('background').get('dom').setAttribute('viewBox', [0, 0, this.getWidth(), this.get('background').get('height')].join(' '));
+          this.get('background').get('dom').setAttribute('x', offset.x);
+          this.get('background').get('dom').setAttribute('y', this.options.headerHeight + this.options.padding / 2); // this.get('background')
+          //   .get('dom')
+          //   .querySelectorAll('.grid-row')
+          //   .forEach((d: SVGElementX) => {
+          //     d.setAttribute('x', -offset.x + '')
+          //     d.setAttribute('width', d.getWidth() + offset.x + '')
+          //   })
+          // this.get('background')
+          //   .get('dom')
+          //   .querySelectorAll('.row-line')
+          //   .forEach((d: SVGElementX) => {
+          //     d.setAttribute('x1', -offset.x + '')
+          //   })
+
           this.get('dom').setAttribute('transform', "translate(".concat(offset.x, ", ").concat(this.options.headerHeight + this.options.padding, ")"));
         }
       }

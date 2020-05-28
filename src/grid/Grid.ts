@@ -47,22 +47,29 @@ export default class Grid extends Prop implements Consumer {
       this.get('header').get('dom').setAttribute('transform', `translate(${offset.x}, 0)`)
       this.get('background')
         .get('dom')
-        .setAttribute('transform', `translate(${offset.x}, ${this.options.headerHeight + 2})`)
-
+        .setAttribute(
+          'viewBox',
+          [0, 0, this.getWidth(), this.get('background').get('height')].join(' ')
+        )
+      this.get('background').get('dom').setAttribute('x', offset.x)
       this.get('background')
         .get('dom')
-        .querySelectorAll('.grid-row')
-        .forEach((d: SVGElementX) => {
-          d.setAttribute('x', -offset.x + '')
-          d.setAttribute('width', d.getWidth() + offset.x + '')
-        })
+        .setAttribute('y', this.options.headerHeight + this.options.padding / 2)
 
-      this.get('background')
-        .get('dom')
-        .querySelectorAll('.row-line')
-        .forEach((d: SVGElementX) => {
-          d.setAttribute('x1', -offset.x + '')
-        })
+      // this.get('background')
+      //   .get('dom')
+      //   .querySelectorAll('.grid-row')
+      //   .forEach((d: SVGElementX) => {
+      //     d.setAttribute('x', -offset.x + '')
+      //     d.setAttribute('width', d.getWidth() + offset.x + '')
+      //   })
+
+      // this.get('background')
+      //   .get('dom')
+      //   .querySelectorAll('.row-line')
+      //   .forEach((d: SVGElementX) => {
+      //     d.setAttribute('x1', -offset.x + '')
+      //   })
 
       this.get('dom').setAttribute(
         'transform',
