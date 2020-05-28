@@ -44,30 +44,32 @@ export default class Grid extends Prop implements Consumer {
         offset.x += c.getWidth() + this.options.padding
       })
 
-      this.get('header').get('dom').setAttribute('transform', `translate(${offset.x}, 0)`)
+      this.get('header').get('dom').setAttribute('transform', `translate(0, 0)`)
       this.get('background')
         .get('dom')
-        .setAttribute('transform', `translate(${offset.x}, ${this.options.headerHeight + 2})`)
+        .setAttribute('transform', `translate(0, ${this.options.headerHeight + 2})`)
 
-      this.get('background')
-        .get('dom')
-        .querySelectorAll('.grid-row')
-        .forEach((d: SVGElementX) => {
-          d.setAttribute('x', -offset.x + '')
-          d.setAttribute('width', d.getWidth() + offset.x + '')
-        })
+      // this.get('background')
+      //   .get('dom')
+      //   .querySelectorAll('.grid-row')
+      //   .forEach((d: SVGElementX) => {
+      //     d.setAttribute('x', -offset.x + '')
+      //     d.setAttribute('width', d.getWidth() + offset.x + '')
+      //   })
 
-      this.get('background')
-        .get('dom')
-        .querySelectorAll('.row-line')
-        .forEach((d: SVGElementX) => {
-          d.setAttribute('x1', -offset.x + '')
-        })
+      // this.get('background')
+      //   .get('dom')
+      //   .querySelectorAll('.row-line')
+      //   .forEach((d: SVGElementX) => {
+      //     d.setAttribute('x1', -offset.x + '')
+      //   })
 
-      this.get('dom').setAttribute(
+      this.get('bars').setAttribute(
         'transform',
-        `translate(${offset.x}, ${this.options.headerHeight + this.options.padding})`
+        `translate(0, ${this.options.headerHeight + this.options.padding})`
       )
+
+      this.get('dom').setAttribute('x', offset.x)
     }
   }
 
@@ -150,16 +152,34 @@ export default class Grid extends Prop implements Consumer {
     parent.setAttribute('width', `${this.getWidth()}`)
     parent.setAttribute('height', `${this.getHeight()}`)
 
-    this.renderStage2(parent, this.options.padding * this.get('columns').length)
+    this.drawBody(parent, this.options.padding * this.get('columns').length)
+
     this.drawColumns(parent)
   }
 
-  private renderStage2(parent: SVGElementX, width: number) {
+  private attachEvents(node: SVGElementX) {
+    node.addEventListener('pointermove', function (event) {
+      console.log(event)
+    })
+  }
+
+  private drawBody(parent: SVGElementX, width: number) {
     this.set(
       'dom',
+      svg('svg', {
+        viewBox: `0 0 ${this.getWidth()} ${this.getHeight()}`,
+        y: 0,
+        x: 0,
+        append_to: parent
+      })
+    )
+
+    const dom = this.get('dom')
+    this.set(
+      'bars',
       svg('g', {
         class: 'bar',
-        prepend_to: parent
+        prepend_to: dom
       })
     )
 
@@ -168,12 +188,12 @@ export default class Grid extends Prop implements Consumer {
       y: 0
     }
 
-    this.get('background').render(parent, offset, this.get('dates'), this.get('tasks'))
-    this.get('header').render(parent, offset, this.get('dates'))
+    this.get('background').render(dom, offset, this.get('dates'), this.get('tasks'))
+    this.get('header').render(dom, offset, this.get('dates'))
 
     offset.y = 0
     this.get('tasks').forEach((t: Task) => {
-      t.render(this.get('dom'), this.get('start'), offset)
+      t.render(this.get('bars'), this.get('start'), offset)
       offset.y += t.get('height') + this.options.padding
     })
   }

@@ -271,7 +271,30 @@ var Timeline = (function (exports) {
 
       testElement = null;
     })();
-  }
+  } // Source: https://github.com/jserz/js_piece/blob/master/DOM/ParentNode/prepend()/prepend().md
+
+  (function (arr) {
+    arr.forEach(function (item) {
+      if (item.hasOwnProperty('prepend')) {
+        return;
+      }
+
+      Object.defineProperty(item, 'prepend', {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: function prepend() {
+          var argArr = Array.prototype.slice.call(arguments),
+              docFrag = document.createDocumentFragment();
+          argArr.forEach(function (argItem) {
+            var isNode = argItem instanceof Node;
+            docFrag.appendChild(isNode ? argItem : document.createTextNode(String(argItem)));
+          });
+          this.insertBefore(docFrag, this.firstChild);
+        }
+      });
+    });
+  })([Element.prototype, Document.prototype, DocumentFragment.prototype]);
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -1571,16 +1594,23 @@ var Timeline = (function (exports) {
             c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", ").concat(_this2.options.headerHeight + 6, ")"));
             offset.x += c.getWidth() + _this2.options.padding;
           });
-          this.get('header').get('dom').setAttribute('transform', "translate(".concat(offset.x, ", 0)"));
-          this.get('background').get('dom').setAttribute('transform', "translate(".concat(offset.x, ", ").concat(this.options.headerHeight + 2, ")"));
-          this.get('background').get('dom').querySelectorAll('.grid-row').forEach(function (d) {
-            d.setAttribute('x', -offset.x + '');
-            d.setAttribute('width', d.getWidth() + offset.x + '');
-          });
-          this.get('background').get('dom').querySelectorAll('.row-line').forEach(function (d) {
-            d.setAttribute('x1', -offset.x + '');
-          });
-          this.get('dom').setAttribute('transform', "translate(".concat(offset.x, ", ").concat(this.options.headerHeight + this.options.padding, ")"));
+          this.get('header').get('dom').setAttribute('transform', "translate(0, 0)");
+          this.get('background').get('dom').setAttribute('transform', "translate(0, ".concat(this.options.headerHeight + 2, ")")); // this.get('background')
+          //   .get('dom')
+          //   .querySelectorAll('.grid-row')
+          //   .forEach((d: SVGElementX) => {
+          //     d.setAttribute('x', -offset.x + '')
+          //     d.setAttribute('width', d.getWidth() + offset.x + '')
+          //   })
+          // this.get('background')
+          //   .get('dom')
+          //   .querySelectorAll('.row-line')
+          //   .forEach((d: SVGElementX) => {
+          //     d.setAttribute('x1', -offset.x + '')
+          //   })
+
+          this.get('bars').setAttribute('transform', "translate(0, ".concat(this.options.headerHeight + this.options.padding, ")"));
+          this.get('dom').setAttribute('x', offset.x);
         }
       }
     }, {
@@ -1677,27 +1707,41 @@ var Timeline = (function (exports) {
       value: function render(parent) {
         parent.setAttribute('width', "".concat(this.getWidth()));
         parent.setAttribute('height', "".concat(this.getHeight()));
-        this.renderStage2(parent, this.options.padding * this.get('columns').length);
+        this.drawBody(parent, this.options.padding * this.get('columns').length);
         this.drawColumns(parent);
       }
     }, {
-      key: "renderStage2",
-      value: function renderStage2(parent, width) {
+      key: "attachEvents",
+      value: function attachEvents(node) {
+        node.addEventListener('pointermove', function (event) {
+          console.log(event);
+        });
+      }
+    }, {
+      key: "drawBody",
+      value: function drawBody(parent, width) {
         var _this7 = this;
 
-        this.set('dom', svg('g', {
+        this.set('dom', svg('svg', {
+          viewBox: "0 0 ".concat(this.getWidth(), " ").concat(this.getHeight()),
+          y: 0,
+          x: 0,
+          append_to: parent
+        }));
+        var dom = this.get('dom');
+        this.set('bars', svg('g', {
           "class": 'bar',
-          prepend_to: parent
+          prepend_to: dom
         }));
         var offset = {
           x: width,
           y: 0
         };
-        this.get('background').render(parent, offset, this.get('dates'), this.get('tasks'));
-        this.get('header').render(parent, offset, this.get('dates'));
+        this.get('background').render(dom, offset, this.get('dates'), this.get('tasks'));
+        this.get('header').render(dom, offset, this.get('dates'));
         offset.y = 0;
         this.get('tasks').forEach(function (t) {
-          t.render(_this7.get('dom'), _this7.get('start'), offset);
+          t.render(_this7.get('bars'), _this7.get('start'), offset);
           offset.y += t.get('height') + _this7.options.padding;
         });
       }
