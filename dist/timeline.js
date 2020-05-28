@@ -1613,6 +1613,7 @@ var Timeline = (function (exports) {
           y: 0
         }));
         var bodyParent = toDom("<div style=\"overflow: hidden; flex: 1;\"></div>");
+        this.set('bodyParent', bodyParent);
         this.set('body', svg('svg', {
           append_to: bodyParent,
           height: this.get('height'),
@@ -1824,7 +1825,10 @@ var Timeline = (function (exports) {
 
         var header = toDom('<div style="overflow: hidden"></div>');
         parent.appendChild(header);
-        var body = toDom('<div style="flex: 1; overflow: hidden"></div>');
+        var body = toDom('<div style="flex: 1; overflow: hidden; overflow-y: auto"></div>');
+        body.addEventListener('scroll', function (e) {
+          this.get('columns').get('bodyParent').scrollTop = e.target.scrollTop;
+        }.bind(this));
         parent.appendChild(body);
         var dom = svg('svg', {
           viewBox: "0 0 ".concat(this.getWidth(), " ").concat(this.getHeight()),

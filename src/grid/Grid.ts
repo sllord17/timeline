@@ -184,7 +184,13 @@ export default class Grid extends Prop implements Consumer {
     const header = toDom('<div style="overflow: hidden"></div>')
     parent.appendChild(header)
 
-    const body = toDom('<div style="flex: 1; overflow: hidden"></div>')
+    const body = toDom('<div style="flex: 1; overflow: hidden; overflow-y: auto"></div>')
+    body.addEventListener(
+      'scroll',
+      function (e) {
+        this.get('columns').get('bodyParent').scrollTop = e.target.scrollTop
+      }.bind(this)
+    )
     parent.appendChild(body)
 
     const dom = svg('svg', {

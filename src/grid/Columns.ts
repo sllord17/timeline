@@ -50,7 +50,7 @@ export default class Columns extends prop implements Consumer {
     )
 
     const bodyParent = toDom(`<div style="overflow: hidden; flex: 1;"></div>`)
-
+    this.set('bodyParent', bodyParent)
     this.set(
       'body',
       svg('svg', {
