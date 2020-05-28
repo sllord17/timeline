@@ -29,10 +29,17 @@ export default class Columns extends prop implements Consumer {
         )
         offset.x += c.getWidth() + this.options.padding
       })
+      ;(<string[]>['header', 'body']).forEach((k) => {
+        const node = this.get(k)
+        node.setAttribute('width', offset.x)
+      })
+      this.get('parent').setAttribute('width', offset.x)
+      console.log(offset.x)
     }
   }
 
   public render(div: HTMLDivElement) {
+    this.set('parent', div)
     const headerHeight = this.options.headerHeight + 10
     const headerParent = toDom(`<div style="overflow: hidden;" height="${headerHeight}"></div>`)
 

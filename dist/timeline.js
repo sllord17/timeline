@@ -1600,11 +1600,19 @@ var Timeline = (function (exports) {
             c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", 0)"));
             offset.x += c.getWidth() + _this2.options.padding;
           });
+          ['header', 'body'].forEach(function (k) {
+            var node = _this2.get(k);
+
+            node.setAttribute('width', offset.x);
+          });
+          this.get('parent').setAttribute('width', offset.x);
+          console.log(offset.x);
         }
       }
     }, {
       key: "render",
       value: function render(div) {
+        this.set('parent', div);
         var headerHeight = this.options.headerHeight + 10;
         var headerParent = toDom("<div style=\"overflow: hidden;\" height=\"".concat(headerHeight, "\"></div>"));
         this.set('header', svg('svg', {
