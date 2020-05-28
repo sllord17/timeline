@@ -28,25 +28,27 @@ export default class Column extends Prop implements Consumer {
     }
   }
 
-  render(layer: SVGElementX, offset: Offset) {
+  render(header: SVGElementX, body: SVGElementX, offset: Offset) {
     offset.y = this.options.headerHeight
+
+    const title = svg('text', {
+      append_to: header,
+      class: 'column-header',
+      transform: `translate(${offset.x}, ${offset.y})`
+    })
+    this.set('title', title)
+
+    const text = toTextFragment(this.get('text'))
+    title.appendChild(text)
 
     this.set(
       'dom',
       svg('g', {
-        append_to: layer,
+        append_to: body,
         class: 'column-wrapper',
         transform: `translate(${offset.x}, ${offset.y})`
       })
     )
-
-    const title = svg('text', {
-      append_to: this.get('dom'),
-      class: 'column-header'
-    })
-
-    const text = toTextFragment(this.get('text'))
-    title.appendChild(text)
 
     offset.y = this.options.padding
 

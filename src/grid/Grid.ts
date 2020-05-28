@@ -11,6 +11,7 @@ import { svg, toDom } from '../util'
 import { Consumer, EVENT } from '../events'
 import { ViewOptions, TaskOptions } from '../options'
 import Task from '../task/Task'
+import Columns from './Columns'
 
 export default class Grid extends Prop implements Consumer {
   private options: ViewOptions
@@ -29,30 +30,25 @@ export default class Grid extends Prop implements Consumer {
     this.options = options
     this.options.subscribe(EVENT.AFTER_RENDER, this)
 
-    this.set(
-      'columns',
-      options.columns.map((c) => new Column(this.options, c, this.get('tasks')))
-    )
+    this.set('columns', new Columns(options, this.get('tasks')))
 
     this.setupDates()
   }
 
   eventHandler(event: EVENT): void {
     if (event == EVENT.AFTER_RENDER) {
-      const offset: Offset = { x: 0, y: 0 }
-      this.get('columns').forEach((c: Column, idx: number) => {
-        c.get('dom').setAttribute(
-          'transform',
-          `translate(${offset.x + this.options.padding / 2}, ${this.options.headerHeight + 6})`
-        )
-        offset.x += c.getWidth() + this.options.padding
-      })
-
+      // const offset: Offset = { x: 0, y: 0 }
+      // this.get('columns').forEach((c: Column, idx: number) => {
+      //   c.get('dom').setAttribute(
+      //     'transform',
+      //     `translate(${offset.x + this.options.padding / 2}, ${this.options.headerHeight + 6})`
+      //   )
+      //   offset.x += c.getWidth() + this.options.padding
+      // })
       // this.get('header').get('dom').setAttribute('transform', `translate(0, 0)`)
       // this.get('background')
       //   .get('dom')
       //   .setAttribute('transform', `translate(0, ${this.options.headerHeight + 2})`)
-
       // this.get('background')
       //   .get('dom')
       //   .querySelectorAll('.grid-row')
@@ -60,16 +56,13 @@ export default class Grid extends Prop implements Consumer {
       //     d.setAttribute('x', -offset.x + '')
       //     d.setAttribute('width', d.getWidth() + offset.x + '')
       //   })
-
       // this.get('background')
       //   .get('dom')
       //   .querySelectorAll('.row-line')
       //   .forEach((d: SVGElementX) => {
       //     d.setAttribute('x1', -offset.x + '')
       //   })
-
-      this.get('left').firstChild.setAttribute('width', offset.x)
-
+      // this.get('left').firstChild.setAttribute('width', offset.x)
       // this.get('bars').setAttribute(
       //   'transform',
       //   `translate(0, ${this.options.headerHeight + this.options.padding})`
@@ -163,7 +156,7 @@ export default class Grid extends Prop implements Consumer {
 
     this.properties = { left: left, right: right }
 
-    this.drawBody(right, this.options.padding * this.get('columns').length)
+    this.drawBody(right)
     this.drawColumns(left)
   }
 
@@ -187,7 +180,7 @@ export default class Grid extends Prop implements Consumer {
     }
   }
 
-  private drawBody(parent: HTMLDivElement, width: number) {
+  private drawBody(parent: HTMLDivElement) {
     const header = toDom('<div style="overflow: hidden"></div>')
     parent.appendChild(header)
 
@@ -215,7 +208,7 @@ export default class Grid extends Prop implements Consumer {
     )
 
     const offset: Offset = {
-      x: width,
+      x: 0,
       y: 0
     }
 
@@ -230,21 +223,10 @@ export default class Grid extends Prop implements Consumer {
   }
 
   private drawColumns(parent: HTMLDivElement) {
-    const layer = svg('svg', {
-      class: 'columns',
-      append_to: parent,
-      height: this.getHeight()
-    })
-
-    const columnsLayer = svg('g', { append_to: layer })
-
-    const offset: Offset = { x: this.options.padding, y: 0 }
-
-    this.get('columns').forEach((col: Column) => {
-      col.render(columnsLayer, offset)
-    })
-
-    parent.setAttribute('height', this.getHeight() + '')
+    this.get('columns')
+      .set('height', this.getHeight())
+      .set('headerHeight', this.get('header').getHeight())
+    this.get('columns').render(parent)
   }
 
   getPointFromEvent(event) {
