@@ -44,6 +44,17 @@ export default class View extends Prop {
     options.parent.style.pointerEvents = 'auto'
     options.parent.classList.add('timeline-container')
 
+    options.parent.addEventListener('wheel', (event: MouseWheelEvent) => {
+      if (!event.shiftKey) return
+
+      const views = Object.values(VIEW_MODE)
+      const direction = event.deltaY > 0 ? 1 : -1
+      const idx = views.indexOf(this.options.viewMode)
+      const newIdx = Math.max(0, Math.min(idx + direction, views.length - 1))
+
+      this.changeView(views[newIdx] as VIEW_MODE)
+    })
+
     this.set('popup', new Popup(this.options, popupContainer))
     this.get('popup').hide()
 
