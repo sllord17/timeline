@@ -39,8 +39,15 @@ export default class Plan extends Prop implements EventListenerObject {
       this.set('end', this.get('end').add(24, 'hour'))
     }
 
-    const duration = this.get('end').diff(this.get('start'), 'hour') / this.options.step
-    this.set('width', duration * this.options.columnWidth)
+    this.set('duration', this.get('end').diff(this.get('start'), 'hour'))
+  }
+
+  private getDuration(): number {
+    return this.get('duration') / this.options.step
+  }
+
+  private getWidth(): number {
+    return this.getDuration() * this.options.columnWidth
   }
 
   private computeX(startDate: dayjs.Dayjs): number {
@@ -86,7 +93,7 @@ export default class Plan extends Prop implements EventListenerObject {
       svg('rect', {
         x: this.get('x'),
         y: this.get('y'),
-        width: this.get('width'),
+        width: this.getWidth(),
         height: this.get('height'),
         rx: this.get('cornerRadius'),
         ry: this.get('cornerRadius'),
@@ -105,7 +112,7 @@ export default class Plan extends Prop implements EventListenerObject {
     const rect = svg('rect', {
       x: this.get('x'),
       y: this.get('y'),
-      width: this.get('width') * (this.get('progress') / 100) || 0,
+      width: this.getWidth() * (this.get('progress') / 100) || 0,
       height: this.get('height'),
       rx: this.get('cornerRadius'),
       ry: this.get('cornerRadius'),
@@ -125,7 +132,7 @@ export default class Plan extends Prop implements EventListenerObject {
     this.set(
       'text',
       svg('text', {
-        x: this.get('x') + this.get('width') / 2,
+        x: this.get('x') + this.getWidth() / 2,
         y: this.get('y') + this.get('height') / 2,
         class: 'bar-label',
         append_to: layer

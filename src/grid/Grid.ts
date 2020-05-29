@@ -23,8 +23,7 @@ export default class Grid extends Prop implements Consumer {
     super({
       background: new Background(options),
       header: new Header(options),
-      tasks: taskOptions.map((o) => new Task(options, o)),
-      body: svg('svg', { class: 'timeline' })
+      tasks: taskOptions.map((o) => new Task(options, o))
     })
 
     this.options = options
@@ -32,7 +31,14 @@ export default class Grid extends Prop implements Consumer {
 
     this.set('columns', new Columns(options, this.get('tasks')))
 
-    this.setupDates()
+    const body = this.options.parent.querySelector('.timeline-right-bottom')
+    const columns = this.options.parent.querySelector('.timeline-left-bottom')
+    body.addEventListener(
+      'scroll',
+      function (e: any) {
+        columns.scrollTop = e.target.scrollTop
+      }.bind(this)
+    )
   }
 
   eventHandler(event: EVENT): void {
@@ -40,7 +46,7 @@ export default class Grid extends Prop implements Consumer {
     }
   }
 
-  private setupDates() {
+  public setupDates() {
     this.setBoundingDates()
     this.convertDates()
     this.fillDates()
@@ -86,6 +92,7 @@ export default class Grid extends Prop implements Consumer {
   }
 
   private setBoundingDates() {
+    this.set('start', null).set('end', null)
     this.get('tasks').forEach((task: Task) => {
       if (!this.get('start') || task.get('start').isBefore(this.get('start'))) {
         this.set('start', task.get('start').clone())
@@ -112,6 +119,7 @@ export default class Grid extends Prop implements Consumer {
   }
 
   public render() {
+    this.setupDates()
     this.drawBody()
     this.drawColumns()
   }
@@ -137,16 +145,9 @@ export default class Grid extends Prop implements Consumer {
   }
 
   private drawBody() {
-    const body = this.options.parent.querySelector('.timeline-right-bottom')
-    const columns = this.options.parent.querySelector('.timeline-left-bottom')
-    body.addEventListener(
-      'scroll',
-      function (e: any) {
-        columns.scrollTop = e.target.scrollTop
-      }.bind(this)
-    )
+    const dom: any = this.options.parent.querySelector('.timeline-right-bottom > svg')
+    dom.innerHTML = ''
 
-    const dom: any = body.querySelector('svg')
     console.log(dom)
     dom.setAttributes({
       viewBox: `0 0 ${this.getWidth()} ${this.getHeight()}`,

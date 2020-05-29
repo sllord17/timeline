@@ -16,6 +16,7 @@ export default class Header extends Prop {
 
   public render(dates: dayjs.Dayjs[]) {
     const dom = this.options.parent.querySelector('.timeline-right-top > svg')
+    dom.innerHTML = ''
     dom.setAttribute('width', this.get('width') + '')
     dom.setAttribute('height', this.getHeight() + '')
 

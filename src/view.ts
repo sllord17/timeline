@@ -33,7 +33,6 @@ export default class View extends Prop {
     this.options.dispatch = this.dispatch.bind(this)
     this.options.subscribe = this.subscribe.bind(this)
     this.options.unsubscribe = this.unsubscribe.bind(this)
-    this.updateScale()
 
     const popupContainer = document.createElement('div')
     popupContainer.classList.add('popup-wrapper')
@@ -49,9 +48,12 @@ export default class View extends Prop {
     this.get('popup').hide()
 
     this.setupView()
-
     this.set('grid', new Grid(this.options, tasks))
+
+    this.updateScale()
     this.render()
+
+    console.log(this)
   }
 
   private setupView() {
@@ -75,6 +77,13 @@ export default class View extends Prop {
       '.timeline-left, .timeline-right-top, .tick, .grid',
       () => this.get('popup').hide()
     )
+  }
+
+  public changeView(mode: VIEW_MODE) {
+    this.options.viewMode = mode
+    this.updateScale()
+    this.get('grid').setupDates()
+    this.get('grid').drawBody()
   }
 
   public render() {

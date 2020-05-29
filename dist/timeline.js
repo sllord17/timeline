@@ -1106,6 +1106,7 @@ var Timeline = (function (exports) {
       key: "render",
       value: function render(dates) {
         var dom = this.options.parent.querySelector('.timeline-right-top > svg');
+        dom.innerHTML = '';
         dom.setAttribute('width', this.get('width') + '');
         dom.setAttribute('height', this.getHeight() + '');
         this.drawBackground(dom);
@@ -1267,14 +1268,22 @@ var Timeline = (function (exports) {
         _this.set('end', _this.get('end').add(24, 'hour'));
       }
 
-      var duration = _this.get('end').diff(_this.get('start'), 'hour') / _this.options.step;
-
-      _this.set('width', duration * _this.options.columnWidth);
+      _this.set('duration', _this.get('end').diff(_this.get('start'), 'hour'));
 
       return _this;
     }
 
     _createClass(Plan, [{
+      key: "getDuration",
+      value: function getDuration() {
+        return this.get('duration') / this.options.step;
+      }
+    }, {
+      key: "getWidth",
+      value: function getWidth() {
+        return this.getDuration() * this.options.columnWidth;
+      }
+    }, {
       key: "computeX",
       value: function computeX(startDate) {
         if (VIEW_MODE.MONTH == this.options.viewMode) {
@@ -1312,7 +1321,7 @@ var Timeline = (function (exports) {
         this.set('bar', svg('rect', {
           x: this.get('x'),
           y: this.get('y'),
-          width: this.get('width'),
+          width: this.getWidth(),
           height: this.get('height'),
           rx: this.get('cornerRadius'),
           ry: this.get('cornerRadius'),
@@ -1331,7 +1340,7 @@ var Timeline = (function (exports) {
         var rect = svg('rect', {
           x: this.get('x'),
           y: this.get('y'),
-          width: this.get('width') * (this.get('progress') / 100) || 0,
+          width: this.getWidth() * (this.get('progress') / 100) || 0,
           height: this.get('height'),
           rx: this.get('cornerRadius'),
           ry: this.get('cornerRadius'),
@@ -1351,7 +1360,7 @@ var Timeline = (function (exports) {
 
         if (!this.get('label')) return;
         this.set('text', svg('text', {
-          x: this.get('x') + this.get('width') / 2,
+          x: this.get('x') + this.getWidth() / 2,
           y: this.get('y') + this.get('height') / 2,
           "class": 'bar-label',
           append_to: layer
@@ -1646,9 +1655,6 @@ var Timeline = (function (exports) {
         header: new Header(options),
         tasks: taskOptions.map(function (o) {
           return new Task(options, o);
-        }),
-        body: svg('svg', {
-          "class": 'timeline'
         })
       });
 
@@ -1672,8 +1678,13 @@ var Timeline = (function (exports) {
 
       _this.set('columns', new Columns(options, _this.get('tasks')));
 
-      _this.setupDates();
+      var body = _this.options.parent.querySelector('.timeline-right-bottom');
 
+      var columns = _this.options.parent.querySelector('.timeline-left-bottom');
+
+      body.addEventListener('scroll', function (e) {
+        columns.scrollTop = e.target.scrollTop;
+      }.bind(_assertThisInitialized(_this)));
       return _this;
     }
 
@@ -1740,6 +1751,7 @@ var Timeline = (function (exports) {
       value: function setBoundingDates() {
         var _this3 = this;
 
+        this.set('start', null).set('end', null);
         this.get('tasks').forEach(function (task) {
           if (!_this3.get('start') || task.get('start').isBefore(_this3.get('start'))) {
             _this3.set('start', task.get('start').clone());
@@ -1769,6 +1781,7 @@ var Timeline = (function (exports) {
     }, {
       key: "render",
       value: function render() {
+        this.setupDates();
         this.drawBody();
         this.drawColumns();
       }
@@ -1806,12 +1819,8 @@ var Timeline = (function (exports) {
       value: function drawBody() {
         var _this5 = this;
 
-        var body = this.options.parent.querySelector('.timeline-right-bottom');
-        var columns = this.options.parent.querySelector('.timeline-left-bottom');
-        body.addEventListener('scroll', function (e) {
-          columns.scrollTop = e.target.scrollTop;
-        }.bind(this));
-        var dom = body.querySelector('svg');
+        var dom = this.options.parent.querySelector('.timeline-right-bottom > svg');
+        dom.innerHTML = '';
         console.log(dom);
         dom.setAttributes({
           viewBox: "0 0 ".concat(this.getWidth(), " ").concat(this.getHeight()),
@@ -1938,9 +1947,6 @@ var Timeline = (function (exports) {
       _this.options.dispatch = _this.dispatch.bind(_assertThisInitialized(_this));
       _this.options.subscribe = _this.subscribe.bind(_assertThisInitialized(_this));
       _this.options.unsubscribe = _this.unsubscribe.bind(_assertThisInitialized(_this));
-
-      _this.updateScale();
-
       var popupContainer = document.createElement('div');
       popupContainer.classList.add('popup-wrapper');
       options.parent.appendChild(popupContainer);
@@ -1958,8 +1964,11 @@ var Timeline = (function (exports) {
 
       _this.set('grid', new Grid(_this.options, tasks));
 
+      _this.updateScale();
+
       _this.render();
 
+      console.log(_assertThisInitialized(_this));
       return _this;
     }
 
@@ -1976,6 +1985,14 @@ var Timeline = (function (exports) {
         delegate(this.options.parent, 'click', '.timeline-left, .timeline-right-top, .tick, .grid', function () {
           return _this2.get('popup').hide();
         });
+      }
+    }, {
+      key: "changeView",
+      value: function changeView(mode) {
+        this.options.viewMode = mode;
+        this.updateScale();
+        this.get('grid').setupDates();
+        this.get('grid').drawBody();
       }
     }, {
       key: "render",
