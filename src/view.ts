@@ -92,6 +92,8 @@ export default class View extends Prop {
   }
 
   public changeView(mode: VIEW_MODE) {
+    this.get('popup').hide()
+
     this.options.viewMode = mode
     this.updateScale()
     this.get('grid').setupDates()

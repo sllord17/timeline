@@ -2016,6 +2016,7 @@ var Timeline = (function (exports) {
       value: function changeView(mode) {
         var _this3 = this;
 
+        this.get('popup').hide();
         this.options.viewMode = mode;
         this.updateScale();
         this.get('grid').setupDates();
