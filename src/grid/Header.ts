@@ -22,6 +22,8 @@ export default class Header extends Prop {
 
     this.drawBackground(dom)
     this.drawDates(dom, dates)
+
+    dom.setAttribute('viewBox', `0 0 ${this.get('width')} ${this.getHeight()}`)
   }
 
   public getHeight(): number {

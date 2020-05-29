@@ -1111,6 +1111,7 @@ var Timeline = (function (exports) {
         dom.setAttribute('height', this.getHeight() + '');
         this.drawBackground(dom);
         this.drawDates(dom, dates);
+        dom.setAttribute('viewBox', "0 0 ".concat(this.get('width'), " ").concat(this.getHeight()));
       }
     }, {
       key: "getHeight",
@@ -1684,6 +1685,15 @@ var Timeline = (function (exports) {
       body.addEventListener('scroll', function (e) {
         columns.scrollTop = e.target.scrollTop;
       }.bind(_assertThisInitialized(_this)));
+
+      if (options.draggable) {
+        _this.set('bodyDom', _this.options.parent.querySelector('.timeline-right-bottom > svg'));
+
+        _this.set('headerDom', _this.options.parent.querySelector('.timeline-right-top > svg'));
+
+        _this.attachEvents(_this.get('bodyDom'));
+      }
+
       return _this;
     }
 
@@ -1892,7 +1902,8 @@ var Timeline = (function (exports) {
 
 
         event.preventDefault();
-        var dom = this.get('dom');
+        var dom = this.get('bodyDom');
+        var header = this.get('headerDom');
         var viewBox = dom.viewBox.baseVal; // Get the pointer position as an dom Point
 
         var pointerPosition = this.getPointFromEvent(event);
@@ -1902,6 +1913,9 @@ var Timeline = (function (exports) {
         var viewBoxString = "".concat(this.viewBox.x, " ").concat(this.viewBox.y, " ").concat(viewBox.width, " ").concat(viewBox.height); // We apply the new viewBox values onto the SVG
 
         dom.setAttribute('viewBox', viewBoxString);
+        var headerViewBox = header.viewBox.baseVal;
+        viewBoxString = "".concat(this.viewBox.x, " 0 ").concat(headerViewBox.width, " ").concat(headerViewBox.height);
+        header.setAttribute('viewBox', viewBoxString);
       }
     }, {
       key: "onPointerUp",
@@ -1937,6 +1951,7 @@ var Timeline = (function (exports) {
         popup: true,
         popupProducer: null,
         columns: [],
+        draggable: true,
         parent: null
       });
 

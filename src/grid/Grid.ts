@@ -39,6 +39,12 @@ export default class Grid extends Prop implements Consumer {
         columns.scrollTop = e.target.scrollTop
       }.bind(this)
     )
+
+    if (options.draggable) {
+      this.set('bodyDom', this.options.parent.querySelector('.timeline-right-bottom > svg'))
+      this.set('headerDom', this.options.parent.querySelector('.timeline-right-top > svg'))
+      this.attachEvents(this.get('bodyDom'))
+    }
   }
 
   eventHandler(event: EVENT): void {
@@ -222,7 +228,9 @@ export default class Grid extends Prop implements Consumer {
     // This prevent user to do a selection on the page
     event.preventDefault()
 
-    const dom = this.get('dom')
+    const dom = this.get('bodyDom')
+    const header = this.get('headerDom')
+
     const viewBox = dom.viewBox.baseVal
 
     // Get the pointer position as an dom Point
@@ -232,9 +240,13 @@ export default class Grid extends Prop implements Consumer {
 
     this.pointerOrigin = pointerPosition
 
-    var viewBoxString = `${this.viewBox.x} ${this.viewBox.y} ${viewBox.width} ${viewBox.height}`
+    let viewBoxString = `${this.viewBox.x} ${this.viewBox.y} ${viewBox.width} ${viewBox.height}`
     // We apply the new viewBox values onto the SVG
     dom.setAttribute('viewBox', viewBoxString)
+
+    const headerViewBox = header.viewBox.baseVal
+    viewBoxString = `${this.viewBox.x} 0 ${headerViewBox.width} ${headerViewBox.height}`
+    header.setAttribute('viewBox', viewBoxString)
   }
 
   private onPointerUp() {

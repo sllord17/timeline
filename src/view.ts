@@ -19,6 +19,7 @@ export default class View extends Prop {
     popup: true,
     popupProducer: null,
     columns: [],
+    draggable: true,
     parent: null
   }
 
