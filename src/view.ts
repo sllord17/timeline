@@ -67,6 +67,14 @@ export default class View extends Prop {
     </div>`)
 
     this.options.parent.append(left, right)
+    this.options.parent
+
+    delegate(
+      this.options.parent,
+      'click',
+      '.timeline-left, .timeline-right-top, .tick, .grid',
+      () => this.get('popup').hide()
+    )
   }
 
   public render() {

@@ -24,7 +24,7 @@ export default class Grid extends Prop implements Consumer {
       background: new Background(options),
       header: new Header(options),
       tasks: taskOptions.map((o) => new Task(options, o)),
-      body: svg('svg', { class: 'gantt' })
+      body: svg('svg', { class: 'timeline' })
     })
 
     this.options = options
@@ -37,36 +37,6 @@ export default class Grid extends Prop implements Consumer {
 
   eventHandler(event: EVENT): void {
     if (event == EVENT.AFTER_RENDER) {
-      // const offset: Offset = { x: 0, y: 0 }
-      // this.get('columns').forEach((c: Column, idx: number) => {
-      //   c.get('dom').setAttribute(
-      //     'transform',
-      //     `translate(${offset.x + this.options.padding / 2}, ${this.options.headerHeight + 6})`
-      //   )
-      //   offset.x += c.getWidth() + this.options.padding
-      // })
-      // this.get('header').get('dom').setAttribute('transform', `translate(0, 0)`)
-      // this.get('background')
-      //   .get('dom')
-      //   .setAttribute('transform', `translate(0, ${this.options.headerHeight + 2})`)
-      // this.get('background')
-      //   .get('dom')
-      //   .querySelectorAll('.grid-row')
-      //   .forEach((d: SVGElementX) => {
-      //     d.setAttribute('x', -offset.x + '')
-      //     d.setAttribute('width', d.getWidth() + offset.x + '')
-      //   })
-      // this.get('background')
-      //   .get('dom')
-      //   .querySelectorAll('.row-line')
-      //   .forEach((d: SVGElementX) => {
-      //     d.setAttribute('x1', -offset.x + '')
-      //   })
-      // this.get('left').firstChild.setAttribute('width', offset.x)
-      // this.get('bars').setAttribute(
-      //   'transform',
-      //   `translate(0, ${this.options.headerHeight + this.options.padding})`
-      // )
     }
   }
 
@@ -74,10 +44,6 @@ export default class Grid extends Prop implements Consumer {
     this.setBoundingDates()
     this.convertDates()
     this.fillDates()
-
-    // ;(<string[]>['header', 'background']).forEach((k: string) =>
-    //   this.get(k).set('width', this.getWidth()).set('height', this.getHeight())
-    // )
   }
 
   private fillDates() {

@@ -37,7 +37,7 @@ export const toDom = (html: string): Node => {
 }
 
 export const delegate = (
-  element: SVGElementX,
+  element: SVGElementX | HTMLElement,
   event: string,
   selector: string,
   listener: { (event: Event, target: HTMLElement | SVGElementX): void }

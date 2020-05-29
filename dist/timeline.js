@@ -1648,7 +1648,7 @@ var Timeline = (function (exports) {
           return new Task(options, o);
         }),
         body: svg('svg', {
-          "class": 'gantt'
+          "class": 'timeline'
         })
       });
 
@@ -1687,9 +1687,7 @@ var Timeline = (function (exports) {
       value: function setupDates() {
         this.setBoundingDates();
         this.convertDates();
-        this.fillDates(); // ;(<string[]>['header', 'background']).forEach((k: string) =>
-        //   this.get(k).set('width', this.getWidth()).set('height', this.getHeight())
-        // )
+        this.fillDates();
       }
     }, {
       key: "fillDates",
@@ -1968,19 +1966,25 @@ var Timeline = (function (exports) {
     _createClass(View, [{
       key: "setupView",
       value: function setupView() {
+        var _this2 = this;
+
         var headerHeight = this.options.headerHeight + 10;
         var left = toDom("<div class=\"timeline-left\" style=\"flex-direction: column; display: flex; overflow: hidden\">\n      <div class=\"timeline-left-top\" style=\"overflow: hidden\" height=\"".concat(headerHeight, "\"><svg x=\"0\" y=\"0\" height=\"").concat(headerHeight, "\"></svg></div>\n      <div class=\"timeline-left-bottom\" style=\"overflow: hidden; flex: 1\"><svg x=\"0\" y=\"0\"></svg></div>\n      </div>"));
         var right = toDom("<div class=\"timeline-right\" style=\"flex: 1; flex-direction: column; display: flex; overflow: hidden\">\n    <div class=\"timeline-right-top\" style=\"overflow: hidden\" height=\"".concat(headerHeight, "\"><svg class=\"timeline\" x=\"0\" y=\"0\" height=\"").concat(headerHeight, "\"></svg></div>\n    <div class=\"timeline-right-bottom\" style=\"overflow: hidden; flex: 1\"><svg class=\"timeline\" x=\"0\" y=\"0\"></svg></div>\n    </div>"));
         this.options.parent.append(left, right);
+        this.options.parent;
+        delegate(this.options.parent, 'click', '.timeline-left, .timeline-right-top, .tick, .grid', function () {
+          return _this2.get('popup').hide();
+        });
       }
     }, {
       key: "render",
       value: function render() {
-        var _this2 = this;
+        var _this3 = this;
 
         this.get('grid').render();
         requestAnimationFrame(function () {
-          return _this2.dispatch(EVENT.AFTER_RENDER);
+          return _this3.dispatch(EVENT.AFTER_RENDER);
         });
       }
     }, {
