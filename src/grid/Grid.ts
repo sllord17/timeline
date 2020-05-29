@@ -236,6 +236,8 @@ export default class Grid extends Prop implements Consumer {
     // Get the pointer position as an dom Point
     const pointerPosition = this.getPointFromEvent(event)
     this.viewBox.x = viewBox.x - (pointerPosition.x - this.pointerOrigin.x)
+    if (this.viewBox.x < 0) this.viewBox.x = 0
+
     this.viewBox.y = viewBox.y
 
     this.pointerOrigin = pointerPosition

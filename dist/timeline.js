@@ -1908,6 +1908,7 @@ var Timeline = (function (exports) {
 
         var pointerPosition = this.getPointFromEvent(event);
         this.viewBox.x = viewBox.x - (pointerPosition.x - this.pointerOrigin.x);
+        if (this.viewBox.x < 0) this.viewBox.x = 0;
         this.viewBox.y = viewBox.y;
         this.pointerOrigin = pointerPosition;
         var viewBoxString = "".concat(this.viewBox.x, " ").concat(this.viewBox.y, " ").concat(viewBox.width, " ").concat(viewBox.height); // We apply the new viewBox values onto the SVG
