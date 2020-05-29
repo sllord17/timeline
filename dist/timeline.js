@@ -26,6 +26,14 @@ var Timeline = (function (exports) {
       return _this.style[k] = style[k];
     });
   };
+
+  Element.prototype.setAttributes = function (attrs) {
+    var _this2 = this;
+
+    Object.keys(attrs).forEach(function (k) {
+      return _this2.setAttribute(k, attrs[k]);
+    });
+  };
   /*
    * classList.js: Cross-browser full element.classList implementation.
    * 1.2.20171210
@@ -679,13 +687,12 @@ var Timeline = (function (exports) {
           parent.style.width = parent.clientWidth + 'px';
         }
 
-        var ctm = config.positionTarget.getCTM();
-        var pos = config.positionTarget.getBBox();
+        var pos = config.positionTarget.getBoundingClientRect();
         console.log(config.positionTarget);
 
         if (config.position == 'left') {
-          parent.style.left = ctm.e + pos.x + (pos.width + 10) + 'px';
-          parent.style.top = ctm.f + pos.y + 'px';
+          parent.style.left = pos.x + (pos.width + 10) + 'px';
+          parent.style.top = pos.y + 'px';
           this.get('pointer').style.transform = 'rotateZ(90deg)';
           this.get('pointer').style.left = '-7px';
           this.get('pointer').style.top = '2px';
@@ -750,39 +757,40 @@ var Timeline = (function (exports) {
 
     _createClass(Background, [{
       key: "render",
-      value: function render(layer, offset, dates, tasks) {
-        this.set('dom', svg('g', {
+      value: function render(dates, tasks) {
+        var dom = this.options.parent.querySelector('.timeline-right-bottom > svg');
+        var layer = svg('g', {
           "class": 'grid',
-          prepend_to: layer
-        }));
-        this.drawBackground(offset);
-        this.drawRows(offset, tasks);
-        this.drawTicks(offset, dates);
+          prepend_to: dom
+        });
+        this.drawBackground(layer);
+        this.drawRows(layer, tasks);
+        this.drawTicks(layer, dates);
       }
     }, {
       key: "drawBackground",
-      value: function drawBackground(offset) {
+      value: function drawBackground(layer) {
         svg('rect', {
           x: 0,
           y: 0,
-          width: this.get('width') + offset.x,
+          width: this.get('width'),
           height: this.get('height'),
           "class": 'grid-background',
-          append_to: this.get('dom')
+          append_to: layer
         });
       }
     }, {
       key: "drawRows",
-      value: function drawRows(offset, tasks) {
+      value: function drawRows(layer, tasks) {
         var _this2 = this;
 
         var rowsLayer = svg('g', {
-          append_to: this.get('dom')
+          append_to: layer
         });
         var linesLayer = svg('g', {
-          append_to: this.get('dom')
+          append_to: layer
         });
-        var rowWidth = this.get('width') + offset.x;
+        var rowWidth = this.get('width');
         var y = 0;
         tasks.forEach(function (task) {
           var rowHeight = task.get('height') + _this2.options.padding;
@@ -808,10 +816,8 @@ var Timeline = (function (exports) {
       }
     }, {
       key: "drawTicks",
-      value: function drawTicks(offset, dates) {
-        var x = offset.x;
-        var y = this.options.padding / 2,
-            height = this.get('height');
+      value: function drawTicks(layer, dates) {
+        var x = 0;
 
         var _iterator = _createForOfIteratorHelper(dates),
             _step;
@@ -826,9 +832,9 @@ var Timeline = (function (exports) {
             }
 
             svg('path', {
-              d: "M ".concat(x, " 0 v ").concat(height),
+              d: "M ".concat(x, " 0 v ").concat(this.get('height')),
               "class": clazz,
-              append_to: this.get('dom')
+              append_to: layer
             });
 
             if (VIEW_MODE.MONTH == this.options.viewMode) {
@@ -863,6 +869,218 @@ var Timeline = (function (exports) {
     return Background;
   }(Prop);
 
+  var Column = /*#__PURE__*/function (_Prop) {
+    _inherits(Column, _Prop);
+
+    var _super = _createSuper(Column);
+
+    function Column(options, config, tasks) {
+      var _this;
+
+      _classCallCheck(this, Column);
+
+      _this = _super.call(this, _objectSpread2(_objectSpread2({}, config), {}, {
+        tasks: tasks
+      }));
+
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
+
+      _this.options = options;
+      options.subscribe(EVENT.AFTER_RENDER, _assertThisInitialized(_this));
+      return _this;
+    }
+
+    _createClass(Column, [{
+      key: "eventHandler",
+      value: function eventHandler(event) {
+        if (event == EVENT.AFTER_RENDER) {
+          this.get('dom').querySelectorAll('.column-background').forEach(function (r) {
+            r.setAttribute('width', r.columnRow.getBBox().width + '');
+          });
+        }
+      }
+    }, {
+      key: "render",
+      value: function render(header, body, offset) {
+        var _this2 = this;
+
+        offset.y = this.options.headerHeight;
+        var title = svg('text', {
+          append_to: header,
+          "class": 'column-header',
+          x: offset.x,
+          y: offset.y
+        });
+        this.set('title', title);
+        var text = toTextFragment(this.get('text'));
+        title.appendChild(text);
+        this.set('dom', svg('g', {
+          append_to: body,
+          "class": 'column-wrapper',
+          transform: "translate(".concat(offset.x, ", 0)")
+        }));
+        offset.y = this.options.padding / 2;
+        this.get('tasks').forEach(function (t) {
+          var column = svg('text', {
+            append_to: _this2.get('dom'),
+            "class": 'column-' + _this2.get('field'),
+            height: t.get('height'),
+            transform: "translate(0, ".concat(offset.y, ")")
+          });
+          var bg = svg('g', {
+            prepend_to: _this2.get('dom'),
+            "class": 'column-background-' + _this2.get('field'),
+            height: t.get('height'),
+            transform: "translate(0, ".concat(offset.y, ")")
+          });
+
+          _this2.renderRow(column, bg, t);
+
+          offset.y += t.get('height') + _this2.options.padding;
+        });
+      }
+    }, {
+      key: "getWidth",
+      value: function getWidth() {
+        return this.get('dom').getBBox().width;
+      }
+    }, {
+      key: "renderRow",
+      value: function renderRow(layer, backgroundLayer, task) {
+        var _this3 = this;
+
+        var value = task.get(this.get('field'));
+        if (!value) return;
+
+        if (typeof value == 'string' || typeof value == 'number') {
+          return this.renderTspan(layer, null, task, {
+            label: value
+          });
+        }
+
+        console.assert(Array.isArray(value), "Column value isn't a string or array");
+        var offset = {
+          x: 0,
+          y: 0
+        };
+        value.forEach(function (v, idx) {
+          _this3.renderTspan(layer, backgroundLayer, task, v, offset, idx);
+
+          offset.y += task.getRowHeight(idx);
+        });
+      }
+    }, {
+      key: "renderTspan",
+      value: function renderTspan(textLayer, backgroundLayer, task, obj) {
+        var offset = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {
+          x: 0,
+          y: 0
+        };
+        var idx = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
+        var label = svg('tspan', {
+          append_to: textLayer,
+          "class": 'column-text',
+          dy: offset.y,
+          'dominant-baseline': 'hanging',
+          x: 0
+        });
+
+        if (obj.labelStyle) {
+          label.applyStyle(obj.labelStyle);
+        }
+
+        var text = toTextFragment(obj.label);
+        label.appendChild(text);
+
+        if (obj.backgroundStyle) {
+          var rect = svg('rect', {
+            x: 0,
+            dy: offset.y,
+            height: task.getRowHeight(idx),
+            prepend_to: backgroundLayer,
+            "class": 'column-background',
+            id: obj.label
+          });
+          rect.columnRow = label;
+          rect.applyStyle(obj.backgroundStyle);
+        }
+      }
+    }]);
+
+    return Column;
+  }(Prop);
+
+  var Columns = /*#__PURE__*/function (_prop) {
+    _inherits(Columns, _prop);
+
+    var _super = _createSuper(Columns);
+
+    function Columns(options, tasks) {
+      var _this;
+
+      _classCallCheck(this, Columns);
+
+      _this = _super.call(this, {
+        tasks: tasks,
+        columns: options.columns.map(function (c) {
+          return new Column(options, c, tasks);
+        })
+      });
+
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
+
+      _this.options = options;
+
+      _this.options.subscribe(EVENT.AFTER_RENDER, _assertThisInitialized(_this));
+
+      _this.set('parent', options.parent.querySelector('.timeline-left'));
+
+      _this.set('body', options.parent.querySelector('.timeline-left-bottom > svg'));
+
+      _this.set('header', options.parent.querySelector('.timeline-left-top > svg'));
+
+      return _this;
+    }
+
+    _createClass(Columns, [{
+      key: "eventHandler",
+      value: function eventHandler(event) {
+        var _this2 = this;
+
+        if (event == EVENT.AFTER_RENDER) {
+          var offset = {
+            x: 0,
+            y: 0
+          };
+          this.get('columns').forEach(function (c, idx) {
+            c.get('title').setAttribute('x', offset.x + _this2.options.padding / 2);
+            c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", 0)"));
+            offset.x += c.getWidth() + _this2.options.padding;
+          });
+          this.get('body').setAttribute('width', offset.x);
+          this.get('header').setAttribute('width', offset.x);
+          this.get('parent').setAttribute('width', offset.x);
+        }
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        var dom = this.get('body');
+        dom.setAttribute('height', this.get('height'));
+        var header = this.get('header');
+        var offset = {
+          x: this.options.padding,
+          y: 0
+        };
+        this.get('columns').forEach(function (col) {
+          col.render(header, dom, offset);
+        });
+      }
+    }]);
+
+    return Columns;
+  }(Prop);
+
   var Header = /*#__PURE__*/function (_Prop) {
     _inherits(Header, _Prop);
 
@@ -886,17 +1104,12 @@ var Timeline = (function (exports) {
 
     _createClass(Header, [{
       key: "render",
-      value: function render(layer, offset, dates) {
-        this.set('dom', svg('svg', {
-          "class": 'date gantt',
-          prepend_to: layer
-        }));
-        var dom = this.get('dom');
-        dom.setAttribute('width', this.get('width'));
-        dom.setAttribute('height', this.getHeight());
-        layer.setAttribute('height', this.getHeight() + '');
-        this.drawBackground(offset);
-        this.drawDates(offset, dates);
+      value: function render(dates) {
+        var dom = this.options.parent.querySelector('.timeline-right-top > svg');
+        dom.setAttribute('width', this.get('width') + '');
+        dom.setAttribute('height', this.getHeight() + '');
+        this.drawBackground(dom);
+        this.drawDates(dom, dates);
       }
     }, {
       key: "getHeight",
@@ -905,19 +1118,19 @@ var Timeline = (function (exports) {
       }
     }, {
       key: "drawBackground",
-      value: function drawBackground(offset) {
+      value: function drawBackground(layer) {
         svg('rect', {
-          x: offset.x,
+          x: 0,
           y: 0,
           width: this.get('width'),
           height: this.getHeight(),
           "class": 'grid-header',
-          append_to: this.get('dom')
+          append_to: layer
         });
       }
     }, {
       key: "drawDates",
-      value: function drawDates(offset, dates) {
+      value: function drawDates(layer, dates) {
         var lastDate = null;
         var i = 0;
 
@@ -930,19 +1143,19 @@ var Timeline = (function (exports) {
             var date = this.getDateInfo(d, lastDate, i++);
             lastDate = d;
             var lowerText = svg('text', {
-              x: date.lower_x + offset.x,
+              x: date.lower_x,
               y: date.lower_y,
               "class": 'lower-text',
-              append_to: this.get('dom')
+              append_to: layer
             });
             lowerText.appendChild(toTextFragment(date.lower_text));
 
             if (date.upper_text) {
               var upperText = svg('text', {
-                x: date.upper_x + offset.x,
+                x: date.upper_x,
                 y: date.upper_y,
                 "class": 'upper-text',
-                append_to: this.get('dom')
+                append_to: layer
               });
               upperText.appendChild(toTextFragment(date.upper_text)); // remove out-of-bound dates
               // if ($upper_text.getBBox().x2 > this.getLayer('grid').getBBox().width) {
@@ -1418,233 +1631,6 @@ var Timeline = (function (exports) {
     return Task;
   }(Prop);
 
-  var Column = /*#__PURE__*/function (_Prop) {
-    _inherits(Column, _Prop);
-
-    var _super = _createSuper(Column);
-
-    function Column(options, config, tasks) {
-      var _this;
-
-      _classCallCheck(this, Column);
-
-      _this = _super.call(this, _objectSpread2(_objectSpread2({}, config), {}, {
-        tasks: tasks
-      }));
-
-      _defineProperty(_assertThisInitialized(_this), "options", void 0);
-
-      _this.options = options;
-      options.subscribe(EVENT.AFTER_RENDER, _assertThisInitialized(_this));
-      return _this;
-    }
-
-    _createClass(Column, [{
-      key: "eventHandler",
-      value: function eventHandler(event) {
-        if (event == EVENT.AFTER_RENDER) {
-          this.get('dom').querySelectorAll('.column-background').forEach(function (r) {
-            r.setAttribute('width', r.columnRow.getBBox().width + '');
-          });
-        }
-      }
-    }, {
-      key: "render",
-      value: function render(header, body, offset) {
-        var _this2 = this;
-
-        offset.y = this.options.headerHeight;
-        var title = svg('text', {
-          append_to: header,
-          "class": 'column-header',
-          x: offset.x,
-          y: offset.y
-        });
-        this.set('title', title);
-        var text = toTextFragment(this.get('text'));
-        title.appendChild(text);
-        this.set('dom', svg('g', {
-          append_to: body,
-          "class": 'column-wrapper',
-          transform: "translate(".concat(offset.x, ", 0)")
-        }));
-        offset.y = this.options.padding / 2;
-        this.get('tasks').forEach(function (t) {
-          var column = svg('text', {
-            append_to: _this2.get('dom'),
-            "class": 'column-' + _this2.get('field'),
-            height: t.get('height'),
-            transform: "translate(0, ".concat(offset.y, ")")
-          });
-          var bg = svg('g', {
-            prepend_to: _this2.get('dom'),
-            "class": 'column-background-' + _this2.get('field'),
-            height: t.get('height'),
-            transform: "translate(0, ".concat(offset.y, ")")
-          });
-
-          _this2.renderRow(column, bg, t);
-
-          offset.y += t.get('height') + _this2.options.padding;
-        });
-      }
-    }, {
-      key: "getWidth",
-      value: function getWidth() {
-        return this.get('dom').getBBox().width;
-      }
-    }, {
-      key: "renderRow",
-      value: function renderRow(layer, backgroundLayer, task) {
-        var _this3 = this;
-
-        var value = task.get(this.get('field'));
-        if (!value) return;
-
-        if (typeof value == 'string' || typeof value == 'number') {
-          return this.renderTspan(layer, null, task, {
-            label: value
-          });
-        }
-
-        console.assert(Array.isArray(value), "Column value isn't a string or array");
-        var offset = {
-          x: 0,
-          y: 0
-        };
-        value.forEach(function (v, idx) {
-          _this3.renderTspan(layer, backgroundLayer, task, v, offset, idx);
-
-          offset.y += task.getRowHeight(idx);
-        });
-      }
-    }, {
-      key: "renderTspan",
-      value: function renderTspan(textLayer, backgroundLayer, task, obj) {
-        var offset = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {
-          x: 0,
-          y: 0
-        };
-        var idx = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
-        var label = svg('tspan', {
-          append_to: textLayer,
-          "class": 'column-text',
-          dy: offset.y,
-          'dominant-baseline': 'hanging',
-          x: 0
-        });
-
-        if (obj.labelStyle) {
-          label.applyStyle(obj.labelStyle);
-        }
-
-        var text = toTextFragment(obj.label);
-        label.appendChild(text);
-
-        if (obj.backgroundStyle) {
-          var rect = svg('rect', {
-            x: 0,
-            dy: offset.y,
-            height: task.getRowHeight(idx),
-            prepend_to: backgroundLayer,
-            "class": 'column-background',
-            id: obj.label
-          });
-          rect.columnRow = label;
-          rect.applyStyle(obj.backgroundStyle);
-        }
-      }
-    }]);
-
-    return Column;
-  }(Prop);
-
-  var Columns = /*#__PURE__*/function (_prop) {
-    _inherits(Columns, _prop);
-
-    var _super = _createSuper(Columns);
-
-    function Columns(options, tasks) {
-      var _this;
-
-      _classCallCheck(this, Columns);
-
-      _this = _super.call(this, {
-        tasks: tasks,
-        columns: options.columns.map(function (c) {
-          return new Column(options, c, tasks);
-        })
-      });
-
-      _defineProperty(_assertThisInitialized(_this), "options", void 0);
-
-      _this.options = options;
-
-      _this.options.subscribe(EVENT.AFTER_RENDER, _assertThisInitialized(_this));
-
-      return _this;
-    }
-
-    _createClass(Columns, [{
-      key: "eventHandler",
-      value: function eventHandler(event) {
-        var _this2 = this;
-
-        if (event == EVENT.AFTER_RENDER) {
-          var offset = {
-            x: 0,
-            y: 0
-          };
-          this.get('columns').forEach(function (c, idx) {
-            c.get('title').setAttribute('x', offset.x + _this2.options.padding / 2);
-            c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", 0)"));
-            offset.x += c.getWidth() + _this2.options.padding;
-          });
-          ['header', 'body'].forEach(function (k) {
-            var node = _this2.get(k);
-
-            node.setAttribute('width', offset.x);
-          });
-          this.get('parent').setAttribute('width', offset.x);
-          console.log(offset.x);
-        }
-      }
-    }, {
-      key: "render",
-      value: function render(div) {
-        this.set('parent', div);
-        var headerHeight = this.options.headerHeight + 10;
-        var headerParent = toDom("<div style=\"overflow: hidden;\" height=\"".concat(headerHeight, "\"></div>"));
-        this.set('header', svg('svg', {
-          append_to: headerParent,
-          height: headerHeight,
-          x: 0,
-          y: 0
-        }));
-        var bodyParent = toDom("<div style=\"overflow: hidden; flex: 1;\"></div>");
-        this.set('bodyParent', bodyParent);
-        this.set('body', svg('svg', {
-          append_to: bodyParent,
-          height: this.get('height'),
-          y: headerHeight,
-          x: 0
-        }));
-        div.append(headerParent, bodyParent);
-        var dom = this.get('body');
-        var header = this.get('header');
-        var offset = {
-          x: this.options.padding,
-          y: 0
-        };
-        this.get('columns').forEach(function (col) {
-          col.render(header, dom, offset);
-        });
-      }
-    }]);
-
-    return Columns;
-  }(Prop);
-
   var Grid = /*#__PURE__*/function (_Prop) {
     _inherits(Grid, _Prop);
 
@@ -1699,14 +1685,11 @@ var Timeline = (function (exports) {
     }, {
       key: "setupDates",
       value: function setupDates() {
-        var _this2 = this;
-
         this.setBoundingDates();
         this.convertDates();
-        this.fillDates();
-        ['header', 'background'].forEach(function (k) {
-          return _this2.get(k).set('width', _this2.getWidth()).set('height', _this2.getHeight());
-        });
+        this.fillDates(); // ;(<string[]>['header', 'background']).forEach((k: string) =>
+        //   this.get(k).set('width', this.getWidth()).set('height', this.getHeight())
+        // )
       }
     }, {
       key: "fillDates",
@@ -1733,13 +1716,13 @@ var Timeline = (function (exports) {
     }, {
       key: "convertDates",
       value: function convertDates() {
-        var _this3 = this;
+        var _this2 = this;
 
         this.set('start', this.get('start').startOf('day'));
         this.set('end', this.get('end').startOf('day'));
 
         if ([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY].some(function (k) {
-          return k == _this3.options.viewMode;
+          return k == _this2.options.viewMode;
         })) {
           this.set('start', this.get('start').subtract(7, 'day'));
           this.set('end', this.get('end').add(7, 'day'));
@@ -1757,15 +1740,15 @@ var Timeline = (function (exports) {
     }, {
       key: "setBoundingDates",
       value: function setBoundingDates() {
-        var _this4 = this;
+        var _this3 = this;
 
         this.get('tasks').forEach(function (task) {
-          if (!_this4.get('start') || task.get('start').isBefore(_this4.get('start'))) {
-            _this4.set('start', task.get('start').clone());
+          if (!_this3.get('start') || task.get('start').isBefore(_this3.get('start'))) {
+            _this3.set('start', task.get('start').clone());
           }
 
-          if (!_this4.get('end') || task.get('end').isAfter(_this4.get('end'))) {
-            _this4.set('end', task.get('end').clone());
+          if (!_this3.get('end') || task.get('end').isAfter(_this3.get('end'))) {
+            _this3.set('end', task.get('end').clone());
           }
         });
       }
@@ -1777,26 +1760,19 @@ var Timeline = (function (exports) {
     }, {
       key: "getHeight",
       value: function getHeight() {
-        var _this5 = this;
+        var _this4 = this;
 
         return this.get('tasks').map(function (t) {
           return t.get('height');
         }).reduce(function (a, b) {
-          return a + b + _this5.options.padding;
+          return a + b + _this4.options.padding;
         }) + this.options.padding + 6;
       }
     }, {
       key: "render",
-      value: function render(parent) {
-        var left = toDom('<div style="flex-direction: column; display: flex; overflow: hidden"></div>');
-        var right = toDom('<div style="flex: 1; flex-direction: column; display: flex; overflow: hidden"></div>');
-        parent.append(left, right);
-        this.properties = {
-          left: left,
-          right: right
-        };
-        this.drawBody(right);
-        this.drawColumns(left);
+      value: function render() {
+        this.drawBody();
+        this.drawColumns();
       }
     }, {
       key: "attachEvents",
@@ -1829,47 +1805,45 @@ var Timeline = (function (exports) {
       }
     }, {
       key: "drawBody",
-      value: function drawBody(parent) {
-        var _this6 = this;
+      value: function drawBody() {
+        var _this5 = this;
 
-        var header = toDom('<div style="overflow: hidden"></div>');
-        parent.appendChild(header);
-        var body = toDom('<div style="flex: 1; overflow: hidden; overflow-y: auto"></div>');
+        var body = this.options.parent.querySelector('.timeline-right-bottom');
+        var columns = this.options.parent.querySelector('.timeline-left-bottom');
         body.addEventListener('scroll', function (e) {
-          this.get('columns').get('bodyParent').scrollTop = e.target.scrollTop;
+          columns.scrollTop = e.target.scrollTop;
         }.bind(this));
-        parent.appendChild(body);
-        var dom = svg('svg', {
+        var dom = body.querySelector('svg');
+        console.log(dom);
+        dom.setAttributes({
           viewBox: "0 0 ".concat(this.getWidth(), " ").concat(this.getHeight()),
-          "class": 'gantt',
-          y: 0,
-          x: 0,
-          append_to: body,
           width: this.getWidth(),
           height: this.getHeight()
         }); // this.attachEvents(dom)
 
-        this.set('bars', svg('g', {
+        var bars = svg('g', {
           "class": 'bar',
           prepend_to: dom
-        }));
+        });
         var offset = {
           x: 0,
           y: 0
         };
-        this.get('header').render(header, offset, this.get('dates'));
-        this.get('background').render(dom, offset, this.get('dates'), this.get('tasks'));
+        this.get('header').set('width', this.getWidth());
+        this.get('background').set('width', this.getWidth()).set('height', this.getHeight());
+        this.get('header').render(this.get('dates'));
+        this.get('background').render(this.get('dates'), this.get('tasks'));
         offset.y = this.options.padding / 2;
         this.get('tasks').forEach(function (t) {
-          t.render(_this6.get('bars'), _this6.get('start'), offset);
-          offset.y += t.get('height') + _this6.options.padding;
+          t.render(bars, _this5.get('start'), offset);
+          offset.y += t.get('height') + _this5.options.padding;
         });
       }
     }, {
       key: "drawColumns",
-      value: function drawColumns(parent) {
+      value: function drawColumns() {
         this.get('columns').set('height', this.getHeight()).set('headerHeight', this.get('header').getHeight());
-        this.get('columns').render(parent);
+        this.get('columns').render();
       }
     }, {
       key: "getPointFromEvent",
@@ -1943,9 +1917,7 @@ var Timeline = (function (exports) {
 
       _classCallCheck(this, View);
 
-      _this = _super.call(this, {
-        parent: document.querySelector(selector)
-      });
+      _this = _super.call(this);
 
       _defineProperty(_assertThisInitialized(_this), "options", {
         headerHeight: 50,
@@ -1957,11 +1929,13 @@ var Timeline = (function (exports) {
         dateFormat: 'YYYY-MM-DD',
         popup: true,
         popupProducer: null,
-        columns: []
+        columns: [],
+        parent: null
       });
 
       _defineProperty(_assertThisInitialized(_this), "consumers", {});
 
+      options.parent = document.querySelector(selector);
       _this.options = _objectSpread2(_objectSpread2({}, _this.options), options);
       _this.options.dispatch = _this.dispatch.bind(_assertThisInitialized(_this));
       _this.options.subscribe = _this.subscribe.bind(_assertThisInitialized(_this));
@@ -1969,32 +1943,42 @@ var Timeline = (function (exports) {
 
       _this.updateScale();
 
-      _this.set('grid', new Grid(_this.options, tasks));
-
-      _this.render();
-
       var popupContainer = document.createElement('div');
       popupContainer.classList.add('popup-wrapper');
-
-      _this.get('parent').appendChild(popupContainer);
-
-      _this.get('parent').style.display = 'flex';
-      _this.get('parent').style.flexDirection = 'row';
-      _this.get('parent').style.flex = 1;
+      options.parent.appendChild(popupContainer);
+      options.parent.style.display = 'flex';
+      options.parent.style.flexDirection = 'row';
+      options.parent.style.flex = '1';
+      options.parent.style.pointerEvents = 'auto';
+      options.parent.classList.add('timeline-container');
 
       _this.set('popup', new Popup(_this.options, popupContainer));
 
       _this.get('popup').hide();
 
+      _this.setupView();
+
+      _this.set('grid', new Grid(_this.options, tasks));
+
+      _this.render();
+
       return _this;
     }
 
     _createClass(View, [{
+      key: "setupView",
+      value: function setupView() {
+        var headerHeight = this.options.headerHeight + 10;
+        var left = toDom("<div class=\"timeline-left\" style=\"flex-direction: column; display: flex; overflow: hidden\">\n      <div class=\"timeline-left-top\" style=\"overflow: hidden\" height=\"".concat(headerHeight, "\"><svg x=\"0\" y=\"0\" height=\"").concat(headerHeight, "\"></svg></div>\n      <div class=\"timeline-left-bottom\" style=\"overflow: hidden; flex: 1\"><svg x=\"0\" y=\"0\"></svg></div>\n      </div>"));
+        var right = toDom("<div class=\"timeline-right\" style=\"flex: 1; flex-direction: column; display: flex; overflow: hidden\">\n    <div class=\"timeline-right-top\" style=\"overflow: hidden\" height=\"".concat(headerHeight, "\"><svg class=\"timeline\" x=\"0\" y=\"0\" height=\"").concat(headerHeight, "\"></svg></div>\n    <div class=\"timeline-right-bottom\" style=\"overflow: hidden; flex: 1\"><svg class=\"timeline\" x=\"0\" y=\"0\"></svg></div>\n    </div>"));
+        this.options.parent.append(left, right);
+      }
+    }, {
       key: "render",
       value: function render() {
         var _this2 = this;
 
-        this.get('grid').render(this.get('parent'));
+        this.get('grid').render();
         requestAnimationFrame(function () {
           return _this2.dispatch(EVENT.AFTER_RENDER);
         });

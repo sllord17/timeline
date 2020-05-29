@@ -1,17 +1,17 @@
 /** @module timeline/grid */
 
+import { Consumer, EVENT } from '../events'
 import { Offset, SVGElementX, VIEW_MODE } from '../types'
+import { TaskOptions, ViewOptions } from '../options'
+import { svg, toDom } from '../util'
 
 import Background from './Background'
 import Column from './Column'
+import Columns from './Columns'
 import Header from './Header'
 import Prop from '../prop'
-import dayjs from 'dayjs'
-import { svg, toDom } from '../util'
-import { Consumer, EVENT } from '../events'
-import { ViewOptions, TaskOptions } from '../options'
 import Task from '../task/Task'
-import Columns from './Columns'
+import dayjs from 'dayjs'
 
 export default class Grid extends Prop implements Consumer {
   private options: ViewOptions
@@ -74,9 +74,10 @@ export default class Grid extends Prop implements Consumer {
     this.setBoundingDates()
     this.convertDates()
     this.fillDates()
-    ;(<string[]>['header', 'background']).forEach((k: string) =>
-      this.get(k).set('width', this.getWidth()).set('height', this.getHeight())
-    )
+
+    // ;(<string[]>['header', 'background']).forEach((k: string) =>
+    //   this.get(k).set('width', this.getWidth()).set('height', this.getHeight())
+    // )
   }
 
   private fillDates() {
@@ -144,20 +145,9 @@ export default class Grid extends Prop implements Consumer {
     )
   }
 
-  public render(parent: SVGElementX) {
-    const left = toDom(
-      '<div style="flex-direction: column; display: flex; overflow: hidden"></div>'
-    ) as HTMLDivElement
-    const right = toDom(
-      '<div style="flex: 1; flex-direction: column; display: flex; overflow: hidden"></div>'
-    ) as HTMLDivElement
-
-    parent.append(left, right)
-
-    this.properties = { left: left, right: right }
-
-    this.drawBody(right)
-    this.drawColumns(left)
+  public render() {
+    this.drawBody()
+    this.drawColumns()
   }
 
   private attachEvents(dom: SVGElementX) {
@@ -180,59 +170,54 @@ export default class Grid extends Prop implements Consumer {
     }
   }
 
-  private drawBody(parent: HTMLDivElement) {
-    const header = toDom('<div style="overflow: hidden"></div>')
-    parent.appendChild(header)
-
-    const body = toDom('<div style="flex: 1; overflow: hidden; overflow-y: auto"></div>')
+  private drawBody() {
+    const body = this.options.parent.querySelector('.timeline-right-bottom')
+    const columns = this.options.parent.querySelector('.timeline-left-bottom')
     body.addEventListener(
       'scroll',
-      function (e) {
-        this.get('columns').get('bodyParent').scrollTop = e.target.scrollTop
+      function (e: any) {
+        columns.scrollTop = e.target.scrollTop
       }.bind(this)
     )
-    parent.appendChild(body)
 
-    const dom = svg('svg', {
+    const dom: any = body.querySelector('svg')
+    console.log(dom)
+    dom.setAttributes({
       viewBox: `0 0 ${this.getWidth()} ${this.getHeight()}`,
-      class: 'gantt',
-      y: 0,
-      x: 0,
-      append_to: body,
       width: this.getWidth(),
       height: this.getHeight()
     })
 
     // this.attachEvents(dom)
 
-    this.set(
-      'bars',
-      svg('g', {
-        class: 'bar',
-        prepend_to: dom
-      })
-    )
+    const bars = svg('g', {
+      class: 'bar',
+      prepend_to: dom
+    })
 
     const offset: Offset = {
       x: 0,
       y: 0
     }
 
-    this.get('header').render(header, offset, this.get('dates'))
-    this.get('background').render(dom, offset, this.get('dates'), this.get('tasks'))
+    this.get('header').set('width', this.getWidth())
+    this.get('background').set('width', this.getWidth()).set('height', this.getHeight())
+
+    this.get('header').render(this.get('dates'))
+    this.get('background').render(this.get('dates'), this.get('tasks'))
 
     offset.y = this.options.padding / 2
     this.get('tasks').forEach((t: Task) => {
-      t.render(this.get('bars'), this.get('start'), offset)
+      t.render(bars, this.get('start'), offset)
       offset.y += t.get('height') + this.options.padding
     })
   }
 
-  private drawColumns(parent: HTMLDivElement) {
+  private drawColumns() {
     this.get('columns')
       .set('height', this.getHeight())
       .set('headerHeight', this.get('header').getHeight())
-    this.get('columns').render(parent)
+    this.get('columns').render()
   }
 
   getPointFromEvent(event) {

@@ -1,4 +1,3 @@
-import { Offset, SVGElementX } from '../types'
 import { svg, toTextFragment } from '../util'
 
 import Prop from '../prop'
@@ -15,39 +14,31 @@ export default class Header extends Prop {
     this.options = options
   }
 
-  public render(layer: SVGElementX, offset: Offset, dates: dayjs.Dayjs[]) {
-    this.set(
-      'dom',
-      svg('svg', {
-        class: 'date gantt',
-        prepend_to: layer
-      })
-    )
-    const dom = this.get('dom')
-    dom.setAttribute('width', this.get('width'))
-    dom.setAttribute('height', this.getHeight())
+  public render(dates: dayjs.Dayjs[]) {
+    const dom = this.options.parent.querySelector('.timeline-right-top > svg')
+    dom.setAttribute('width', this.get('width') + '')
+    dom.setAttribute('height', this.getHeight() + '')
 
-    layer.setAttribute('height', this.getHeight() + '')
-    this.drawBackground(offset)
-    this.drawDates(offset, dates)
+    this.drawBackground(dom)
+    this.drawDates(dom, dates)
   }
 
   public getHeight(): number {
     return this.options.headerHeight + 10
   }
 
-  private drawBackground(offset: Offset) {
+  private drawBackground(layer: Element) {
     svg('rect', {
-      x: offset.x,
+      x: 0,
       y: 0,
       width: this.get('width'),
       height: this.getHeight(),
       class: 'grid-header',
-      append_to: this.get('dom')
+      append_to: layer
     })
   }
 
-  private drawDates(offset: Offset, dates: dayjs.Dayjs[]) {
+  private drawDates(layer: Element, dates: dayjs.Dayjs[]) {
     let lastDate = null
     let i: number = 0
     for (const d of dates) {
@@ -55,20 +46,20 @@ export default class Header extends Prop {
       lastDate = d
 
       const lowerText = svg('text', {
-        x: date.lower_x + offset.x,
+        x: date.lower_x,
         y: date.lower_y,
         class: 'lower-text',
-        append_to: this.get('dom')
+        append_to: layer
       })
 
       lowerText.appendChild(toTextFragment(date.lower_text))
 
       if (date.upper_text) {
         const upperText = svg('text', {
-          x: date.upper_x + offset.x,
+          x: date.upper_x,
           y: date.upper_y,
           class: 'upper-text',
-          append_to: this.get('dom')
+          append_to: layer
         })
 
         upperText.appendChild(toTextFragment(date.upper_text))

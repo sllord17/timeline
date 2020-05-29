@@ -16,6 +16,7 @@ export interface ViewOptions {
   subscribe?: { (key: EVENT, clazz: Consumer): void }
   unsubscribe?: { (key: EVENT, clazz: Consumer): void }
   columns: ColumnOptions[]
+  parent: HTMLDivElement
 }
 
 export interface SingleBarOptions extends TaskBaseOptions {

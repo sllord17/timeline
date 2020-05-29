@@ -22,6 +22,10 @@ SVGElement.prototype.applyStyle = function (style) {
   Object.keys(style).forEach((k) => (this.style[k] = style[k]))
 }
 
+Element.prototype.setAttributes = function (attrs) {
+  Object.keys(attrs).forEach((k) => this.setAttribute(k, attrs[k]))
+}
+
 /*
  * classList.js: Cross-browser full element.classList implementation.
  * 1.2.20171210

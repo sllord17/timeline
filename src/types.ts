@@ -35,6 +35,10 @@ export class SVGElementX extends SVGElement {
   public applyStyle(obj: any) {
     return obj
   }
+
+  public setAttributes(obj: any) {
+    return obj
+  }
 }
 
 export interface ImageOptions {

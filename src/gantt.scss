@@ -10,7 +10,7 @@ $text-color: #333 !default;
 $blue: #a3a3ff !default;
 $handle-color: #ddd !default;
 
-.gantt {
+.timeline {
   .column-wrapper {
     position: relative;
     z-index: 100;
@@ -142,7 +142,7 @@ $handle-color: #ddd !default;
   user-select: none;
 }
 
-.gantt-container {
+.timeline-container {
   position: relative;
   overflow: hidden;
   font-size: 12px;

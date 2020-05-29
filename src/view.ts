@@ -1,7 +1,7 @@
 import { Consumer, EVENT } from './events'
 import Popup, { PopupOptions } from './Popup'
 import { TaskOptions, ViewOptions } from './options'
-import { delegate, svg } from './util'
+import { delegate, svg, toDom } from './util'
 
 import Grid from './grid/Grid'
 import Prop from './prop'
@@ -18,15 +18,16 @@ export default class View extends Prop {
     dateFormat: 'YYYY-MM-DD',
     popup: true,
     popupProducer: null,
-    columns: []
+    columns: [],
+    parent: null
   }
 
   private consumers: { [key: string]: Consumer[] } = {}
 
   constructor(selector: string, tasks: TaskOptions[], options: ViewOptions) {
-    super({
-      parent: document.querySelector(selector)
-    })
+    super()
+
+    options.parent = document.querySelector(selector)
 
     this.options = { ...this.options, ...options }
     this.options.dispatch = this.dispatch.bind(this)
@@ -34,24 +35,42 @@ export default class View extends Prop {
     this.options.unsubscribe = this.unsubscribe.bind(this)
     this.updateScale()
 
-    this.set('grid', new Grid(this.options, tasks))
-
-    this.render()
-
     const popupContainer = document.createElement('div')
     popupContainer.classList.add('popup-wrapper')
-    this.get('parent').appendChild(popupContainer)
+    options.parent.appendChild(popupContainer)
 
-    this.get('parent').style.display = 'flex'
-    this.get('parent').style.flexDirection = 'row'
-    this.get('parent').style.flex = 1
+    options.parent.style.display = 'flex'
+    options.parent.style.flexDirection = 'row'
+    options.parent.style.flex = '1'
+    options.parent.style.pointerEvents = 'auto'
+    options.parent.classList.add('timeline-container')
 
     this.set('popup', new Popup(this.options, popupContainer))
     this.get('popup').hide()
+
+    this.setupView()
+
+    this.set('grid', new Grid(this.options, tasks))
+    this.render()
+  }
+
+  private setupView() {
+    const headerHeight = this.options.headerHeight + 10
+    const left = toDom(`<div class="timeline-left" style="flex-direction: column; display: flex; overflow: hidden">
+      <div class="timeline-left-top" style="overflow: hidden" height="${headerHeight}"><svg x="0" y="0" height="${headerHeight}"></svg></div>
+      <div class="timeline-left-bottom" style="overflow: hidden; flex: 1"><svg x="0" y="0"></svg></div>
+      </div>`)
+
+    const right = toDom(`<div class="timeline-right" style="flex: 1; flex-direction: column; display: flex; overflow: hidden">
+    <div class="timeline-right-top" style="overflow: hidden" height="${headerHeight}"><svg class="timeline" x="0" y="0" height="${headerHeight}"></svg></div>
+    <div class="timeline-right-bottom" style="overflow: hidden; flex: 1"><svg class="timeline" x="0" y="0"></svg></div>
+    </div>`)
+
+    this.options.parent.append(left, right)
   }
 
   public render() {
-    this.get('grid').render(this.get('parent'))
+    this.get('grid').render()
     requestAnimationFrame(() => this.dispatch(EVENT.AFTER_RENDER))
   }
 

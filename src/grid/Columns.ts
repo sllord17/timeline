@@ -16,6 +16,10 @@ export default class Columns extends prop implements Consumer {
     })
     this.options = options
     this.options.subscribe(EVENT.AFTER_RENDER, this)
+
+    this.set('parent', options.parent.querySelector('.timeline-left'))
+    this.set('body', options.parent.querySelector('.timeline-left-bottom > svg'))
+    this.set('header', options.parent.querySelector('.timeline-left-top > svg'))
   }
 
   eventHandler(event: EVENT): void {
@@ -29,45 +33,16 @@ export default class Columns extends prop implements Consumer {
         )
         offset.x += c.getWidth() + this.options.padding
       })
-      ;(<string[]>['header', 'body']).forEach((k) => {
-        const node = this.get(k)
-        node.setAttribute('width', offset.x)
-      })
+
+      this.get('body').setAttribute('width', offset.x)
+      this.get('header').setAttribute('width', offset.x)
       this.get('parent').setAttribute('width', offset.x)
-      console.log(offset.x)
     }
   }
 
-  public render(div: HTMLDivElement) {
-    this.set('parent', div)
-    const headerHeight = this.options.headerHeight + 10
-    const headerParent = toDom(`<div style="overflow: hidden;" height="${headerHeight}"></div>`)
-
-    this.set(
-      'header',
-      svg('svg', {
-        append_to: headerParent,
-        height: headerHeight,
-        x: 0,
-        y: 0
-      })
-    )
-
-    const bodyParent = toDom(`<div style="overflow: hidden; flex: 1;"></div>`)
-    this.set('bodyParent', bodyParent)
-    this.set(
-      'body',
-      svg('svg', {
-        append_to: bodyParent,
-        height: this.get('height'),
-        y: headerHeight,
-        x: 0
-      })
-    )
-
-    div.append(headerParent, bodyParent)
-
+  public render() {
     const dom = this.get('body')
+    dom.setAttribute('height', this.get('height'))
     const header = this.get('header')
 
     const offset: Offset = { x: this.options.padding, y: 0 }

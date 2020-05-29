@@ -1,109 +1,109 @@
-.gantt .column-wrapper {
+.timeline .column-wrapper {
   position: relative;
   z-index: 100;
 }
-.gantt .grid-background {
+.timeline .grid-background {
   fill: none;
 }
-.gantt .grid-header {
+.timeline .grid-header {
   fill: #ffffff;
   stroke: #bbbbbb;
   stroke-width: 1.4;
 }
-.gantt .grid-row {
+.timeline .grid-row {
   fill: #ffffff;
 }
-.gantt .grid-row:nth-child(even) {
+.timeline .grid-row:nth-child(even) {
   fill: #f5f5f5;
 }
-.gantt .row-line {
+.timeline .row-line {
   stroke: #ebeff2;
 }
-.gantt .tick {
+.timeline .tick {
   stroke: #bbbbbb;
   stroke-width: 0.2;
 }
-.gantt .tick.thick {
+.timeline .tick.thick {
   stroke-width: 0.4;
 }
-.gantt .today-highlight {
+.timeline .today-highlight {
   fill: #fcf8e3;
   opacity: 0.5;
 }
-.gantt .arrow {
+.timeline .arrow {
   fill: none;
   stroke: #666;
   stroke-width: 1.4;
 }
-.gantt .bar {
+.timeline .bar {
   fill: #9ca1a7;
   stroke: #8d99a6;
   stroke-width: 0;
   transition: stroke-width 0.3s ease;
   user-select: none;
 }
-.gantt .bar-progress {
+.timeline .bar-progress {
   fill: #a3a3ff;
 }
-.gantt .bar-invalid {
+.timeline .bar-invalid {
   fill: transparent;
   stroke: #8d99a6;
   stroke-width: 1;
   stroke-dasharray: 5;
 }
-.gantt .bar-invalid ~ .bar-label {
+.timeline .bar-invalid ~ .bar-label {
   fill: #555;
 }
-.gantt .bar-label {
+.timeline .bar-label {
   fill: #fff;
   dominant-baseline: central;
   text-anchor: middle;
   font-size: 12px;
   font-weight: lighter;
 }
-.gantt .bar-label.big {
+.timeline .bar-label.big {
   fill: #555;
   text-anchor: start;
 }
-.gantt .handle {
+.timeline .handle {
   fill: #ddd;
   cursor: ew-resize;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease;
 }
-.gantt .bar-wrapper {
+.timeline .bar-wrapper {
   cursor: pointer;
   outline: none;
 }
-.gantt .bar-wrapper:hover .bar {
+.timeline .bar-wrapper:hover .bar {
   fill: #8f949b;
 }
-.gantt .bar-wrapper:hover .bar-progress {
+.timeline .bar-wrapper:hover .bar-progress {
   fill: #8a8aff;
 }
-.gantt .bar-wrapper:hover .handle {
+.timeline .bar-wrapper:hover .handle {
   visibility: visible;
   opacity: 1;
 }
-.gantt .bar-wrapper.active .bar {
+.timeline .bar-wrapper.active .bar {
   fill: #8f949b;
 }
-.gantt .bar-wrapper.active .bar-progress {
+.timeline .bar-wrapper.active .bar-progress {
   fill: #8a8aff;
 }
-.gantt .lower-text,
-.gantt .upper-text {
+.timeline .lower-text,
+.timeline .upper-text {
   font-size: 12px;
   text-anchor: middle;
 }
-.gantt .upper-text {
+.timeline .upper-text {
   fill: #555;
 }
-.gantt .lower-text {
+.timeline .lower-text {
   fill: #333;
 }
-.gantt .hide {
+.timeline .hide {
   display: none;
 }
 
@@ -111,12 +111,12 @@
   user-select: none;
 }
 
-.gantt-container {
+.timeline-container {
   position: relative;
   overflow: hidden;
   font-size: 12px;
 }
-.gantt-container .popup-wrapper {
+.timeline-container .popup-wrapper {
   position: absolute;
   top: 0;
   left: 0;
@@ -125,15 +125,15 @@
   color: #959da5;
   border-radius: 3px;
 }
-.gantt-container .popup-wrapper .title {
+.timeline-container .popup-wrapper .title {
   border-bottom: 3px solid #a3a3ff;
   padding: 10px;
 }
-.gantt-container .popup-wrapper .subtitle {
+.timeline-container .popup-wrapper .subtitle {
   padding: 10px;
   color: #dfe2e5;
 }
-.gantt-container .popup-wrapper .pointer {
+.timeline-container .popup-wrapper .pointer {
   position: absolute;
   height: 5px;
   margin: 0 0 0 -5px;

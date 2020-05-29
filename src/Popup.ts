@@ -52,12 +52,11 @@ export default class Popup extends Prop {
       parent.style.width = parent.clientWidth + 'px'
     }
 
-    const ctm = config.positionTarget.getCTM()
-    const pos = config.positionTarget.getBBox()
+    const pos = config.positionTarget.getBoundingClientRect()
     console.log(config.positionTarget)
     if (config.position == 'left') {
-      parent.style.left = ctm.e + pos.x + (pos.width + 10) + 'px'
-      parent.style.top = ctm.f + pos.y + 'px'
+      parent.style.left = pos.x + (pos.width + 10) + 'px'
+      parent.style.top = pos.y + 'px'
 
       this.get('pointer').style.transform = 'rotateZ(90deg)'
       this.get('pointer').style.left = '-7px'
