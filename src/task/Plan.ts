@@ -62,7 +62,6 @@ export default class Plan extends Prop implements EventListenerObject {
 
   public render(layer: SVGElementX, startDate: dayjs.Dayjs, offset: Offset) {
     this.set('x', this.computeX(startDate) + offset.x)
-    this.set('y', this.get('y') + offset.y)
 
     this.set(
       'dom',
@@ -82,17 +81,17 @@ export default class Plan extends Prop implements EventListenerObject {
       barGroup.addEventListener('click', this, false)
     }
 
-    this.drawBar(barGroup)
-    this.drawProgressBar(barGroup)
-    this.drawLabel(barGroup)
+    this.drawBar(barGroup, offset)
+    this.drawProgressBar(barGroup, offset)
+    this.drawLabel(barGroup, offset)
   }
 
-  private drawBar(layer: SVGElementX) {
+  private drawBar(layer: SVGElementX, offset: Offset) {
     this.set(
       'bar',
       svg('rect', {
         x: this.get('x'),
-        y: this.get('y'),
+        y: this.get('y') + offset.y,
         width: this.getWidth(),
         height: this.get('height'),
         rx: this.get('cornerRadius'),
@@ -108,10 +107,10 @@ export default class Plan extends Prop implements EventListenerObject {
     }
   }
 
-  private drawProgressBar(layer: SVGElementX) {
+  private drawProgressBar(layer: SVGElementX, offset: Offset) {
     const rect = svg('rect', {
       x: this.get('x'),
-      y: this.get('y'),
+      y: this.get('y') + offset.y,
       width: this.getWidth() * (this.get('progress') / 100) || 0,
       height: this.get('height'),
       rx: this.get('cornerRadius'),
@@ -126,14 +125,14 @@ export default class Plan extends Prop implements EventListenerObject {
     }
   }
 
-  private drawLabel(layer: SVGElementX) {
+  private drawLabel(layer: SVGElementX, offset: Offset) {
     if (!this.get('label')) return
 
     this.set(
       'text',
       svg('text', {
         x: this.get('x') + this.getWidth() / 2,
-        y: this.get('y') + this.get('height') / 2,
+        y: this.get('y') + offset.y + this.get('height') / 2,
         class: 'bar-label',
         append_to: layer
       })

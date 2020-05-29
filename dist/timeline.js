@@ -1296,7 +1296,6 @@ var Timeline = (function (exports) {
       key: "render",
       value: function render(layer, startDate, offset) {
         this.set('x', this.computeX(startDate) + offset.x);
-        this.set('y', this.get('y') + offset.y);
         this.set('dom', svg('g', {
           "class": 'bar-wrapper',
           'data-id': this.task.get('id'),
@@ -1311,16 +1310,16 @@ var Timeline = (function (exports) {
           barGroup.addEventListener('click', this, false);
         }
 
-        this.drawBar(barGroup);
-        this.drawProgressBar(barGroup);
-        this.drawLabel(barGroup);
+        this.drawBar(barGroup, offset);
+        this.drawProgressBar(barGroup, offset);
+        this.drawLabel(barGroup, offset);
       }
     }, {
       key: "drawBar",
-      value: function drawBar(layer) {
+      value: function drawBar(layer, offset) {
         this.set('bar', svg('rect', {
           x: this.get('x'),
-          y: this.get('y'),
+          y: this.get('y') + offset.y,
           width: this.getWidth(),
           height: this.get('height'),
           rx: this.get('cornerRadius'),
@@ -1336,10 +1335,10 @@ var Timeline = (function (exports) {
       }
     }, {
       key: "drawProgressBar",
-      value: function drawProgressBar(layer) {
+      value: function drawProgressBar(layer, offset) {
         var rect = svg('rect', {
           x: this.get('x'),
-          y: this.get('y'),
+          y: this.get('y') + offset.y,
           width: this.getWidth() * (this.get('progress') / 100) || 0,
           height: this.get('height'),
           rx: this.get('cornerRadius'),
@@ -1355,13 +1354,13 @@ var Timeline = (function (exports) {
       }
     }, {
       key: "drawLabel",
-      value: function drawLabel(layer) {
+      value: function drawLabel(layer, offset) {
         var _this2 = this;
 
         if (!this.get('label')) return;
         this.set('text', svg('text', {
           x: this.get('x') + this.getWidth() / 2,
-          y: this.get('y') + this.get('height') / 2,
+          y: this.get('y') + offset.y + this.get('height') / 2,
           "class": 'bar-label',
           append_to: layer
         }));
@@ -1840,6 +1839,7 @@ var Timeline = (function (exports) {
         this.get('background').set('width', this.getWidth()).set('height', this.getHeight());
         this.get('header').render(this.get('dates'));
         this.get('background').render(this.get('dates'), this.get('tasks'));
+        console.log(this.options.padding);
         offset.y = this.options.padding / 2;
         this.get('tasks').forEach(function (t) {
           t.render(bars, _this5.get('start'), offset);
