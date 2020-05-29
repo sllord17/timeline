@@ -1989,19 +1989,24 @@ var Timeline = (function (exports) {
     }, {
       key: "changeView",
       value: function changeView(mode) {
+        var _this3 = this;
+
         this.options.viewMode = mode;
         this.updateScale();
         this.get('grid').setupDates();
         this.get('grid').drawBody();
+        requestAnimationFrame(function () {
+          return _this3.dispatch(EVENT.AFTER_RENDER);
+        });
       }
     }, {
       key: "render",
       value: function render() {
-        var _this3 = this;
+        var _this4 = this;
 
         this.get('grid').render();
         requestAnimationFrame(function () {
-          return _this3.dispatch(EVENT.AFTER_RENDER);
+          return _this4.dispatch(EVENT.AFTER_RENDER);
         });
       }
     }, {

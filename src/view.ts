@@ -84,6 +84,7 @@ export default class View extends Prop {
     this.updateScale()
     this.get('grid').setupDates()
     this.get('grid').drawBody()
+    requestAnimationFrame(() => this.dispatch(EVENT.AFTER_RENDER))
   }
 
   public render() {
