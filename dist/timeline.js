@@ -1686,6 +1686,8 @@ var Timeline = (function (exports) {
         columns.scrollTop = e.target.scrollTop;
       }.bind(_assertThisInitialized(_this)));
 
+      _this.set('body', body);
+
       if (options.draggable) {
         _this.set('bodyDom', _this.options.parent.querySelector('.timeline-right-bottom > svg'));
 
@@ -1909,6 +1911,12 @@ var Timeline = (function (exports) {
         var pointerPosition = this.getPointFromEvent(event);
         this.viewBox.x = viewBox.x - (pointerPosition.x - this.pointerOrigin.x);
         if (this.viewBox.x < 0) this.viewBox.x = 0;
+        var width = this.get('body').clientWidth;
+
+        if (viewBox.width - this.viewBox.x < width) {
+          this.viewBox.x = viewBox.width - width;
+        }
+
         this.viewBox.y = viewBox.y;
         this.pointerOrigin = pointerPosition;
         var viewBoxString = "".concat(this.viewBox.x, " ").concat(this.viewBox.y, " ").concat(viewBox.width, " ").concat(viewBox.height); // We apply the new viewBox values onto the SVG
@@ -2017,6 +2025,8 @@ var Timeline = (function (exports) {
         var _this3 = this;
 
         this.get('popup').hide();
+        var d = this.options.parent.querySelector('.timeline-right-bottom');
+        console.log(d);
         this.options.viewMode = mode;
         this.updateScale();
         this.get('grid').setupDates();

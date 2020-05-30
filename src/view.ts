@@ -94,6 +94,9 @@ export default class View extends Prop {
   public changeView(mode: VIEW_MODE) {
     this.get('popup').hide()
 
+    const d = this.options.parent.querySelector('.timeline-right-bottom')
+    console.log(d)
+
     this.options.viewMode = mode
     this.updateScale()
     this.get('grid').setupDates()

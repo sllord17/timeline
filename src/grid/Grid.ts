@@ -40,6 +40,8 @@ export default class Grid extends Prop implements Consumer {
       }.bind(this)
     )
 
+    this.set('body', body)
+
     if (options.draggable) {
       this.set('bodyDom', this.options.parent.querySelector('.timeline-right-bottom > svg'))
       this.set('headerDom', this.options.parent.querySelector('.timeline-right-top > svg'))
@@ -237,6 +239,11 @@ export default class Grid extends Prop implements Consumer {
     const pointerPosition = this.getPointFromEvent(event)
     this.viewBox.x = viewBox.x - (pointerPosition.x - this.pointerOrigin.x)
     if (this.viewBox.x < 0) this.viewBox.x = 0
+
+    const width = this.get('body').clientWidth
+    if (viewBox.width - this.viewBox.x < width) {
+      this.viewBox.x = viewBox.width - width
+    }
 
     this.viewBox.y = viewBox.y
 
