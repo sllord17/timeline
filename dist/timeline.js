@@ -549,6 +549,7 @@ var Timeline = (function (exports) {
     EVENT["HIDE_POPUP"] = "HIDE_POPUP";
     EVENT["TOGGLE_POPUP"] = "TOGGLE_POPUP";
     EVENT["AFTER_RENDER"] = "AFTER_RENDER";
+    EVENT["AFTER_LAYOUT"] = "AFTER_LAYOUT";
   })(EVENT || (EVENT = {}));
 
   var Prop = /*#__PURE__*/function () {
@@ -713,16 +714,15 @@ var Timeline = (function (exports) {
     return Popup;
   }(Prop);
 
-  var VIEW_MODE;
-
   (function (VIEW_MODE) {
-    VIEW_MODE["QUARTER_DAY"] = "Quarter Day";
-    VIEW_MODE["HALF_DAY"] = "Half Day";
-    VIEW_MODE["DAY"] = "Day";
-    VIEW_MODE["WEEK"] = "Week";
-    VIEW_MODE["MONTH"] = "Month";
-    VIEW_MODE["YEAR"] = "Year";
-  })(VIEW_MODE || (VIEW_MODE = {}));
+    VIEW_MODE[VIEW_MODE["FIT"] = -1] = "FIT";
+    VIEW_MODE[VIEW_MODE["QUARTER_DAY"] = 0.25] = "QUARTER_DAY";
+    VIEW_MODE[VIEW_MODE["HALF_DAY"] = 0.5] = "HALF_DAY";
+    VIEW_MODE[VIEW_MODE["DAY"] = 1] = "DAY";
+    VIEW_MODE[VIEW_MODE["WEEK"] = 7] = "WEEK";
+    VIEW_MODE[VIEW_MODE["MONTH"] = 30] = "MONTH";
+    VIEW_MODE[VIEW_MODE["YEAR"] = 365] = "YEAR";
+  })(exports.VIEW_MODE || (exports.VIEW_MODE = {}));
 
   var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -827,7 +827,7 @@ var Timeline = (function (exports) {
             var date = _step.value;
             var clazz = 'tick';
 
-            if (VIEW_MODE.DAY == this.options.viewMode && date.date() == 1 || VIEW_MODE.WEEK == this.options.viewMode && date.date() >= 1 && date.date() < 8 || VIEW_MODE.MONTH == this.options.viewMode && (date.month() + 1) % 3 === 0) {
+            if (exports.VIEW_MODE.DAY == this.options.viewMode && date.date() == 1 || exports.VIEW_MODE.WEEK == this.options.viewMode && date.date() >= 1 && date.date() < 8 || exports.VIEW_MODE.MONTH == this.options.viewMode && (date.month() + 1) % 3 === 0) {
               clazz += ' thick';
             }
 
@@ -837,7 +837,7 @@ var Timeline = (function (exports) {
               append_to: layer
             });
 
-            if (VIEW_MODE.MONTH == this.options.viewMode) {
+            if (exports.VIEW_MODE.MONTH == this.options.viewMode) {
               x += date.daysInMonth() * this.options.columnWidth / 30;
             } else {
               x += this.options.columnWidth;
@@ -852,7 +852,7 @@ var Timeline = (function (exports) {
     }, {
       key: "highlightCurrentDay",
       value: function highlightCurrentDay(layer, offset) {
-        if (VIEW_MODE.DAY == this.options.viewMode) {
+        if (exports.VIEW_MODE.DAY == this.options.viewMode) {
           var x = dayjs_min().diff(this.get('start'), 'hour') / this.options.step * this.options.columnWidth;
           svg('rect', {
             x: x + offset.x,
@@ -1060,6 +1060,7 @@ var Timeline = (function (exports) {
           this.get('body').setAttribute('width', offset.x);
           this.get('header').setAttribute('width', offset.x);
           this.get('parent').setAttribute('width', offset.x);
+          this.options.dispatch(EVENT.AFTER_LAYOUT);
         }
       }
     }, {
@@ -1175,29 +1176,45 @@ var Timeline = (function (exports) {
       key: "getDateInfo",
       value: function getDateInfo(date, last_date, i) {
         if (!last_date) {
-          last_date = date.add(1, 'year').add(1, 'day');
+          last_date = date.add(1, 'year');
         }
 
-        var date_text = {
-          'Quarter Day_lower': date.format('HH'),
-          'Half Day_lower': date.format('HH'),
-          Day_lower: date.date() !== last_date.date() ? date.format('D') : '',
-          Week_lower: date.month() !== last_date.month() ? date.format('D MMM') : date.format('D'),
-          Month_lower: date.format('MMMM'),
-          Year_lower: date.format('YYYY'),
-          'Quarter Day_upper': date.date() !== last_date.date() ? date.format('D MMM') : '',
-          'Half Day_upper': // eslint-disable-next-line no-nested-ternary
-          date.date() !== last_date.date() ? date.month() !== last_date.month() ? date.format('D MMM') : date.format('D') : '',
-          Day_upper: date.month() !== last_date.month() ? date.format('MMMM') : '',
-          Week_upper: date.month() !== last_date.month() ? date.format('MMMM') : '',
-          Month_upper: date.year() !== last_date.year() ? date.format('YYYY') : '',
-          Year_upper: date.year() !== last_date.year() ? date.format('YYYY') : ''
-        };
+        var lowerDate = null,
+            upperDate = null,
+            lowerX = 0,
+            upperX = 0;
         var base_pos = {
           x: i * this.options.columnWidth,
           lower_y: this.options.headerHeight,
           upper_y: this.options.headerHeight - 25
         };
+        var mode = this.options.step / 24;
+
+        if (mode < exports.VIEW_MODE.DAY) {
+          lowerX = this.options.columnWidth * 1 / mode / 2;
+          lowerDate = date.format('HH');
+          upperDate = date.date() !== last_date.date() ? date.month() !== last_date.month() ? date.format('D MMM') : date.format('D') : '';
+        } else if (mode < exports.VIEW_MODE.WEEK) {
+          upperX = this.options.columnWidth * exports.VIEW_MODE.MONTH / mode / 2;
+          lowerX = 0;
+          lowerDate = date.date() !== last_date.date() && base_pos.x > 0 ? date.format('D') : '';
+          upperDate = date.month() !== last_date.month() ? date.format('MMMM') : '';
+        } else if (mode < exports.VIEW_MODE.MONTH) {
+          upperX = this.options.columnWidth * (28 / mode) / 2;
+          lowerDate = date.month() !== last_date.month() ? date.format('D MMM') : date.format('D');
+          upperDate = date.month() !== last_date.month() ? date.format('MMMM') : '';
+        } else if (mode < exports.VIEW_MODE.YEAR) {
+          upperX = this.options.columnWidth * (12 * (mode / exports.VIEW_MODE.YEAR)) / 2;
+          lowerX = this.options.columnWidth / 2;
+          lowerDate = date.format('MMMM');
+          upperDate = date.year() !== last_date.year() ? date.format('YYYY') : '';
+        } else {
+          upperX = this.options.columnWidth * 30 / 2;
+          lowerX = this.options.columnWidth / 2;
+          lowerDate = date.format('YYYY');
+          upperDate = date.year() !== last_date.year() ? date.format('YYYY') : '';
+        }
+
         var x_pos = {
           'Quarter Day_lower': this.options.columnWidth * 4 / 2,
           'Quarter Day_upper': 0,
@@ -1213,11 +1230,11 @@ var Timeline = (function (exports) {
           Year_upper: this.options.columnWidth * 30 / 2
         };
         return {
-          upper_text: date_text["".concat(this.options.viewMode, "_upper")],
-          lower_text: date_text["".concat(this.options.viewMode, "_lower")],
-          upper_x: base_pos.x + x_pos["".concat(this.options.viewMode, "_upper")],
+          upper_text: upperDate,
+          lower_text: lowerDate,
+          upper_x: base_pos.x + upperX,
           upper_y: base_pos.upper_y,
-          lower_x: base_pos.x + x_pos["".concat(this.options.viewMode, "_lower")],
+          lower_x: base_pos.x + lowerX,
           lower_y: base_pos.lower_y
         };
       }
@@ -1287,7 +1304,7 @@ var Timeline = (function (exports) {
     }, {
       key: "computeX",
       value: function computeX(startDate) {
-        if (VIEW_MODE.MONTH == this.options.viewMode) {
+        if (exports.VIEW_MODE.MONTH == this.options.viewMode) {
           return this.get('start').diff(startDate, 'day') * this.options.columnWidth / 30;
         }
 
@@ -1461,7 +1478,7 @@ var Timeline = (function (exports) {
     }, {
       key: "computeX",
       value: function computeX(startDate) {
-        if (VIEW_MODE.MONTH == this.options.viewMode) {
+        if (exports.VIEW_MODE.MONTH == this.options.viewMode) {
           return this.get('date').diff(startDate, 'day') * this.options.columnWidth / 30;
         }
 
@@ -1674,7 +1691,7 @@ var Timeline = (function (exports) {
 
       _this.options = options;
 
-      _this.options.subscribe(EVENT.AFTER_RENDER, _assertThisInitialized(_this));
+      _this.options.subscribe(EVENT.AFTER_LAYOUT, _assertThisInitialized(_this));
 
       _this.set('columns', new Columns(options, _this.get('tasks')));
 
@@ -1702,74 +1719,76 @@ var Timeline = (function (exports) {
     _createClass(Grid, [{
       key: "eventHandler",
       value: function eventHandler(event) {
-        if (event == EVENT.AFTER_RENDER) ;
+        if (event == EVENT.AFTER_LAYOUT) {
+          this.setupDates();
+          this.drawBody();
+        }
       }
     }, {
       key: "setupDates",
       value: function setupDates() {
         this.setBoundingDates();
+        this.updateScale();
         this.convertDates();
         this.fillDates();
       }
     }, {
       key: "fillDates",
       value: function fillDates() {
-        var dates = [];
-        var d = null;
+        var dates = [],
+            body = this.get('body'),
+            width = body.getBoundingClientRect().width;
+        var d = null,
+            c = 0;
 
         do {
           if (!d) {
             d = dayjs_min(this.get('start'));
-          } else if (VIEW_MODE.YEAR == this.options.viewMode) {
+          } else if (exports.VIEW_MODE.YEAR == this.options.viewMode) {
             d = d.add(1, 'year');
-          } else if (VIEW_MODE.MONTH == this.options.viewMode) {
+          } else if (exports.VIEW_MODE.MONTH == this.options.viewMode) {
             d = d.add(1, 'month');
           } else {
             d = d.add(this.options.step, 'hour');
           }
 
           dates.push(d);
-        } while (d.isBefore(this.get('end')));
+          c += this.options.columnWidth;
+        } while (d.isBefore(this.get('end')) || c < width);
 
         this.set('dates', dates);
       }
     }, {
       key: "convertDates",
       value: function convertDates() {
-        var _this2 = this;
-
         this.set('start', this.get('start').startOf('day'));
-        this.set('end', this.get('end').startOf('day'));
-
-        if ([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY].some(function (k) {
-          return k == _this2.options.viewMode;
-        })) {
-          this.set('start', this.get('start').subtract(7, 'day'));
-          this.set('end', this.get('end').add(7, 'day'));
-        } else if (VIEW_MODE.MONTH == this.options.viewMode) {
-          this.set('start', this.get('start').subtract(1, 'year'));
-          this.set('end', this.get('end').add(1, 'year'));
-        } else if (VIEW_MODE.YEAR == this.options.viewMode) {
-          this.set('start', this.get('start').subtract(2, 'year'));
-          this.set('end', this.get('end').add(2, 'year'));
-        } else {
-          this.set('start', this.get('start').subtract(1, 'month'));
-          this.set('end', this.get('end').add(1, 'month'));
-        }
+        this.set('end', this.get('end').startOf('day')); // if ([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY].some((k) => k == this.options.viewMode)) {
+        //   this.set('start', this.get('start').subtract(7, 'day'))
+        //   this.set('end', this.get('end').add(7, 'day'))
+        // } else if (VIEW_MODE.MONTH == this.options.viewMode) {
+        //   this.set('start', this.get('start').subtract(1, 'year'))
+        //   this.set('end', this.get('end').add(1, 'year'))
+        // } else if (VIEW_MODE.YEAR == this.options.viewMode) {
+        //   this.set('start', this.get('start').subtract(2, 'year'))
+        //   this.set('end', this.get('end').add(2, 'year'))
+        // } else {
+        //   this.set('start', this.get('start').subtract(1, 'month'))
+        //   this.set('end', this.get('end').add(1, 'month'))
+        // }
       }
     }, {
       key: "setBoundingDates",
       value: function setBoundingDates() {
-        var _this3 = this;
+        var _this2 = this;
 
         this.set('start', null).set('end', null);
         this.get('tasks').forEach(function (task) {
-          if (!_this3.get('start') || task.get('start').isBefore(_this3.get('start'))) {
-            _this3.set('start', task.get('start').clone());
+          if (!_this2.get('start') || task.get('start').isBefore(_this2.get('start'))) {
+            _this2.set('start', task.get('start').clone());
           }
 
-          if (!_this3.get('end') || task.get('end').isAfter(_this3.get('end'))) {
-            _this3.set('end', task.get('end').clone());
+          if (!_this2.get('end') || task.get('end').isAfter(_this2.get('end'))) {
+            _this2.set('end', task.get('end').clone());
           }
         });
       }
@@ -1781,19 +1800,17 @@ var Timeline = (function (exports) {
     }, {
       key: "getHeight",
       value: function getHeight() {
-        var _this4 = this;
+        var _this3 = this;
 
         return this.get('tasks').map(function (t) {
           return t.get('height');
         }).reduce(function (a, b) {
-          return a + b + _this4.options.padding;
+          return a + b + _this3.options.padding;
         }) + this.options.padding + 6;
       }
     }, {
       key: "render",
       value: function render() {
-        this.setupDates();
-        this.drawBody();
         this.drawColumns();
       }
     }, {
@@ -1828,7 +1845,7 @@ var Timeline = (function (exports) {
     }, {
       key: "drawBody",
       value: function drawBody() {
-        var _this5 = this;
+        var _this4 = this;
 
         var dom = this.options.parent.querySelector('.timeline-right-bottom > svg');
         dom.innerHTML = '';
@@ -1851,11 +1868,10 @@ var Timeline = (function (exports) {
         this.get('background').set('width', this.getWidth()).set('height', this.getHeight());
         this.get('header').render(this.get('dates'));
         this.get('background').render(this.get('dates'), this.get('tasks'));
-        console.log(this.options.padding);
         offset.y = this.options.padding / 2;
         this.get('tasks').forEach(function (t) {
-          t.render(bars, _this5.get('start'), offset);
-          offset.y += t.get('height') + _this5.options.padding;
+          t.render(bars, _this4.get('start'), offset);
+          offset.y += t.get('height') + _this4.options.padding;
         });
       }
     }, {
@@ -1932,6 +1948,31 @@ var Timeline = (function (exports) {
         // The pointer is no longer considered as down
         this.isPointerDown = false;
       }
+    }, {
+      key: "updateScale",
+      value: function updateScale() {
+        var mode = this.options.viewMode;
+        this.options.step = 24 * mode;
+
+        if (mode <= 0) {
+          var start = this.get('start'),
+              end = this.get('end'),
+              body = this.get('body');
+          console.log(end.diff(start, 'hour'));
+          var hours = end.diff(start, 'hour');
+          var width = body.clientWidth;
+          this.options.step = 24;
+          this.options.columnWidth = width / (hours / 24);
+        } else if (mode < exports.VIEW_MODE.WEEK) {
+          this.options.columnWidth = 38;
+        } else if (mode < exports.VIEW_MODE.MONTH) {
+          this.options.columnWidth = 140;
+        } else {
+          this.options.columnWidth = 120;
+        }
+
+        console.log(this.options.step, this.options.columnWidth);
+      }
     }]);
 
     return Grid;
@@ -1955,7 +1996,7 @@ var Timeline = (function (exports) {
         step: 24,
         barHeight: 20,
         padding: 18,
-        viewMode: VIEW_MODE.DAY,
+        viewMode: exports.VIEW_MODE.DAY,
         dateFormat: 'YYYY-MM-DD',
         popup: true,
         popupProducer: null,
@@ -1981,7 +2022,7 @@ var Timeline = (function (exports) {
       options.parent.classList.add('timeline-container');
       options.parent.addEventListener('wheel', function (event) {
         if (!event.shiftKey) return;
-        var views = Object.values(VIEW_MODE);
+        var views = Object.values(exports.VIEW_MODE);
         var direction = event.deltaY > 0 ? 1 : -1;
         var idx = views.indexOf(_this.options.viewMode);
         var newIdx = Math.max(0, Math.min(idx + direction, views.length - 1));
@@ -1996,8 +2037,6 @@ var Timeline = (function (exports) {
       _this.setupView();
 
       _this.set('grid', new Grid(_this.options, tasks));
-
-      _this.updateScale();
 
       _this.render();
 
@@ -2028,7 +2067,7 @@ var Timeline = (function (exports) {
         var d = this.options.parent.querySelector('.timeline-right-bottom');
         console.log(d);
         this.options.viewMode = mode;
-        this.updateScale();
+        this.get('grid').updateScale();
         this.get('grid').setupDates();
         this.get('grid').drawBody();
         requestAnimationFrame(function () {
@@ -2085,31 +2124,6 @@ var Timeline = (function (exports) {
         events.forEach(function (c) {
           return c.eventHandler(key);
         });
-      }
-    }, {
-      key: "updateScale",
-      value: function updateScale() {
-        var mode = this.options.viewMode;
-
-        if (mode === VIEW_MODE.DAY) {
-          this.options.step = 24;
-          this.options.columnWidth = 38;
-        } else if (mode === VIEW_MODE.HALF_DAY) {
-          this.options.step = 24 / 2;
-          this.options.columnWidth = 38;
-        } else if (mode === VIEW_MODE.QUARTER_DAY) {
-          this.options.step = 24 / 4;
-          this.options.columnWidth = 38;
-        } else if (mode === VIEW_MODE.WEEK) {
-          this.options.step = 24 * 7;
-          this.options.columnWidth = 140;
-        } else if (mode === VIEW_MODE.MONTH) {
-          this.options.step = 24 * 30;
-          this.options.columnWidth = 120;
-        } else if (mode === VIEW_MODE.YEAR) {
-          this.options.step = 24 * 365;
-          this.options.columnWidth = 120;
-        }
       }
     }]);
 

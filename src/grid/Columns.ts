@@ -37,6 +37,8 @@ export default class Columns extends prop implements Consumer {
       this.get('body').setAttribute('width', offset.x)
       this.get('header').setAttribute('width', offset.x)
       this.get('parent').setAttribute('width', offset.x)
+
+      this.options.dispatch(EVENT.AFTER_LAYOUT)
     }
   }
 

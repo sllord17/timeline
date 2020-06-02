@@ -5,11 +5,11 @@ export interface ViewOptions {
   headerHeight?: number
   columnWidth?: number
   step?: number
-  viewModes?: VIEW_MODE[]
   barHeight?: number
   padding?: number
   viewMode?: VIEW_MODE
   dateFormat?: string
+  draggable: boolean
   popup?: true
   popupProducer?: HtmlProducer
   dispatch?: { (key: EVENT, paylod?: any): void }

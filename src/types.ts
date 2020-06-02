@@ -57,10 +57,11 @@ export interface HtmlProducer {
 }
 
 export enum VIEW_MODE {
-  QUARTER_DAY = 'Quarter Day',
-  HALF_DAY = 'Half Day',
-  DAY = 'Day',
-  WEEK = 'Week',
-  MONTH = 'Month',
-  YEAR = 'Year'
+  FIT = -1,
+  QUARTER_DAY = 0.25,
+  HALF_DAY = 0.5,
+  DAY = 1,
+  WEEK = 7,
+  MONTH = 30,
+  YEAR = 365
 }

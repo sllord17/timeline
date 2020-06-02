@@ -62,7 +62,6 @@ export default class View extends Prop {
     this.setupView()
     this.set('grid', new Grid(this.options, tasks))
 
-    this.updateScale()
     this.render()
 
     console.log(this)
@@ -98,7 +97,7 @@ export default class View extends Prop {
     console.log(d)
 
     this.options.viewMode = mode
-    this.updateScale()
+    this.get('grid').updateScale()
     this.get('grid').setupDates()
     this.get('grid').drawBody()
     requestAnimationFrame(() => this.dispatch(EVENT.AFTER_RENDER))
@@ -139,28 +138,5 @@ export default class View extends Prop {
     }
 
     events.forEach((c) => c.eventHandler(key))
-  }
-
-  private updateScale() {
-    const mode = this.options.viewMode
-    if (mode === VIEW_MODE.DAY) {
-      this.options.step = 24
-      this.options.columnWidth = 38
-    } else if (mode === VIEW_MODE.HALF_DAY) {
-      this.options.step = 24 / 2
-      this.options.columnWidth = 38
-    } else if (mode === VIEW_MODE.QUARTER_DAY) {
-      this.options.step = 24 / 4
-      this.options.columnWidth = 38
-    } else if (mode === VIEW_MODE.WEEK) {
-      this.options.step = 24 * 7
-      this.options.columnWidth = 140
-    } else if (mode === VIEW_MODE.MONTH) {
-      this.options.step = 24 * 30
-      this.options.columnWidth = 120
-    } else if (mode === VIEW_MODE.YEAR) {
-      this.options.step = 24 * 365
-      this.options.columnWidth = 120
-    }
   }
 }

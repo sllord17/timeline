@@ -1,6 +1,7 @@
 import { svg, toTextFragment } from '../util'
 
 import Prop from '../prop'
+import { VIEW_MODE } from '../types'
 import { ViewOptions } from '../options'
 import dayjs from 'dayjs'
 
@@ -87,34 +88,49 @@ export default class Header extends Prop {
     lower_y: number
   } {
     if (!last_date) {
-      last_date = date.add(1, 'year').add(1, 'day')
+      last_date = date.add(1, 'year')
     }
 
-    const date_text: { [key: string]: string } = {
-      'Quarter Day_lower': date.format('HH'),
-      'Half Day_lower': date.format('HH'),
-      Day_lower: date.date() !== last_date.date() ? date.format('D') : '',
-      Week_lower: date.month() !== last_date.month() ? date.format('D MMM') : date.format('D'),
-      Month_lower: date.format('MMMM'),
-      Year_lower: date.format('YYYY'),
-      'Quarter Day_upper': date.date() !== last_date.date() ? date.format('D MMM') : '',
-      'Half Day_upper':
-        // eslint-disable-next-line no-nested-ternary
-        date.date() !== last_date.date()
-          ? date.month() !== last_date.month()
-            ? date.format('D MMM')
-            : date.format('D')
-          : '',
-      Day_upper: date.month() !== last_date.month() ? date.format('MMMM') : '',
-      Week_upper: date.month() !== last_date.month() ? date.format('MMMM') : '',
-      Month_upper: date.year() !== last_date.year() ? date.format('YYYY') : '',
-      Year_upper: date.year() !== last_date.year() ? date.format('YYYY') : ''
-    }
+    let lowerDate = null,
+      upperDate = null,
+      lowerX = 0,
+      upperX = 0
 
     const base_pos: { [key: string]: number } = {
       x: i * this.options.columnWidth,
       lower_y: this.options.headerHeight,
       upper_y: this.options.headerHeight - 25
+    }
+
+    const mode = this.options.step / 24
+    if (mode < VIEW_MODE.DAY) {
+      lowerX = (this.options.columnWidth * 1) / mode / 2
+      lowerDate = date.format('HH')
+      upperDate =
+        date.date() !== last_date.date()
+          ? date.month() !== last_date.month()
+            ? date.format('D MMM')
+            : date.format('D')
+          : ''
+    } else if (mode < VIEW_MODE.WEEK) {
+      upperX = (this.options.columnWidth * VIEW_MODE.MONTH) / mode / 2
+      lowerX = 0
+      lowerDate = date.date() !== last_date.date() && base_pos.x > 0 ? date.format('D') : ''
+      upperDate = date.month() !== last_date.month() ? date.format('MMMM') : ''
+    } else if (mode < VIEW_MODE.MONTH) {
+      upperX = (this.options.columnWidth * (28 / mode)) / 2
+      lowerDate = date.month() !== last_date.month() ? date.format('D MMM') : date.format('D')
+      upperDate = date.month() !== last_date.month() ? date.format('MMMM') : ''
+    } else if (mode < VIEW_MODE.YEAR) {
+      upperX = (this.options.columnWidth * (12 * (mode / VIEW_MODE.YEAR))) / 2
+      lowerX = this.options.columnWidth / 2
+      lowerDate = date.format('MMMM')
+      upperDate = date.year() !== last_date.year() ? date.format('YYYY') : ''
+    } else {
+      upperX = (this.options.columnWidth * 30) / 2
+      lowerX = this.options.columnWidth / 2
+      lowerDate = date.format('YYYY')
+      upperDate = date.year() !== last_date.year() ? date.format('YYYY') : ''
     }
 
     const x_pos: { [key: string]: number } = {
@@ -133,11 +149,11 @@ export default class Header extends Prop {
     }
 
     return {
-      upper_text: date_text[`${this.options.viewMode}_upper`],
-      lower_text: date_text[`${this.options.viewMode}_lower`],
-      upper_x: base_pos.x + x_pos[`${this.options.viewMode}_upper`],
+      upper_text: upperDate,
+      lower_text: lowerDate,
+      upper_x: base_pos.x + upperX,
       upper_y: base_pos.upper_y,
-      lower_x: base_pos.x + x_pos[`${this.options.viewMode}_lower`],
+      lower_x: base_pos.x + lowerX,
       lower_y: base_pos.lower_y
     }
   }

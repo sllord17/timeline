@@ -27,7 +27,7 @@ export default class Grid extends Prop implements Consumer {
     })
 
     this.options = options
-    this.options.subscribe(EVENT.AFTER_RENDER, this)
+    this.options.subscribe(EVENT.AFTER_LAYOUT, this)
 
     this.set('columns', new Columns(options, this.get('tasks')))
 
@@ -50,20 +50,26 @@ export default class Grid extends Prop implements Consumer {
   }
 
   eventHandler(event: EVENT): void {
-    if (event == EVENT.AFTER_RENDER) {
+    if (event == EVENT.AFTER_LAYOUT) {
+      this.setupDates()
+      this.drawBody()
     }
   }
 
   public setupDates() {
     this.setBoundingDates()
+    this.updateScale()
     this.convertDates()
     this.fillDates()
   }
 
   private fillDates() {
-    const dates: dayjs.Dayjs[] = []
+    const dates: dayjs.Dayjs[] = [],
+      body = this.get('body'),
+      width = body.getBoundingClientRect().width
 
-    let d: dayjs.Dayjs = null
+    let d: dayjs.Dayjs = null,
+      c = 0
     do {
       if (!d) {
         d = dayjs(this.get('start'))
@@ -75,7 +81,8 @@ export default class Grid extends Prop implements Consumer {
         d = d.add(this.options.step, 'hour')
       }
       dates.push(d)
-    } while (d.isBefore(this.get('end')))
+      c += this.options.columnWidth
+    } while (d.isBefore(this.get('end')) || c < width)
 
     this.set('dates', dates)
   }
@@ -84,19 +91,19 @@ export default class Grid extends Prop implements Consumer {
     this.set('start', this.get('start').startOf('day'))
     this.set('end', this.get('end').startOf('day'))
 
-    if ([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY].some((k) => k == this.options.viewMode)) {
-      this.set('start', this.get('start').subtract(7, 'day'))
-      this.set('end', this.get('end').add(7, 'day'))
-    } else if (VIEW_MODE.MONTH == this.options.viewMode) {
-      this.set('start', this.get('start').subtract(1, 'year'))
-      this.set('end', this.get('end').add(1, 'year'))
-    } else if (VIEW_MODE.YEAR == this.options.viewMode) {
-      this.set('start', this.get('start').subtract(2, 'year'))
-      this.set('end', this.get('end').add(2, 'year'))
-    } else {
-      this.set('start', this.get('start').subtract(1, 'month'))
-      this.set('end', this.get('end').add(1, 'month'))
-    }
+    // if ([VIEW_MODE.QUARTER_DAY, VIEW_MODE.HALF_DAY].some((k) => k == this.options.viewMode)) {
+    //   this.set('start', this.get('start').subtract(7, 'day'))
+    //   this.set('end', this.get('end').add(7, 'day'))
+    // } else if (VIEW_MODE.MONTH == this.options.viewMode) {
+    //   this.set('start', this.get('start').subtract(1, 'year'))
+    //   this.set('end', this.get('end').add(1, 'year'))
+    // } else if (VIEW_MODE.YEAR == this.options.viewMode) {
+    //   this.set('start', this.get('start').subtract(2, 'year'))
+    //   this.set('end', this.get('end').add(2, 'year'))
+    // } else {
+    //   this.set('start', this.get('start').subtract(1, 'month'))
+    //   this.set('end', this.get('end').add(1, 'month'))
+    // }
   }
 
   private setBoundingDates() {
@@ -127,8 +134,6 @@ export default class Grid extends Prop implements Consumer {
   }
 
   public render() {
-    this.setupDates()
-    this.drawBody()
     this.drawColumns()
   }
 
@@ -180,8 +185,6 @@ export default class Grid extends Prop implements Consumer {
 
     this.get('header').render(this.get('dates'))
     this.get('background').render(this.get('dates'), this.get('tasks'))
-
-    console.log(this.options.padding)
 
     offset.y = this.options.padding / 2
     this.get('tasks').forEach((t: Task) => {
@@ -261,5 +264,29 @@ export default class Grid extends Prop implements Consumer {
   private onPointerUp() {
     // The pointer is no longer considered as down
     this.isPointerDown = false
+  }
+
+  private updateScale() {
+    const mode = this.options.viewMode
+    this.options.step = 24 * mode
+    if (mode <= 0) {
+      const start: dayjs.Dayjs = this.get('start'),
+        end: dayjs.Dayjs = this.get('end'),
+        body = this.get('body')
+
+      console.log(end.diff(start, 'hour'))
+      const hours = end.diff(start, 'hour')
+      const width = body.clientWidth
+      this.options.step = 24
+      this.options.columnWidth = width / (hours / 24)
+    } else if (mode < VIEW_MODE.WEEK) {
+      this.options.columnWidth = 38
+    } else if (mode < VIEW_MODE.MONTH) {
+      this.options.columnWidth = 140
+    } else {
+      this.options.columnWidth = 120
+    }
+
+    console.log(this.options.step, this.options.columnWidth)
   }
 }
