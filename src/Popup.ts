@@ -43,14 +43,16 @@ export default class Popup extends Prop {
     }
 
     if (this.options.popupProducer) {
+      const pointer = this.get('pointer')
       parent.innerHTML = this.options.popupProducer(config.eventTarget)
-      this.set('pointer', toDom('<div class="pointer"></div>'))
-      parent.appendChild(this.get('poiner'))
+      parent.appendChild(pointer)
     } else {
       this.get('title').innerHTML = config.title
       this.get('subtitle').innerHTML = config.subtitle
       parent.style.width = parent.clientWidth + 'px'
     }
+
+    console.log(config)
 
     const pos = config.positionTarget.getBoundingClientRect()
     console.log(config.positionTarget)

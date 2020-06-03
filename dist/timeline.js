@@ -697,15 +697,16 @@ var Timeline = (function (exports) {
         }
 
         if (this.options.popupProducer) {
+          var pointer = this.get('pointer');
           parent.innerHTML = this.options.popupProducer(config.eventTarget);
-          this.set('pointer', toDom('<div class="pointer"></div>'));
-          parent.appendChild(this.get('poiner'));
+          parent.appendChild(pointer);
         } else {
           this.get('title').innerHTML = config.title;
           this.get('subtitle').innerHTML = config.subtitle;
           parent.style.width = parent.clientWidth + 'px';
         }
 
+        console.log(config);
         var pos = config.positionTarget.getBoundingClientRect();
         console.log(config.positionTarget);
 
@@ -1436,7 +1437,8 @@ var Timeline = (function (exports) {
             eventTarget: this,
             positionTarget: this.get('dom'),
             title: this.task.get('name'),
-            subtitle: this.get('start').format('MMM DD') + ' - ' + this.get('end').format('MMM DD')
+            subtitle: this.get('start').format('MMM DD') + ' - ' + this.get('end').format('MMM DD'),
+            position: 'left'
           });
           return;
         }

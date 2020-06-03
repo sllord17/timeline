@@ -171,7 +171,8 @@ export default class Plan extends Prop implements EventListenerObject {
         eventTarget: this,
         positionTarget: this.get('dom'),
         title: this.task.get('name'),
-        subtitle: this.get('start').format('MMM DD') + ' - ' + this.get('end').format('MMM DD')
+        subtitle: this.get('start').format('MMM DD') + ' - ' + this.get('end').format('MMM DD'),
+        position: 'left'
       })
 
       return
