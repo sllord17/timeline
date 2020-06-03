@@ -1,7 +1,7 @@
 import { Consumer, EVENT } from './events'
 import Popup, { PopupOptions } from './Popup'
 import { TaskOptions, ViewOptions } from './options'
-import { delegate, svg, toDom } from './util'
+import { debounce, delegate, svg, toDom } from './util'
 
 import Grid from './grid/Grid'
 import Prop from './prop'
@@ -28,13 +28,16 @@ export default class View extends Prop {
   static VIEWS: View[] = View.initResizeListener()
 
   private static initResizeListener(): View[] {
-    window.addEventListener('resize', function (e) {
-      for (const view of View.VIEWS) {
-        if (view.options.parent) {
-          view.changeView(view.options.viewMode)
+    window.addEventListener(
+      'resize',
+      debounce(function (e) {
+        for (const view of View.VIEWS) {
+          if (view.options.parent) {
+            view.changeView(view.options.viewMode)
+          }
         }
-      }
-    })
+      }, 250)
+    )
 
     return []
   }

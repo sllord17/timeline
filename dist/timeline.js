@@ -640,6 +640,19 @@ var Timeline = (function (exports) {
       }
     });
   };
+  var debounce = function debounce(fn, time) {
+    var timeout;
+    return function () {
+      var _this = this;
+
+      var functionCall = function functionCall() {
+        return fn.apply(_this, _this.arguments);
+      };
+
+      clearTimeout(timeout);
+      timeout = setTimeout(functionCall, time);
+    };
+  };
 
   var Popup = /*#__PURE__*/function (_Prop) {
     _inherits(Popup, _Prop);
@@ -1992,7 +2005,7 @@ var Timeline = (function (exports) {
     _createClass(View, null, [{
       key: "initResizeListener",
       value: function initResizeListener() {
-        window.addEventListener('resize', function (e) {
+        window.addEventListener('resize', debounce(function (e) {
           var _iterator = _createForOfIteratorHelper(View.VIEWS),
               _step;
 
@@ -2009,7 +2022,7 @@ var Timeline = (function (exports) {
           } finally {
             _iterator.f();
           }
-        });
+        }, 250));
         return [];
       }
     }]);
@@ -2163,6 +2176,7 @@ var Timeline = (function (exports) {
   _defineProperty(View, "VIEWS", View.initResizeListener());
 
   exports.View = View;
+  exports.debounce = debounce;
   exports.delegate = delegate;
   exports.svg = svg;
   exports.toDom = toDom;
