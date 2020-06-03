@@ -1177,7 +1177,7 @@ var Timeline = (function (exports) {
       key: "getDateInfo",
       value: function getDateInfo(date, last_date, i) {
         if (!last_date) {
-          last_date = date.add(1, 'year');
+          last_date = date.add(1, 'year').add(1, 'month');
         }
 
         var lowerDate = null,

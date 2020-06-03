@@ -88,7 +88,7 @@ export default class Header extends Prop {
     lower_y: number
   } {
     if (!last_date) {
-      last_date = date.add(1, 'year')
+      last_date = date.add(1, 'year').add(1, 'month')
     }
 
     let lowerDate = null,
