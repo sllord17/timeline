@@ -21,7 +21,7 @@ export default class Plan extends Prop implements EventListenerObject {
   private task: Task
 
   constructor(options: ViewOptions, config: PlanOptions, task: Task) {
-    super({ ...defaultPlanOptions, ...config })
+    super({ ...defaultPlanOptions, ...config, type: 'Plan' })
 
     this.options = options
     this.task = task

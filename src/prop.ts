@@ -7,6 +7,10 @@ export default class Prop {
     this.properties = o
   }
 
+  get type(): string {
+    return this.get('type')
+  }
+
   get properties(): obj {
     return { ...this._properties }
   }

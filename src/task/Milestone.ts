@@ -22,7 +22,7 @@ export default class Milestone extends Prop implements EventListenerObject {
   private dom: SVGElementX
 
   constructor(options: ViewOptions, config: MilestoneOptions, task: Task) {
-    super({ ...defaultMilestoneOptions, ...config })
+    super({ ...defaultMilestoneOptions, ...config, type: 'Milestone' })
 
     this.options = options
     this.task = task

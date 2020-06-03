@@ -580,6 +580,11 @@ var Timeline = (function (exports) {
         delete this._properties[key];
       }
     }, {
+      key: "type",
+      get: function get() {
+        return this.get('type');
+      }
+    }, {
       key: "properties",
       get: function get() {
         return _objectSpread2({}, this._properties);
@@ -1276,7 +1281,9 @@ var Timeline = (function (exports) {
 
       _classCallCheck(this, Plan);
 
-      _this = _super.call(this, _objectSpread2(_objectSpread2({}, defaultPlanOptions), config));
+      _this = _super.call(this, _objectSpread2(_objectSpread2(_objectSpread2({}, defaultPlanOptions), config), {}, {
+        type: 'Plan'
+      }));
 
       _defineProperty(_assertThisInitialized(_this), "options", void 0);
 
@@ -1457,7 +1464,9 @@ var Timeline = (function (exports) {
 
       _classCallCheck(this, Milestone);
 
-      _this = _super.call(this, _objectSpread2(_objectSpread2({}, defaultMilestoneOptions), config));
+      _this = _super.call(this, _objectSpread2(_objectSpread2(_objectSpread2({}, defaultMilestoneOptions), config), {}, {
+        type: 'Milestone'
+      }));
 
       _defineProperty(_assertThisInitialized(_this), "options", void 0);
 
@@ -1548,7 +1557,8 @@ var Timeline = (function (exports) {
       _this.options = options;
       _this.properties = _objectSpread2(_objectSpread2({}, config), {}, {
         height: 0,
-        id: generate_id(_assertThisInitialized(_this))
+        id: generate_id(_assertThisInitialized(_this)),
+        type: 'Task'
       });
 
       if (isSingle(config)) {
@@ -2032,7 +2042,9 @@ var Timeline = (function (exports) {
 
       _classCallCheck(this, View);
 
-      _this = _super.call(this);
+      _this = _super.call(this, {
+        type: 'View'
+      });
 
       _defineProperty(_assertThisInitialized(_this), "options", {
         headerHeight: 50,
@@ -2085,6 +2097,7 @@ var Timeline = (function (exports) {
       _this.render();
 
       View.VIEWS.push(_assertThisInitialized(_this));
+      console.log(_assertThisInitialized(_this));
       return _this;
     }
 

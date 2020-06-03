@@ -43,7 +43,7 @@ export default class View extends Prop {
   }
 
   constructor(selector: string, tasks: TaskOptions[], options: ViewOptions) {
-    super()
+    super({ type: 'View' })
 
     options.parent = document.querySelector(selector)
 
@@ -82,6 +82,8 @@ export default class View extends Prop {
     this.render()
 
     View.VIEWS.push(this)
+
+    console.log(this)
   }
 
   private setupView() {

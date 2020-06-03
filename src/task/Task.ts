@@ -28,7 +28,8 @@ export default class Task extends Prop {
     this.properties = {
       ...config,
       height: 0,
-      id: generate_id(this)
+      id: generate_id(this),
+      type: 'Task'
     }
 
     if (isSingle(config)) {
