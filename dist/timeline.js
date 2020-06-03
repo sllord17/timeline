@@ -1936,6 +1936,11 @@ var Timeline = (function (exports) {
         }
 
         var last = this.get('lastIdx');
+
+        if (this.viewBox.x > width - last * this.options.columnWidth) {
+          this.viewBox.x = width - last * this.options.columnWidth;
+        }
+
         this.viewBox.y = viewBox.y;
         this.pointerOrigin = pointerPosition;
         var viewBoxString = "".concat(this.viewBox.x, " ").concat(this.viewBox.y, " ").concat(viewBox.width, " ").concat(viewBox.height); // We apply the new viewBox values onto the SVG

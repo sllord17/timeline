@@ -250,6 +250,9 @@ export default class Grid extends Prop implements Consumer {
     }
 
     const last: number = this.get('lastIdx')
+    if (this.viewBox.x > width - last * this.options.columnWidth) {
+      this.viewBox.x = width - last * this.options.columnWidth
+    }
 
     this.viewBox.y = viewBox.y
 
