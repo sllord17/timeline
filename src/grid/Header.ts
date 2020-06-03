@@ -32,14 +32,14 @@ export default class Header extends Prop {
   }
 
   private drawBackground(layer: Element) {
-    svg('rect', {
-      x: 0,
-      y: 0,
-      width: this.get('width'),
-      height: this.getHeight(),
-      class: 'grid-header',
-      append_to: layer
-    })
+    // svg('rect', {
+    //   x: 0,
+    //   y: 0,
+    //   width: this.get('width'),
+    //   height: this.getHeight(),
+    //   class: 'grid-header',
+    //   append_to: layer
+    // })
   }
 
   private drawDates(layer: Element, dates: dayjs.Dayjs[]) {

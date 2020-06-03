@@ -1123,15 +1123,14 @@ var Timeline = (function (exports) {
       }
     }, {
       key: "drawBackground",
-      value: function drawBackground(layer) {
-        svg('rect', {
-          x: 0,
-          y: 0,
-          width: this.get('width'),
-          height: this.getHeight(),
-          "class": 'grid-header',
-          append_to: layer
-        });
+      value: function drawBackground(layer) {// svg('rect', {
+        //   x: 0,
+        //   y: 0,
+        //   width: this.get('width'),
+        //   height: this.getHeight(),
+        //   class: 'grid-header',
+        //   append_to: layer
+        // })
       }
     }, {
       key: "drawDates",
