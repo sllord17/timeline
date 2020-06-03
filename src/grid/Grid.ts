@@ -81,8 +81,9 @@ export default class Grid extends Prop implements Consumer {
         d = d.add(this.options.step, 'hour')
       }
       dates.push(d)
-      c += this.options.columnWidth
-    } while (d.isBefore(this.get('end')) || c < width)
+      c++
+      if (d.isBefore(this.get('end'))) this.set('lastIdx', c)
+    } while (d.isBefore(this.get('end')) || c * this.options.columnWidth < width)
 
     this.set('dates', dates)
   }
@@ -120,7 +121,7 @@ export default class Grid extends Prop implements Consumer {
   }
 
   private getWidth(): number {
-    return this.get('dates').length * this.options.columnWidth + this.options.padding
+    return (this.get('dates').length - 1) * this.options.columnWidth + this.options.padding
   }
 
   private getHeight(): number {
@@ -248,6 +249,8 @@ export default class Grid extends Prop implements Consumer {
       this.viewBox.x = viewBox.width - width
     }
 
+    const last: number = this.get('lastIdx')
+
     this.viewBox.y = viewBox.y
 
     this.pointerOrigin = pointerPosition
@@ -274,7 +277,8 @@ export default class Grid extends Prop implements Consumer {
         end: dayjs.Dayjs = this.get('end'),
         body = this.get('body')
 
-      console.log(end.diff(start, 'hour'))
+      console.log(start, end)
+
       const hours = end.diff(start, 'hour')
       const width = body.clientWidth
       this.options.step = 24
@@ -286,7 +290,5 @@ export default class Grid extends Prop implements Consumer {
     } else {
       this.options.columnWidth = 120
     }
-
-    console.log(this.options.step, this.options.columnWidth)
   }
 }

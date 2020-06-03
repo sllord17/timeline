@@ -114,8 +114,8 @@ export default class Header extends Prop {
           : ''
     } else if (mode < VIEW_MODE.WEEK) {
       upperX = (this.options.columnWidth * VIEW_MODE.MONTH) / mode / 2
-      lowerX = 0
-      lowerDate = date.date() !== last_date.date() && base_pos.x > 0 ? date.format('D') : ''
+      lowerX = this.options.columnWidth / 2
+      lowerDate = date.format('D')
       upperDate = date.month() !== last_date.month() ? date.format('MMMM') : ''
     } else if (mode < VIEW_MODE.MONTH) {
       upperX = (this.options.columnWidth * (28 / mode)) / 2

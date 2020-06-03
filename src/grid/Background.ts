@@ -98,6 +98,8 @@ export default class Background extends Prop {
         x += this.options.columnWidth
       }
     }
+
+    console.log(this.options.columnWidth)
   }
 
   private highlightCurrentDay(layer: SVGElementX, offset: Offset) {
