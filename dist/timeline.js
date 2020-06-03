@@ -1935,10 +1935,10 @@ var Timeline = (function (exports) {
           this.viewBox.x = viewBox.width - width;
         }
 
-        var last = this.get('lastIdx');
+        var last = this.get('lastIdx') * this.options.columnWidth;
 
-        if (this.viewBox.x > width - last * this.options.columnWidth) {
-          this.viewBox.x = width - last * this.options.columnWidth;
+        if (width - last >= 0 && this.viewBox.x > width - last) {
+          this.viewBox.x = width - last;
         }
 
         this.viewBox.y = viewBox.y;
@@ -1988,6 +1988,31 @@ var Timeline = (function (exports) {
     _inherits(View, _Prop);
 
     var _super = _createSuper(View);
+
+    _createClass(View, null, [{
+      key: "initResizeListener",
+      value: function initResizeListener() {
+        window.addEventListener('resize', function (e) {
+          var _iterator = _createForOfIteratorHelper(View.VIEWS),
+              _step;
+
+          try {
+            for (_iterator.s(); !(_step = _iterator.n()).done;) {
+              var view = _step.value;
+
+              if (view.options.parent) {
+                view.changeView(view.options.viewMode);
+              }
+            }
+          } catch (err) {
+            _iterator.e(err);
+          } finally {
+            _iterator.f();
+          }
+        });
+        return [];
+      }
+    }]);
 
     function View(selector, tasks, options) {
       var _this;
@@ -2046,7 +2071,7 @@ var Timeline = (function (exports) {
 
       _this.render();
 
-      console.log(_assertThisInitialized(_this));
+      View.VIEWS.push(_assertThisInitialized(_this));
       return _this;
     }
 
@@ -2073,7 +2098,6 @@ var Timeline = (function (exports) {
         var d = this.options.parent.querySelector('.timeline-right-bottom');
         console.log(d);
         this.options.viewMode = mode;
-        this.get('grid').updateScale();
         this.get('grid').setupDates();
         this.get('grid').drawBody();
         requestAnimationFrame(function () {
@@ -2135,6 +2159,8 @@ var Timeline = (function (exports) {
 
     return View;
   }(Prop);
+
+  _defineProperty(View, "VIEWS", View.initResizeListener());
 
   exports.View = View;
   exports.delegate = delegate;

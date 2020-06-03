@@ -249,9 +249,9 @@ export default class Grid extends Prop implements Consumer {
       this.viewBox.x = viewBox.width - width
     }
 
-    const last: number = this.get('lastIdx')
-    if (this.viewBox.x > width - last * this.options.columnWidth) {
-      this.viewBox.x = width - last * this.options.columnWidth
+    const last: number = this.get('lastIdx') * this.options.columnWidth
+    if (width - last >= 0 && this.viewBox.x > width - last) {
+      this.viewBox.x = width - last
     }
 
     this.viewBox.y = viewBox.y

@@ -342,7 +342,7 @@ var tasks = [
 ]
 
 var gantt_chart = new Timeline.View('#abc123', tasks, {
-  viewMode: -1,
+  viewMode: 30,
   columns: [
     { text: 'Name', field: 'name' },
     { text: 'Sq/ft', field: 'area' },

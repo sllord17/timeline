@@ -25,6 +25,20 @@ export default class View extends Prop {
 
   private consumers: { [key: string]: Consumer[] } = {}
 
+  static VIEWS: View[] = View.initResizeListener()
+
+  private static initResizeListener(): View[] {
+    window.addEventListener('resize', function (e) {
+      for (const view of View.VIEWS) {
+        if (view.options.parent) {
+          view.changeView(view.options.viewMode)
+        }
+      }
+    })
+
+    return []
+  }
+
   constructor(selector: string, tasks: TaskOptions[], options: ViewOptions) {
     super()
 
@@ -64,7 +78,7 @@ export default class View extends Prop {
 
     this.render()
 
-    console.log(this)
+    View.VIEWS.push(this)
   }
 
   private setupView() {
@@ -97,7 +111,6 @@ export default class View extends Prop {
     console.log(d)
 
     this.options.viewMode = mode
-    this.get('grid').updateScale()
     this.get('grid').setupDates()
     this.get('grid').drawBody()
     requestAnimationFrame(() => this.dispatch(EVENT.AFTER_RENDER))
