@@ -1783,6 +1783,7 @@ var Timeline = (function (exports) {
           if (d.isBefore(this.get('end'))) this.set('lastIdx', c);
         } while (d.isBefore(this.get('end')) || c * this.options.columnWidth < width);
 
+        console.log(dates[dates.length - 1]);
         this.set('dates', dates);
       }
     }, {
@@ -1822,7 +1823,7 @@ var Timeline = (function (exports) {
     }, {
       key: "getWidth",
       value: function getWidth() {
-        return (this.get('dates').length - 1) * this.options.columnWidth + this.options.padding;
+        return this.get('dates').length * this.options.columnWidth + this.options.padding;
       }
     }, {
       key: "getHeight",
@@ -1955,6 +1956,7 @@ var Timeline = (function (exports) {
         this.viewBox.x = viewBox.x - (pointerPosition.x - this.pointerOrigin.x);
         if (this.viewBox.x < 0) this.viewBox.x = 0;
         var width = this.get('body').clientWidth;
+        if (viewBox.width < width) return;
 
         if (viewBox.width - this.viewBox.x < width) {
           this.viewBox.x = viewBox.width - width;
@@ -1962,10 +1964,11 @@ var Timeline = (function (exports) {
 
         var last = this.get('lastIdx') * this.options.columnWidth;
 
-        if (width - last >= 0 && this.viewBox.x > width - last) {
-          this.viewBox.x = width - last;
+        if (this.viewBox.x + width > last) {
+          return;
         }
 
+        console.log(last);
         this.viewBox.y = viewBox.y;
         this.pointerOrigin = pointerPosition;
         var viewBoxString = "".concat(this.viewBox.x, " ").concat(this.viewBox.y, " ").concat(viewBox.width, " ").concat(viewBox.height); // We apply the new viewBox values onto the SVG

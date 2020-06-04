@@ -85,6 +85,8 @@ export default class Grid extends Prop implements Consumer {
       if (d.isBefore(this.get('end'))) this.set('lastIdx', c)
     } while (d.isBefore(this.get('end')) || c * this.options.columnWidth < width)
 
+    console.log(dates[dates.length - 1])
+
     this.set('dates', dates)
   }
 
@@ -121,7 +123,7 @@ export default class Grid extends Prop implements Consumer {
   }
 
   private getWidth(): number {
-    return (this.get('dates').length - 1) * this.options.columnWidth + this.options.padding
+    return this.get('dates').length * this.options.columnWidth + this.options.padding
   }
 
   private getHeight(): number {
@@ -245,14 +247,19 @@ export default class Grid extends Prop implements Consumer {
     if (this.viewBox.x < 0) this.viewBox.x = 0
 
     const width = this.get('body').clientWidth
+
+    if (viewBox.width < width) return
+
     if (viewBox.width - this.viewBox.x < width) {
       this.viewBox.x = viewBox.width - width
     }
 
     const last: number = this.get('lastIdx') * this.options.columnWidth
-    if (width - last >= 0 && this.viewBox.x > width - last) {
-      this.viewBox.x = width - last
+    if (this.viewBox.x + width > last) {
+      return
     }
+
+    console.log(last)
 
     this.viewBox.y = viewBox.y
 
