@@ -706,9 +706,7 @@ var Timeline = (function (exports) {
           parent.style.width = parent.clientWidth + 'px';
         }
 
-        console.log(config);
         var pos = config.positionTarget.getBoundingClientRect();
-        console.log(config.positionTarget);
 
         if (config.position == 'left') {
           parent.style.left = pos.x + (pos.width + 10) + 'px';
@@ -867,8 +865,6 @@ var Timeline = (function (exports) {
         } finally {
           _iterator.f();
         }
-
-        console.log(this.options.columnWidth);
       }
     }, {
       key: "highlightCurrentDay",
@@ -1766,6 +1762,7 @@ var Timeline = (function (exports) {
             width = body.getBoundingClientRect().width;
         var d = null,
             c = 0;
+        console.log(this.options.viewMode);
 
         do {
           if (!d) {
@@ -1783,7 +1780,6 @@ var Timeline = (function (exports) {
           if (d.isBefore(this.get('end'))) this.set('lastIdx', c);
         } while (d.isBefore(this.get('end')) || c * this.options.columnWidth < width);
 
-        console.log(dates[dates.length - 1]);
         this.set('dates', dates);
       }
     }, {
@@ -1877,7 +1873,6 @@ var Timeline = (function (exports) {
 
         var dom = this.options.parent.querySelector('.timeline-right-bottom > svg');
         dom.innerHTML = '';
-        console.log(dom);
         dom.setAttributes({
           viewBox: "0 0 ".concat(this.getWidth(), " ").concat(this.getHeight()),
           width: this.getWidth(),
@@ -1968,7 +1963,6 @@ var Timeline = (function (exports) {
           return;
         }
 
-        console.log(last);
         this.viewBox.y = viewBox.y;
         this.pointerOrigin = pointerPosition;
         var viewBoxString = "".concat(this.viewBox.x, " ").concat(this.viewBox.y, " ").concat(viewBox.width, " ").concat(viewBox.height); // We apply the new viewBox values onto the SVG
@@ -1994,7 +1988,6 @@ var Timeline = (function (exports) {
           var start = this.get('start'),
               end = this.get('end'),
               body = this.get('body');
-          console.log(start, end);
           var hours = end.diff(start, 'hour');
           var width = body.clientWidth;
           this.options.step = 24;
@@ -2083,10 +2076,13 @@ var Timeline = (function (exports) {
       options.parent.classList.add('timeline-container');
       options.parent.addEventListener('wheel', function (event) {
         if (!event.shiftKey) return;
-        var views = Object.values(exports.VIEW_MODE);
+        var views = Object.values(exports.VIEW_MODE).filter(function (v) {
+          return typeof v == 'number';
+        });
         var direction = event.deltaY > 0 ? 1 : -1;
         var idx = views.indexOf(_this.options.viewMode);
         var newIdx = Math.max(0, Math.min(idx + direction, views.length - 1));
+        console.log(newIdx);
 
         _this.changeView(views[newIdx]);
       });
@@ -2102,7 +2098,6 @@ var Timeline = (function (exports) {
       _this.render();
 
       View.VIEWS.push(_assertThisInitialized(_this));
-      console.log(_assertThisInitialized(_this));
       return _this;
     }
 
@@ -2127,7 +2122,6 @@ var Timeline = (function (exports) {
 
         this.get('popup').hide();
         var d = this.options.parent.querySelector('.timeline-right-bottom');
-        console.log(d);
         this.options.viewMode = mode;
         this.get('grid').setupDates();
         this.get('grid').drawBody();

@@ -70,6 +70,7 @@ export default class Grid extends Prop implements Consumer {
 
     let d: dayjs.Dayjs = null,
       c = 0
+    console.log(this.options.viewMode)
     do {
       if (!d) {
         d = dayjs(this.get('start'))
@@ -84,8 +85,6 @@ export default class Grid extends Prop implements Consumer {
       c++
       if (d.isBefore(this.get('end'))) this.set('lastIdx', c)
     } while (d.isBefore(this.get('end')) || c * this.options.columnWidth < width)
-
-    console.log(dates[dates.length - 1])
 
     this.set('dates', dates)
   }
@@ -164,7 +163,6 @@ export default class Grid extends Prop implements Consumer {
     const dom: any = this.options.parent.querySelector('.timeline-right-bottom > svg')
     dom.innerHTML = ''
 
-    console.log(dom)
     dom.setAttributes({
       viewBox: `0 0 ${this.getWidth()} ${this.getHeight()}`,
       width: this.getWidth(),
@@ -259,8 +257,6 @@ export default class Grid extends Prop implements Consumer {
       return
     }
 
-    console.log(last)
-
     this.viewBox.y = viewBox.y
 
     this.pointerOrigin = pointerPosition
@@ -286,8 +282,6 @@ export default class Grid extends Prop implements Consumer {
       const start: dayjs.Dayjs = this.get('start'),
         end: dayjs.Dayjs = this.get('end'),
         body = this.get('body')
-
-      console.log(start, end)
 
       const hours = end.diff(start, 'hour')
       const width = body.clientWidth

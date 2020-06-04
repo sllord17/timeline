@@ -65,10 +65,11 @@ export default class View extends Prop {
     options.parent.addEventListener('wheel', (event: MouseWheelEvent) => {
       if (!event.shiftKey) return
 
-      const views = Object.values(VIEW_MODE)
+      const views = Object.values(VIEW_MODE).filter((v) => typeof v == 'number')
       const direction = event.deltaY > 0 ? 1 : -1
       const idx = views.indexOf(this.options.viewMode)
       const newIdx = Math.max(0, Math.min(idx + direction, views.length - 1))
+      console.log(newIdx)
 
       this.changeView(views[newIdx] as VIEW_MODE)
     })
@@ -82,8 +83,6 @@ export default class View extends Prop {
     this.render()
 
     View.VIEWS.push(this)
-
-    console.log(this)
   }
 
   private setupView() {
@@ -113,7 +112,6 @@ export default class View extends Prop {
     this.get('popup').hide()
 
     const d = this.options.parent.querySelector('.timeline-right-bottom')
-    console.log(d)
 
     this.options.viewMode = mode
     this.get('grid').setupDates()
