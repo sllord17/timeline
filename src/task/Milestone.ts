@@ -37,8 +37,8 @@ export default class Milestone extends Prop implements EventListenerObject {
       this.options.dispatch(EVENT.SHOW_POPUP, {
         eventTarget: this,
         positionTarget: this.dom,
-        title: this.task.get('name'),
-        subtitle: this.get('date').format('MMM DD')
+        title: this.get('name'),
+        subtitle: this.get('tooltip')
       })
 
       return

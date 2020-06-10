@@ -170,8 +170,8 @@ export default class Plan extends Prop implements EventListenerObject {
       this.options.dispatch(EVENT.SHOW_POPUP, {
         eventTarget: this,
         positionTarget: this.get('dom'),
-        title: this.task.get('name'),
-        subtitle: this.get('start').format('MMM DD') + ' - ' + this.get('end').format('MMM DD'),
+        title: this.get('name'),
+        subtitle: this.get('tooltip'),
         position: 'left'
       })
 
