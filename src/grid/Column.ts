@@ -119,16 +119,44 @@ export default class Column extends Prop implements Consumer {
     label.appendChild(text)
 
     if (obj.backgroundStyle) {
-      const rect = svg('rect', {
-        x: 0,
-        dy: offset.y,
-        height: task.getRowHeight(idx),
-        prepend_to: backgroundLayer,
-        class: 'column-background',
-        id: obj.label
-      })
-      rect.columnRow = label
-      rect.applyStyle(obj.backgroundStyle)
+      if (obj.backgroundShape && obj.backgroundShape == 'circle') {
+        const circle = svg('circle', {
+          cx: 20,
+          cy: offset.y + 15,
+          height: task.getRowHeight(idx),
+          r: task.getRowHeight(idx)/2,
+          prepend_to: backgroundLayer,
+          class: 'column-background',
+          id: obj.label
+        })
+        circle.columnRow = label
+        circle.applyStyle(obj.backgroundStyle)
+      }
+      else if (obj.backgroundShape && obj.backgroundShape == 'img') {
+        const img = svg('image', {
+          x: 5,
+          y: offset.y + 5,
+          height: task.getRowHeight(idx),
+          width: task.getRowHeight(idx),
+          prepend_to: backgroundLayer,
+          href: obj.href,
+          id: obj.label
+        })
+        img.columnRow = label
+        img.applyStyle(obj.backgroundStyle)
+      }
+      else {
+        const rect = svg('rect', {
+          x: 0,
+          dy: offset.y,
+          height: task.getRowHeight(idx),
+          prepend_to: backgroundLayer,
+          class: 'column-background',
+          id: obj.label
+        })
+        rect.columnRow = label
+        rect.applyStyle(obj.backgroundStyle)
+      }
     }
   }
 }

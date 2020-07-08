@@ -1010,16 +1010,42 @@ var Timeline = (function (exports) {
         label.appendChild(text);
 
         if (obj.backgroundStyle) {
-          var rect = svg('rect', {
-            x: 0,
-            dy: offset.y,
-            height: task.getRowHeight(idx),
-            prepend_to: backgroundLayer,
-            "class": 'column-background',
-            id: obj.label
-          });
-          rect.columnRow = label;
-          rect.applyStyle(obj.backgroundStyle);
+          if (obj.backgroundShape && obj.backgroundShape == 'circle') {
+            var circle = svg('circle', {
+              cx: 20,
+              cy: offset.y + 15,
+              height: task.getRowHeight(idx),
+              r: task.getRowHeight(idx) / 2,
+              prepend_to: backgroundLayer,
+              "class": 'column-background',
+              id: obj.label
+            });
+            circle.columnRow = label;
+            circle.applyStyle(obj.backgroundStyle);
+          } else if (obj.backgroundShape && obj.backgroundShape == 'img') {
+            var img = svg('image', {
+              x: 5,
+              y: offset.y + 5,
+              height: task.getRowHeight(idx),
+              width: task.getRowHeight(idx),
+              prepend_to: backgroundLayer,
+              href: obj.href,
+              id: obj.label
+            });
+            img.columnRow = label;
+            img.applyStyle(obj.backgroundStyle);
+          } else {
+            var rect = svg('rect', {
+              x: 0,
+              dy: offset.y,
+              height: task.getRowHeight(idx),
+              prepend_to: backgroundLayer,
+              "class": 'column-background',
+              id: obj.label
+            });
+            rect.columnRow = label;
+            rect.applyStyle(obj.backgroundStyle);
+          }
         }
       }
     }]);
