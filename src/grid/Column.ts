@@ -4,7 +4,7 @@ import { svg, toTextFragment } from '../util'
 import Task from '../task/Task'
 import Prop from '../prop'
 import { Consumer, EVENT } from '../events'
-import { ViewOptions, ColumnOptions } from '../options'
+import { ViewOptions, ColumnOptions, LabelOptions } from '../options'
 
 export default class Column extends Prop implements Consumer {
   private options: ViewOptions
@@ -82,7 +82,7 @@ export default class Column extends Prop implements Consumer {
     if (!value) return
 
     if (typeof value == 'string' || typeof value == 'number') {
-      return this.renderTspan(layer, null, task, { label: value })
+      return this.renderTspan(layer, null, task, <LabelOptions>{ label: value })
     }
 
     console.assert(Array.isArray(value), "Column value isn't a string or array")
@@ -90,7 +90,7 @@ export default class Column extends Prop implements Consumer {
     const offset: Offset = { x: 0, y: 0 }
 
     ;(<{ [key: string]: any }[]>value).forEach((v, idx) => {
-      this.renderTspan(layer, backgroundLayer, task, v, offset, idx)
+      this.renderTspan(layer, backgroundLayer, task, <LabelOptions>v, offset, idx)
       offset.y += task.getRowHeight(idx)
     })
   }
@@ -99,7 +99,7 @@ export default class Column extends Prop implements Consumer {
     textLayer: SVGElementX,
     backgroundLayer: SVGElementX,
     task: Task,
-    obj: any,
+    obj: LabelOptions,
     offset: Offset = { x: 0, y: 0 },
     idx: number = 0
   ) {
@@ -119,34 +119,29 @@ export default class Column extends Prop implements Consumer {
     label.appendChild(text)
 
     if (obj.backgroundStyle) {
+      let background
       if (obj.backgroundShape && obj.backgroundShape == 'circle') {
-        const circle = svg('circle', {
-          cx: 20,
-          cy: offset.y + 15,
+        background = svg('circle', {
+          cx: task.getRowHeight(idx) / 2,
+          cy: offset.y + task.getRowHeight(idx) / 2,
           height: task.getRowHeight(idx),
-          r: task.getRowHeight(idx)/2,
+          r: task.getRowHeight(idx) / 2,
           prepend_to: backgroundLayer,
           class: 'column-background',
           id: obj.label
         })
-        circle.columnRow = label
-        circle.applyStyle(obj.backgroundStyle)
-      }
-      else if (obj.backgroundShape && obj.backgroundShape == 'img') {
-        const img = svg('image', {
-          x: 5,
-          y: offset.y + 5,
+      } else if (obj.backgroundShape && obj.backgroundShape == 'img') {
+        background = svg('image', {
+          x: 0,
+          y: offset.y,
           height: task.getRowHeight(idx),
           width: task.getRowHeight(idx),
           prepend_to: backgroundLayer,
           href: obj.href,
           id: obj.label
         })
-        img.columnRow = label
-        img.applyStyle(obj.backgroundStyle)
-      }
-      else {
-        const rect = svg('rect', {
+      } else {
+        background = svg('rect', {
           x: 0,
           dy: offset.y,
           height: task.getRowHeight(idx),
@@ -154,9 +149,10 @@ export default class Column extends Prop implements Consumer {
           class: 'column-background',
           id: obj.label
         })
-        rect.columnRow = label
-        rect.applyStyle(obj.backgroundStyle)
       }
+
+      background.columnRow = label
+      background.applyStyle(obj.backgroundStyle)
     }
   }
 }
