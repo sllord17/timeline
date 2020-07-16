@@ -35,19 +35,31 @@ interface TaskBaseOptions {
 
 export type TaskOptions = SingleBarOptions & MultiBarOptions
 
+interface BaseLabelOptions {
+  label: string
+  labelStyle?: ElementCSSInlineStyle
+}
+
 interface BasePlanOptions {
   progress?: number
   height?: number
   start: string
   end: string
-  label: string
   cornerRadius?: number
   progressStyle?: ElementCSSInlineStyle
   backgroundStyle?: ElementCSSInlineStyle
-  labelStyle?: ElementCSSInlineStyle
 }
 
-export type PlanOptions = BasePlanOptions & Offset
+export type PlanOptions = BasePlanOptions & Offset & BaseLabelOptions
+
+interface BaseShapeOptions {
+  backgroundStyle?: ElementCSSInlineStyle
+  backgroundShape?: string
+  href?: string
+  cornerRadius?: number
+}
+
+export type LabelOptions = BaseLabelOptions & BaseShapeOptions & Offset
 
 interface MilestoneBaseOptions {
   date: string
