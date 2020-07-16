@@ -1,7 +1,7 @@
 import { Consumer, EVENT } from './events'
 import Popup, { PopupOptions } from './Popup'
 import { TaskOptions, ViewOptions } from './options'
-import { debounce, delegate, svg, toDom } from './util'
+import { debounce, delegate, toDom } from './util'
 
 import Grid from './grid/Grid'
 import Prop from './prop'
@@ -30,7 +30,7 @@ export default class View extends Prop {
   private static initResizeListener(): View[] {
     window.addEventListener(
       'resize',
-      debounce(function (e) {
+      debounce(function () {
         for (const view of View.VIEWS) {
           if (view.options.parent) {
             view.changeView(view.options.viewMode)
@@ -69,7 +69,6 @@ export default class View extends Prop {
       const direction = event.deltaY > 0 ? 1 : -1
       const idx = views.indexOf(this.options.viewMode)
       const newIdx = Math.max(0, Math.min(idx + direction, views.length - 1))
-      console.log(newIdx)
 
       this.changeView(views[newIdx] as VIEW_MODE)
     })
@@ -110,8 +109,6 @@ export default class View extends Prop {
 
   public changeView(mode: VIEW_MODE) {
     this.get('popup').hide()
-
-    const d = this.options.parent.querySelector('.timeline-right-bottom')
 
     this.options.viewMode = mode
     this.get('grid').setupDates()

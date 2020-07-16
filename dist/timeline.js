@@ -865,7 +865,8 @@ var Timeline = (function (exports) {
         } finally {
           _iterator.f();
         }
-      }
+      } // @ts-ignore
+
     }, {
       key: "highlightCurrentDay",
       value: function highlightCurrentDay(layer, offset) {
@@ -2038,7 +2039,7 @@ var Timeline = (function (exports) {
     _createClass(View, null, [{
       key: "initResizeListener",
       value: function initResizeListener() {
-        window.addEventListener('resize', debounce(function (e) {
+        window.addEventListener('resize', debounce(function () {
           var _iterator = _createForOfIteratorHelper(View.VIEWS),
               _step;
 
@@ -2107,7 +2108,6 @@ var Timeline = (function (exports) {
         var direction = event.deltaY > 0 ? 1 : -1;
         var idx = views.indexOf(_this.options.viewMode);
         var newIdx = Math.max(0, Math.min(idx + direction, views.length - 1));
-        console.log(newIdx);
 
         _this.changeView(views[newIdx]);
       });
@@ -2146,7 +2146,6 @@ var Timeline = (function (exports) {
         var _this3 = this;
 
         this.get('popup').hide();
-        var d = this.options.parent.querySelector('.timeline-right-bottom');
         this.options.viewMode = mode;
         this.get('grid').setupDates();
         this.get('grid').drawBody();
