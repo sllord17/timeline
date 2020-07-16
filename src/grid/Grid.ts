@@ -3,15 +3,14 @@
 import { Consumer, EVENT } from '../events'
 import { Offset, SVGElementX, VIEW_MODE } from '../types'
 import { TaskOptions, ViewOptions } from '../options'
-import { svg, toDom } from '../util'
 
 import Background from './Background'
-import Column from './Column'
 import Columns from './Columns'
 import Header from './Header'
 import Prop from '../prop'
 import Task from '../task/Task'
 import dayjs from 'dayjs'
+import { svg } from '../util'
 
 export default class Grid extends Prop implements Consumer {
   private options: ViewOptions
@@ -201,7 +200,7 @@ export default class Grid extends Prop implements Consumer {
     this.get('columns').render()
   }
 
-  getPointFromEvent(event) {
+  getPointFromEvent(event: MouseEvent & TouchEvent) {
     var point = { x: 0, y: 0 }
     // If even is triggered by a touch event, we get the position of the first finger
     if (event.targetTouches) {
@@ -215,7 +214,7 @@ export default class Grid extends Prop implements Consumer {
     return point
   }
 
-  private onPointerDown(event: Event) {
+  private onPointerDown(event: MouseEvent & TouchEvent) {
     this.isPointerDown = true // We set the pointer as down
     // We get the pointer position on click/touchdown so we can get the value once the user starts to drag
     var pointerPosition = this.getPointFromEvent(event)
@@ -226,7 +225,7 @@ export default class Grid extends Prop implements Consumer {
   // We save the original values from the viewBox
 
   // Function called by the event listeners when user start moving/dragging
-  private onPointerMove(event: Event) {
+  private onPointerMove(event: MouseEvent & TouchEvent) {
     // Only run this function if the pointer is down
     if (!this.isPointerDown) {
       return

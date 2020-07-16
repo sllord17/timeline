@@ -1,8 +1,7 @@
 import { Consumer, EVENT } from '../events'
-import { Offset, SVGElementX } from '../types'
-import { svg, toDom } from '../util'
 
 import Column from './Column'
+import { Offset } from '../types'
 import Task from '../task/Task'
 import { ViewOptions } from '../options'
 import prop from '../prop'
@@ -25,7 +24,7 @@ export default class Columns extends prop implements Consumer {
   eventHandler(event: EVENT): void {
     if (event == EVENT.AFTER_RENDER) {
       const offset: Offset = { x: 0, y: 0 }
-      this.get('columns').forEach((c: Column, idx: number) => {
+      this.get('columns').forEach((c: Column) => {
         c.get('title').setAttribute('x', offset.x + this.options.padding / 2)
         c.get('dom').setAttribute(
           'transform',

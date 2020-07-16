@@ -1094,7 +1094,7 @@ var Timeline = (function (exports) {
             x: 0,
             y: 0
           };
-          this.get('columns').forEach(function (c, idx) {
+          this.get('columns').forEach(function (c) {
             c.get('title').setAttribute('x', offset.x + _this2.options.padding / 2);
             c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", 0)"));
             offset.x += c.getWidth() + _this2.options.padding;
