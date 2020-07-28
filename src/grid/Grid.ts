@@ -53,6 +53,7 @@ export default class Grid extends Prop implements Consumer {
     if (event == EVENT.AFTER_LAYOUT) {
       this.setupDates()
       this.drawBody()
+      this.options.dispatch(EVENT.SETUP_HIGHLIGHTS)
     }
   }
 
@@ -198,6 +199,7 @@ export default class Grid extends Prop implements Consumer {
     this.get('columns')
       .set('height', this.getHeight())
       .set('headerHeight', this.get('header').getHeight())
+    this.options.gridHeight = this.getHeight()
     this.get('columns').render()
   }
 

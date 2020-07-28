@@ -84,7 +84,7 @@ export default class Task extends Prop {
         }
 
         if (!this.get('end') || p.get('end').isAfter(this.get('end'))) {
-          this.set('end', p.get('end').clone())
+          this.set('end', p.get('end').clone().add(4, 'day'))
         }
       })
     )

@@ -5,7 +5,9 @@ import { debounce, delegate, svg, toDom } from './util'
 
 import Grid from './grid/Grid'
 import Prop from './prop'
-import { VIEW_MODE } from './types'
+import { VIEW_MODE, Offset } from './types'
+import Highlight, { HighlightOptions } from './Highlight'
+import Task from './task/Task'
 
 export default class View extends Prop {
   private options: ViewOptions = {
@@ -20,7 +22,9 @@ export default class View extends Prop {
     popupProducer: null,
     columns: [],
     draggable: true,
-    parent: null
+    parent: null,
+    gridHeight: 0,
+    highlights: []
   }
 
   private consumers: { [key: string]: Consumer[] } = {}
@@ -42,12 +46,13 @@ export default class View extends Prop {
     return []
   }
 
-  constructor(selector: string, tasks: TaskOptions[], options: ViewOptions) {
+  constructor(selector: string, tasks: TaskOptions[], highlights: HighlightOptions[], options: ViewOptions) {
     super({ type: 'View' })
 
     options.parent = document.querySelector(selector)
 
     this.options = { ...this.options, ...options }
+    this.options.highlights = highlights
     this.options.dispatch = this.dispatch.bind(this)
     this.options.subscribe = this.subscribe.bind(this)
     this.options.unsubscribe = this.unsubscribe.bind(this)
@@ -94,7 +99,8 @@ export default class View extends Prop {
 
     const right = toDom(`<div class="timeline-right" style="flex: 1; flex-direction: column; display: flex; overflow: hidden">
     <div class="timeline-right-top" style="overflow: hidden" height="${headerHeight}"><svg class="timeline" x="0" y="0" height="${headerHeight}"></svg></div>
-    <div class="timeline-right-bottom" style="overflow: hidden; flex: 1"><svg class="timeline" x="0" y="0"></svg></div>
+    <div class="timeline-right-bottom" style="overflow: hidden; flex: 1">
+    <svg class="timeline" x="0" y="0"></svg></div>
     </div>`)
 
     this.options.parent.append(left, right)
@@ -121,7 +127,23 @@ export default class View extends Prop {
 
   public render() {
     this.get('grid').render()
+
+    const tasks = this.get('grid').get('tasks')
+
+    this.set('startDate', null)
+    this.set('endDate', null)
+    tasks.forEach((task: Task) => {
+      if (!this.get('startDate') || task.get('start').isBefore(this.get('startDate'))) {
+        this.set('startDate', task.get('start').clone())
+
+        if (!this.get('endDate') || task.get('end').isAfter(this.get('endDate'))) {
+          this.set('endDate', task.get('end').clone())
+        }
+      }
+    })
+
     requestAnimationFrame(() => this.dispatch(EVENT.AFTER_RENDER))
+
   }
 
   private subscribe(key: EVENT, clazz: Consumer) {
@@ -146,6 +168,19 @@ export default class View extends Prop {
       case EVENT.HIDE_POPUP:
         this.get('popup').hide()
         return
+      case EVENT.SETUP_HIGHLIGHTS:
+        this.set('gridHeight', this.get('grid').getHeight())
+        const highlightContainer = document.createElement('div')
+        highlightContainer.classList.add('highlight-wrapper')
+        this.options.parent.querySelector('.timeline-right-bottom > svg').appendChild(highlightContainer)
+        this.set('highlights', this.options.highlights.map((o) => new Highlight(this.options, highlightContainer, o)))
+        const offset: Offset = {
+          x: 0,
+          y: 0
+        }
+        var sdate = this.get('startDate')
+        var edate = this.get('endDate')
+        this.get('highlights').forEach((h: Highlight) => h.render(this.options.parent.querySelector('.highlight-wrapper'), sdate, edate, offset))
     }
 
     const events = this.consumers[key]

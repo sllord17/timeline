@@ -1,5 +1,6 @@
 import { Consumer, EVENT } from './events'
 import { HtmlProducer, ImageOptions, Offset, VIEW_MODE } from './types'
+import { HighlightOptions } from './Highlight'
 
 export interface ViewOptions {
   headerHeight?: number
@@ -16,7 +17,9 @@ export interface ViewOptions {
   subscribe?: { (key: EVENT, clazz: Consumer): void }
   unsubscribe?: { (key: EVENT, clazz: Consumer): void }
   columns: ColumnOptions[]
-  parent: HTMLDivElement
+  parent: HTMLDivElement,
+  gridHeight: number,
+  highlights: HighlightOptions[]
 }
 
 export interface SingleBarOptions extends TaskBaseOptions {

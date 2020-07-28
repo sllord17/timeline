@@ -550,6 +550,7 @@ var Timeline = (function (exports) {
     EVENT["TOGGLE_POPUP"] = "TOGGLE_POPUP";
     EVENT["AFTER_RENDER"] = "AFTER_RENDER";
     EVENT["AFTER_LAYOUT"] = "AFTER_LAYOUT";
+    EVENT["SETUP_HIGHLIGHTS"] = "SETUP_HIGHLIGHTS";
   })(EVENT || (EVENT = {}));
 
   var Prop = /*#__PURE__*/function () {
@@ -1649,7 +1650,7 @@ var Timeline = (function (exports) {
             }
 
             if (!_this3.get('end') || p.get('end').isAfter(_this3.get('end'))) {
-              _this3.set('end', p.get('end').clone());
+              _this3.set('end', p.get('end').clone().add(4, 'day'));
             }
           });
         });
@@ -1770,6 +1771,7 @@ var Timeline = (function (exports) {
         if (event == EVENT.AFTER_LAYOUT) {
           this.setupDates();
           this.drawBody();
+          this.options.dispatch(EVENT.SETUP_HIGHLIGHTS);
         }
       }
     }, {
@@ -1927,6 +1929,7 @@ var Timeline = (function (exports) {
       key: "drawColumns",
       value: function drawColumns() {
         this.get('columns').set('height', this.getHeight()).set('headerHeight', this.get('header').getHeight());
+        this.options.gridHeight = this.getHeight();
         this.get('columns').render();
       }
     }, {
@@ -2031,6 +2034,117 @@ var Timeline = (function (exports) {
     return Grid;
   }(Prop);
 
+  function generate_id$1(highlight) {
+    return 'highlight_' + Math.random().toString(36).slice(2, 12);
+  }
+
+  var Highlight = /*#__PURE__*/function (_Prop) {
+    _inherits(Highlight, _Prop);
+
+    var _super = _createSuper(Highlight);
+
+    function Highlight(options, parent, config) {
+      var _this;
+
+      _classCallCheck(this, Highlight);
+
+      _this = _super.call(this, {
+        parent: parent,
+        width: 0,
+        height: 0,
+        y: 0,
+        x: 0
+      });
+
+      _defineProperty(_assertThisInitialized(_this), "options", void 0);
+
+      _this.options = options;
+      _this.properties = _objectSpread2(_objectSpread2({}, config), {}, {
+        height: 0,
+        id: generate_id$1(_assertThisInitialized(_this)),
+        type: 'Highlight'
+      });
+
+      _this.set('startDate', dayjs_min(config.startDate));
+
+      _this.set('endDate', dayjs_min(config.endDate));
+
+      _this.set('duration', _this.get('endDate').diff(_this.get('startDate'), 'hour'));
+
+      return _this;
+    }
+
+    _createClass(Highlight, [{
+      key: "eventHandler",
+      value: function eventHandler(event) {
+        if (event == EVENT.SETUP_HIGHLIGHTS) {
+          console.log(this);
+        }
+      }
+    }, {
+      key: "render",
+      value: function render(layer, startDate, endDate, offset) {
+        console.log(this.options);
+        console.log(this.computeX(startDate));
+        this.set('x', this.computeX(startDate));
+        this.set('dom', svg('g', {
+          "class": 'highlight',
+          'data-id': this.get('id'),
+          append_to: layer
+        }));
+        var rect = svg('rect', {
+          x: this.get('x'),
+          y: this.get('y') + offset.y,
+          width: this.get('duration') * this.options.columnWidth,
+          height: this.options.gridHeight,
+          //rx: this.get('cornerRadius'),
+          //ry: this.get('cornerRadius'),
+          "class": 'bar',
+          append_to: layer
+        });
+        /*  this.set(
+            'bar',
+            svg('rect', {
+              x: this.get('x'),
+              y: this.get('y') + offset.y,
+              width: this.get('duration') * this.options.columnWidth,
+              height: this.options.gridHeight,
+              //rx: this.get('cornerRadius'),
+              //ry: this.get('cornerRadius'),
+              //class: 'bar',
+              append_to: layer
+            })
+          )*/
+
+        if (this.get('highlightStyle')) {
+          var style = this.get('highlightStyle');
+          rect.applyStyle(style);
+        } //console.log(startDate)
+        //console.log(offset)
+        //const dom = this.options.parent.querySelector('.highlight-wrapper > svg')
+        //const obj = svg('g', {
+        //  class: 'highlight',
+        //  prepend_to: dom
+        //})
+        //this.drawBackground(layer)
+
+      }
+    }, {
+      key: "computeX",
+      value: function computeX(startDate) {
+        console.log(this.options.viewMode + '\n' + this.options.columnWidth + '\n' + this.options.step);
+
+        if (exports.VIEW_MODE.MONTH == this.options.viewMode) {
+          return this.get('startDate').diff(startDate, 'day') * this.options.columnWidth / 30;
+        }
+
+        return this.get('startDate').diff(startDate, 'hour') / this.options.step * this.options.columnWidth;
+      }
+    }]);
+
+    return Highlight;
+  }(Prop);
+
   var View = /*#__PURE__*/function (_Prop) {
     _inherits(View, _Prop);
 
@@ -2061,7 +2175,7 @@ var Timeline = (function (exports) {
       }
     }]);
 
-    function View(selector, tasks, options) {
+    function View(selector, tasks, highlights, options) {
       var _this;
 
       _classCallCheck(this, View);
@@ -2082,13 +2196,16 @@ var Timeline = (function (exports) {
         popupProducer: null,
         columns: [],
         draggable: true,
-        parent: null
+        parent: null,
+        gridHeight: 0,
+        highlights: []
       });
 
       _defineProperty(_assertThisInitialized(_this), "consumers", {});
 
       options.parent = document.querySelector(selector);
       _this.options = _objectSpread2(_objectSpread2({}, _this.options), options);
+      _this.options.highlights = highlights;
       _this.options.dispatch = _this.dispatch.bind(_assertThisInitialized(_this));
       _this.options.subscribe = _this.subscribe.bind(_assertThisInitialized(_this));
       _this.options.unsubscribe = _this.unsubscribe.bind(_assertThisInitialized(_this));
@@ -2134,7 +2251,7 @@ var Timeline = (function (exports) {
 
         var headerHeight = this.options.headerHeight + 10;
         var left = toDom("<div class=\"timeline-left\" style=\"flex-direction: column; display: flex; overflow: hidden\">\n      <div class=\"timeline-left-top\" style=\"overflow: hidden\" height=\"".concat(headerHeight, "\"><svg x=\"0\" y=\"0\" height=\"").concat(headerHeight, "\"></svg></div>\n      <div class=\"timeline-left-bottom\" style=\"overflow: hidden; flex: 1\"><svg x=\"0\" y=\"0\"></svg></div>\n      </div>"));
-        var right = toDom("<div class=\"timeline-right\" style=\"flex: 1; flex-direction: column; display: flex; overflow: hidden\">\n    <div class=\"timeline-right-top\" style=\"overflow: hidden\" height=\"".concat(headerHeight, "\"><svg class=\"timeline\" x=\"0\" y=\"0\" height=\"").concat(headerHeight, "\"></svg></div>\n    <div class=\"timeline-right-bottom\" style=\"overflow: hidden; flex: 1\"><svg class=\"timeline\" x=\"0\" y=\"0\"></svg></div>\n    </div>"));
+        var right = toDom("<div class=\"timeline-right\" style=\"flex: 1; flex-direction: column; display: flex; overflow: hidden\">\n    <div class=\"timeline-right-top\" style=\"overflow: hidden\" height=\"".concat(headerHeight, "\"><svg class=\"timeline\" x=\"0\" y=\"0\" height=\"").concat(headerHeight, "\"></svg></div>\n    <div class=\"timeline-right-bottom\" style=\"overflow: hidden; flex: 1\">\n    <svg class=\"timeline\" x=\"0\" y=\"0\"></svg></div>\n    </div>"));
         this.options.parent.append(left, right);
         this.options.parent;
         delegate(this.options.parent, 'click', '.timeline-left, .timeline-right-top, .tick, .grid', function () {
@@ -2161,6 +2278,18 @@ var Timeline = (function (exports) {
         var _this4 = this;
 
         this.get('grid').render();
+        var tasks = this.get('grid').get('tasks');
+        this.set('startDate', null);
+        this.set('endDate', null);
+        tasks.forEach(function (task) {
+          if (!_this4.get('startDate') || task.get('start').isBefore(_this4.get('startDate'))) {
+            _this4.set('startDate', task.get('start').clone());
+
+            if (!_this4.get('endDate') || task.get('end').isAfter(_this4.get('endDate'))) {
+              _this4.set('endDate', task.get('end').clone());
+            }
+          }
+        });
         requestAnimationFrame(function () {
           return _this4.dispatch(EVENT.AFTER_RENDER);
         });
@@ -2186,6 +2315,8 @@ var Timeline = (function (exports) {
     }, {
       key: "dispatch",
       value: function dispatch(key, payload) {
+        var _this5 = this;
+
         switch (key) {
           case EVENT.SHOW_POPUP:
             this.get('popup').show(payload);
@@ -2194,6 +2325,24 @@ var Timeline = (function (exports) {
           case EVENT.HIDE_POPUP:
             this.get('popup').hide();
             return;
+
+          case EVENT.SETUP_HIGHLIGHTS:
+            this.set('gridHeight', this.get('grid').getHeight());
+            var highlightContainer = document.createElement('div');
+            highlightContainer.classList.add('highlight-wrapper');
+            this.options.parent.querySelector('.timeline-right-bottom > svg').appendChild(highlightContainer);
+            this.set('highlights', this.options.highlights.map(function (o) {
+              return new Highlight(_this5.options, highlightContainer, o);
+            }));
+            var offset = {
+              x: 0,
+              y: 0
+            };
+            var sdate = this.get('startDate');
+            var edate = this.get('endDate');
+            this.get('highlights').forEach(function (h) {
+              return h.render(_this5.options.parent.querySelector('.highlight-wrapper'), sdate, edate, offset);
+            });
         }
 
         var events = this.consumers[key];
