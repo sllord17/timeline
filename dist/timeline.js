@@ -866,7 +866,8 @@ var Timeline = (function (exports) {
         } finally {
           _iterator.f();
         }
-      }
+      } // @ts-ignore
+
     }, {
       key: "highlightCurrentDay",
       value: function highlightCurrentDay(layer, offset) {
@@ -1011,32 +1012,30 @@ var Timeline = (function (exports) {
         label.appendChild(text);
 
         if (obj.backgroundStyle) {
+          var background;
+
           if (obj.backgroundShape && obj.backgroundShape == 'circle') {
-            var circle = svg('circle', {
-              cx: 20,
-              cy: offset.y + 15,
+            background = svg('circle', {
+              cx: task.getRowHeight(idx) / 2,
+              cy: offset.y + task.getRowHeight(idx) / 2,
               height: task.getRowHeight(idx),
               r: task.getRowHeight(idx) / 2,
               prepend_to: backgroundLayer,
               "class": 'column-background',
               id: obj.label
             });
-            circle.columnRow = label;
-            circle.applyStyle(obj.backgroundStyle);
           } else if (obj.backgroundShape && obj.backgroundShape == 'img') {
-            var img = svg('image', {
-              x: 5,
-              y: offset.y + 5,
+            background = svg('image', {
+              x: 0,
+              y: offset.y,
               height: task.getRowHeight(idx),
               width: task.getRowHeight(idx),
               prepend_to: backgroundLayer,
               href: obj.href,
               id: obj.label
             });
-            img.columnRow = label;
-            img.applyStyle(obj.backgroundStyle);
           } else {
-            var rect = svg('rect', {
+            background = svg('rect', {
               x: 0,
               dy: offset.y,
               height: task.getRowHeight(idx),
@@ -1044,9 +1043,10 @@ var Timeline = (function (exports) {
               "class": 'column-background',
               id: obj.label
             });
-            rect.columnRow = label;
-            rect.applyStyle(obj.backgroundStyle);
           }
+
+          background.columnRow = label;
+          background.applyStyle(obj.backgroundStyle);
         }
       }
     }]);
@@ -1096,7 +1096,7 @@ var Timeline = (function (exports) {
             x: 0,
             y: 0
           };
-          this.get('columns').forEach(function (c, idx) {
+          this.get('columns').forEach(function (c) {
             c.get('title').setAttribute('x', offset.x + _this2.options.padding / 2);
             c.get('dom').setAttribute('transform', "translate(".concat(offset.x + _this2.options.padding / 2, ", 0)"));
             offset.x += c.getWidth() + _this2.options.padding;
@@ -2153,7 +2153,7 @@ var Timeline = (function (exports) {
     _createClass(View, null, [{
       key: "initResizeListener",
       value: function initResizeListener() {
-        window.addEventListener('resize', debounce(function (e) {
+        window.addEventListener('resize', debounce(function () {
           var _iterator = _createForOfIteratorHelper(View.VIEWS),
               _step;
 
@@ -2225,7 +2225,6 @@ var Timeline = (function (exports) {
         var direction = event.deltaY > 0 ? 1 : -1;
         var idx = views.indexOf(_this.options.viewMode);
         var newIdx = Math.max(0, Math.min(idx + direction, views.length - 1));
-        console.log(newIdx);
 
         _this.changeView(views[newIdx]);
       });
@@ -2264,7 +2263,6 @@ var Timeline = (function (exports) {
         var _this3 = this;
 
         this.get('popup').hide();
-        var d = this.options.parent.querySelector('.timeline-right-bottom');
         this.options.viewMode = mode;
         this.get('grid').setupDates();
         this.get('grid').drawBody();

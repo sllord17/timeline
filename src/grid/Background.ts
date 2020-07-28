@@ -100,6 +100,7 @@ export default class Background extends Prop {
     }
   }
 
+  // @ts-ignore
   private highlightCurrentDay(layer: SVGElementX, offset: Offset) {
     if (VIEW_MODE.DAY == this.options.viewMode) {
       const x =
